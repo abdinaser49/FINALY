@@ -55,6 +55,7 @@ const Dashboard = () => {
   const [modalType, setModalType] = useState<"appointment" | "client" | "service" | "staff" | "payment" | "rental" | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [reportsSortLatest, setReportsSortLatest] = useState(true);
+  const [reportsPage, setReportsPage] = useState(1);
   const [dbServices, setDbServices] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
@@ -1806,10 +1807,14 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-100 bg-white">
-                        {allBookings.filter(b => b.status !== 'cancelled').sort((a,b) => {
-                          const val = new Date(b.created_at || b.booking_date).getTime() - new Date(a.created_at || a.booking_date).getTime() || ((b.id||0) - (a.id||0));
-                          return reportsSortLatest ? val : -val;
-                        }).map((sale, i) => (
+                        {(() => {
+                          const filtered = allBookings.filter(b => b.status !== 'cancelled').sort((a,b) => {
+                            const val = new Date(b.created_at || b.booking_date).getTime() - new Date(a.created_at || a.booking_date).getTime() || ((b.id||0) - (a.id||0));
+                            return reportsSortLatest ? val : -val;
+                          });
+                          const perPage = 10;
+                          const visibleRows = filtered.slice((reportsPage - 1) * perPage, reportsPage * perPage);
+                          return visibleRows.map((sale, i) => (
                           <tr key={sale.id || i} className="hover:bg-zinc-50/50 transition-colors group">
                             <td className="py-4 px-6">
                               <span className="text-[13px] font-medium text-[#1E1E1E]">{sale.name || 'Guest'}</span>
@@ -1844,28 +1849,45 @@ const Dashboard = () => {
                               </button>
                             </td>
                           </tr>
-                        ))}
+                        ));
+                        })()}
                       </tbody>
                     </table>
                   </div>
                   
                   {/* Footer / Pagination */}
                   <div className="flex items-center justify-between p-6 border-t border-zinc-100">
-                    <button className="flex items-center gap-1.5 text-[13px] font-medium text-zinc-500 bg-white border border-zinc-200 px-3 py-1.5 rounded hover:bg-zinc-50 transition-colors">
-                      <ChevronLeft className="w-3.5 h-3.5" /> Previous
-                    </button>
-                    <div className="flex items-center gap-1.5">
-                      <button className="w-7 h-7 flex items-center justify-center rounded bg-[#171E2D] text-white text-[13px] font-medium">1</button>
-                      <button className="w-7 h-7 flex items-center justify-center rounded bg-[#F9FAFB] text-zinc-500 text-[13px] hover:bg-zinc-100 transition-colors">2</button>
-                      <button className="w-7 h-7 flex items-center justify-center rounded bg-[#F9FAFB] text-zinc-500 text-[13px] hover:bg-zinc-100 transition-colors">3</button>
-                      <span className="text-zinc-400 text-[13px]">...</span>
-                      <button className="w-7 h-7 flex items-center justify-center rounded bg-[#F9FAFB] text-zinc-500 text-[13px] hover:bg-zinc-100 transition-colors">8</button>
-                      <button className="w-7 h-7 flex items-center justify-center rounded bg-[#F9FAFB] text-zinc-500 text-[13px] hover:bg-zinc-100 transition-colors">9</button>
-                      <button className="w-7 h-7 flex items-center justify-center rounded bg-[#F9FAFB] text-zinc-500 text-[13px] hover:bg-zinc-100 transition-colors">10</button>
-                    </div>
-                    <button className="flex items-center gap-1.5 text-[13px] font-medium text-zinc-500 bg-white border border-zinc-200 px-3 py-1.5 rounded hover:bg-zinc-50 transition-colors">
-                      Next <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
+                    {(() => {
+                      const filtered = allBookings.filter(b => b.status !== 'cancelled');
+                      const perPage = 10;
+                      const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+                      
+                      return (
+                        <>
+                          <button 
+                            onClick={() => setReportsPage(Math.max(1, reportsPage - 1))}
+                            disabled={reportsPage === 1}
+                            className="flex items-center gap-1.5 text-[13px] font-medium text-zinc-500 bg-white border border-zinc-200 px-3 py-1.5 rounded hover:bg-zinc-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <ChevronLeft className="w-3.5 h-3.5" /> Previous
+                          </button>
+                          
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-zinc-500 text-[13px] font-medium">
+                              Page {reportsPage} of {totalPages}
+                            </span>
+                          </div>
+                          
+                          <button 
+                            onClick={() => setReportsPage(Math.min(totalPages, reportsPage + 1))}
+                            disabled={reportsPage === totalPages}
+                            className="flex items-center gap-1.5 text-[13px] font-medium text-zinc-500 bg-white border border-zinc-200 px-3 py-1.5 rounded hover:bg-zinc-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Next <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

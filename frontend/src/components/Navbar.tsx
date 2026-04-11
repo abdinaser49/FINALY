@@ -161,12 +161,7 @@ const Navbar = ({ onBookNow }: NavbarProps) => {
                            </div>
 
                            <div className="p-4 flex flex-col gap-2 flex-1 overflow-y-auto">
-                               <Link to="/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-zinc-50 transition-colors font-bold text-sm text-[#112232] group">
-                                  <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center group-hover:scale-105 transition-transform">
-                                    <Settings className="w-5 h-5 text-zinc-600" /> 
-                                  </div>
-                                  Profile Settings
-                               </Link>
+
                                {isAdmin && (
                                  <Link to="/dashboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-primary/5 transition-colors font-bold text-sm text-primary group">
                                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-105 transition-transform">
@@ -287,15 +282,7 @@ const Navbar = ({ onBookNow }: NavbarProps) => {
               <div className="pt-6 border-t border-border">
                 {user ? (
                   <>
-                    <button 
-                      onClick={() => { setProfileOpen(true); setMobileOpen(false); }}
-                      className="flex items-center justify-between w-full py-4 text-charcoal font-black uppercase tracking-widest text-xs"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Settings className="w-5 h-5 text-zinc-400" />
-                        My Profile Settings
-                      </div>
-                    </button>
+
                     {isAdmin && (
                       <Link 
                         to="/dashboard" 

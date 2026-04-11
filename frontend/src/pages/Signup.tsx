@@ -46,8 +46,11 @@ const Signup = () => {
     if (data.user && phone.trim()) {
       await supabase
         .from('profiles')
-        .update({ phone: phone.trim() })
-        .eq('user_id', data.user.id);
+        .upsert({ 
+          user_id: data.user.id,
+          phone: phone.trim(),
+          full_name: fullName.trim()
+        }, { onConflict: 'user_id' });
     }
 
     setLoading(false);

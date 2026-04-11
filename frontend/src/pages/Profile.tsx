@@ -68,21 +68,45 @@ const Profile = () => {
         updates.password = password;
       }
 
-      const { error } = await supabase.auth.updateUser(updates);
+      const { data: { user: updatedUser }, error } = await supabase.auth.updateUser(updates);
       if (error) throw error;
 
       if (user?.id) {
-        await supabase.from('profiles').update({
+        // 1. Update/Create profile record
+        await supabase.from('profiles').upsert({
+          user_id: user.id,
           full_name: profile.full_name,
           phone: profile.phone,
-          avatar_url: profile.avatar_url
-        }).eq('user_id', user.id);
+          avatar_url: profile.avatar_url,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+        // 2. Also update 'customers' table if this user is a customer
+        // We match by the CURRENT user's email
+        if (user.email) {
+           await supabase.from('customers').update({
+             name: profile.full_name,
+             phone: profile.phone
+           }).eq('email', user.email);
+        }
       }
 
       toast.success("Profile updated successfully!");
       if (password || profile.email !== user?.email || profile.phone !== user?.phone) {
          toast.info("If you changed email, phone, or password, please check for confirmation messages.");
       }
+      
+      // Update local state if updatedUser is returned
+      if (updatedUser) {
+        setProfile({
+          full_name: updatedUser.user_metadata?.full_name || "",
+          phone: updatedUser.user_metadata?.phone || "",
+          email: updatedUser.email || "",
+          gender: updatedUser.user_metadata?.gender || "Female",
+          avatar_url: updatedUser.user_metadata?.avatar_url || ""
+        });
+      }
+
       setPassword("");
       setConfirmPassword("");
     } catch (err: any) {
