@@ -287,26 +287,56 @@ const Profile = () => {
               </form>
            </motion.div>
 
-           {/* Second Card (Ayan Abdi style demo) */}
+           {/* Second Card (Live Preview) */}
            <motion.div 
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
+             initial={{ opacity: 0, x: 20 }}
+             animate={{ opacity: 1, x: 0 }}
              transition={{ delay: 0.1 }}
-             className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-zinc-200/50 border border-white opacity-60 hidden md:block"
+             className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-zinc-200/50 border border-white hidden md:block"
            >
               <div className="flex items-center gap-8 mb-12">
-                 <div className="w-32 h-32 rounded-full overflow-hidden border-[6px] border-white shadow-2xl bg-zinc-100 flex items-center justify-center text-zinc-400">
-                    <User className="w-12 h-12" />
+                 <div className="w-32 h-32 rounded-full overflow-hidden border-[6px] border-white shadow-2xl relative">
+                    {profile.avatar_url ? (
+                      <img src={profile.avatar_url} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary">
+                         <User className="w-12 h-12" />
+                      </div>
+                    )}
                  </div>
                  <div>
-                   <h2 className="text-3xl font-display font-bold text-zinc-300 italic">Example Profile</h2>
-                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300 mt-2">Preview Mode</p>
+                   <h2 className="text-3xl font-display font-bold text-[#4B0E3D]">{profile.full_name || "User Name"}</h2>
+                   <p className="text-[10px] font-black uppercase tracking-widest text-primary mt-2">Live Preview Card</p>
                  </div>
               </div>
+              
               <div className="space-y-6">
-                 {[1,2,3,4].map(i => (
-                    <div key={i} className="h-16 bg-zinc-50 rounded-2xl" />
-                 ))}
+                 <div className="p-6 bg-zinc-50 rounded-2xl border border-zinc-100">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Contact Details</p>
+                    <div className="flex flex-col gap-3">
+                       <div className="flex items-center gap-3 text-sm font-bold text-zinc-600">
+                          <Mail className="w-4 h-4 text-primary/40" /> {profile.email || 'Email not set'}
+                       </div>
+                       <div className="flex items-center gap-3 text-sm font-bold text-zinc-600">
+                          <Phone className="w-4 h-4 text-primary/40" /> {profile.phone || 'No phone number'}
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="p-6 bg-zinc-50 rounded-2xl border border-zinc-100">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Preferences</p>
+                    <div className="flex items-center gap-3 text-sm font-bold text-zinc-600">
+                       <CheckCircle className="w-4 h-4 text-emerald-500" /> Gender: {profile.gender}
+                    </div>
+                 </div>
+
+                 <div className="p-8 mt-4 rounded-3xl bg-gradient-to-br from-[#4B0E3D] to-[#83215D] text-white overflow-hidden relative">
+                    <div className="relative z-10">
+                       <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Membership Status</p>
+                       <h4 className="text-xl font-display font-bold">Qurux Dumar Member</h4>
+                    </div>
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
+                 </div>
               </div>
            </motion.div>
         </div>
