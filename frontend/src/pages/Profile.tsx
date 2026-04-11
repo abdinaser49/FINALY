@@ -26,15 +26,44 @@ const Profile = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setProfile({
-        full_name: user.user_metadata?.full_name || "",
-        phone: user.user_metadata?.phone || "",
-        email: user.email || "",
-        gender: user.user_metadata?.gender || "Female",
-        avatar_url: user.user_metadata?.avatar_url || ""
-      });
-    }
+    const fetchProfile = async () => {
+      if (!user) return;
+      
+      setLoading(true);
+      try {
+        // 1. First try to get from profiles table
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (data) {
+          setProfile({
+            full_name: data.full_name || user.user_metadata?.full_name || "",
+            phone: data.phone || user.user_metadata?.phone || "",
+            email: user.email || "",
+            gender: user.user_metadata?.gender || "Female",
+            avatar_url: data.avatar_url || user.user_metadata?.avatar_url || ""
+          });
+        } else {
+          // 2. If no profile record, fall back to metadata
+          setProfile({
+            full_name: user.user_metadata?.full_name || "",
+            phone: user.user_metadata?.phone || "",
+            email: user.email || "",
+            gender: user.user_metadata?.gender || "Female",
+            avatar_url: user.user_metadata?.avatar_url || ""
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
   }, [user]);
 
   const handleUpdate = async (e: React.FormEvent) => {
