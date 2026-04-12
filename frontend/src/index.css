@@ -111,3 +111,21 @@
     @apply active:scale-95 transition-transform;
   }
 }
+
+@media print {
+  /* Hide all toast notifications during print */
+  [data-sonner-toaster],
+  .sonner-toast,
+  .react-hot-toast,
+  [role="status"] {
+    display: none !important;
+  }
+
+  /* Hide browser head/foot (URL, Date) */
+  @page {
+    margin: 0;
+  }
+  body {
+    padding: 1.5cm; /* Add padding to prevent content from hitting the edge */
+  }
+}

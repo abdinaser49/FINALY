@@ -14,6 +14,7 @@ import logo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { createClient } from "@supabase/supabase-js";
+import { translations } from "@/utils/translations";
 import hairImg from "@/assets/hair.jpg";
 import nailImg from "@/assets/Nail Art1.jpg";
 import facialImg from "@/assets/makeup.jpg";
@@ -52,7 +53,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalType, setModalType] = useState<"appointment" | "client" | "service" | "staff" | "payment" | "rental" | null>(null);
+  const [modalType, setModalType] = useState<"appointment" | "client" | "service" | "staff" | "payment" | "rental" | "expense" | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [reportsSortLatest, setReportsSortLatest] = useState(true);
   const [reportsPage, setReportsPage] = useState(1);
@@ -61,6 +62,9 @@ const Dashboard = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [lang, setLang] = useState<'en' | 'so'>((localStorage.getItem('lang') as 'en' | 'so') || 'so');
+  const t = translations[lang];
+  const [expenses, setExpenses] = useState<any[]>([]);
 
   // Role Logic SECOND
   const activeEmail = user?.email || "";
@@ -71,7 +75,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<Tab>(isAdmin ? "overview" : "appointments");
 
   useEffect(() => {
-    if (!isAdmin && !isCashier && ["overview", "jobs", "settings", "reports", "users", "staff", "finance"].includes(activeTab)) {
+    if (!isAdmin && !isCashier && ["overview", "jobs", "settings", "reports", "users", "staff"].includes(activeTab)) {
       setActiveTab("appointments");
     } else if (isCashier && ["jobs", "settings", "reports", "users", "staff", "finance"].includes(activeTab)) {
       setActiveTab("walkin");
@@ -88,7 +92,8 @@ const Dashboard = () => {
   const [posPaymentMethod, setPosPaymentMethod] = useState("Cash");
   const [posDiscount, setPosDiscount] = useState(0);
   const [settingsSubTab, setSettingsSubTab] = useState<'staff' | 'business' | 'security'>('staff');
-  const [financeSubTab, setFinanceSubTab] = useState<'sales' | 'expenses'>('sales');
+  const [financeTab, setFinanceTab] = useState<'sales' | 'expenses'>(isAdmin ? 'sales' : 'expenses');
+  const [financeSubTab, setFinanceSubTab] = useState<'sales' | 'expenses'>(isAdmin ? 'sales' : 'expenses');
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -118,6 +123,7 @@ const Dashboard = () => {
     fetchServices();
     fetchStaff();
     fetchCustomers();
+    fetchExpenses();
 
     // Real-time subscription — instantly shows new bookings without page refresh
     const channel = supabase
@@ -240,6 +246,18 @@ const Dashboard = () => {
     }
   };
 
+  const fetchExpenses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('*')
+        .order('date', { ascending: false });
+      if (!error) setExpenses(data || []);
+    } catch (err) {
+      console.error("Error loading expenses:", err);
+    }
+  };
+
   const fetchServices = async () => {
     try {
       const { data, error } = await supabase
@@ -271,7 +289,16 @@ const Dashboard = () => {
         return timeB - timeA;
       });
 
-      setBookings(sortedByStatus);
+      // For Staff (not admin or cashier), filter only their assigned bookings
+      let filteredData = sortedByStatus;
+      if (!isAdmin && !isCashier && userProfile?.name) {
+         filteredData = filteredData.filter(b => 
+           b.notes?.includes(`Assigned to: ${userProfile.name}`) || 
+           b.service?.includes(userProfile.name)
+         );
+      }
+
+      setBookings(filteredData);
     } catch (error: any) {
       toast.error("Error loading appointments: " + error.message);
     } finally {
@@ -442,7 +469,7 @@ const Dashboard = () => {
   const handleModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (modalType === 'appointment') {
+      if (modalType === 'appointment' || modalType === 'payment') {
         const slotDate = formData.date || new Date().toISOString().split('T')[0];
         const slotTime = formData.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -584,6 +611,17 @@ const Dashboard = () => {
         if (error) throw error;
         toast.success(editingId ? "Macmiilka waa la badalay." : "Hambalyo! Macmiilka si fiican ayaa loo xareeyay.");
         fetchCustomers();
+      } else if (modalType === 'expense') {
+        const payload = {
+          title: formData.name,
+          category: formData.description || 'General',
+          amount: parseFloat(formData.amount) || 0,
+          date: formData.date || getLocalDateString()
+        };
+        const { error } = await supabase.from('expenses').insert([payload]);
+        if (error) throw error;
+        toast.success("Expense recorded successfully!");
+        fetchExpenses();
       }
 
       setModalType(null);
@@ -669,8 +707,12 @@ const Dashboard = () => {
   const allBookings = bookings;
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
+    try {
+      await signOut();
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+    navigate("/", { replace: true });
   };
 
   // Dynamic Navigation Items based on Role
@@ -698,6 +740,7 @@ const Dashboard = () => {
     { id: "rentals", label: "Rentals", icon: Box },
   ] : [
     { id: "appointments", label: "My Bookings", icon: Calendar },
+    { id: "finance", label: "Expenses", icon: CreditCard },
     { id: "rentals", label: "Rentals", icon: Box },
     { id: "products", label: "Products", icon: ShoppingBag },
   ];
@@ -804,7 +847,7 @@ const Dashboard = () => {
       name: name,
       email: lastBooking?.email || `${name.toLowerCase().replace(/\s/g, '')}@example.com`,
       phone: lastBooking?.phone || "061XXXXXXX",
-      visits: userBookings.length,
+visits: userBookings.length,
       spent: userBookings.reduce((acc, b) => acc + (Number(b.amount) || 0), 0)
     };
   });
@@ -813,43 +856,72 @@ const Dashboard = () => {
     <>
       {/* ─── Hidden Printable Receipt ───────────────────────────────────── */}
       {receiptData && (
-        <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-8 text-black font-body">
-          <div className="max-w-[80mm] mx-auto text-center border-b border-black pb-4 mb-4">
-            <h1 className="text-xl font-black uppercase text-black">{receiptData.bizName}</h1>
-            <p className="text-xs">{receiptData.bizPhone}</p>
-            <p className="text-[10px] mt-2 font-bold uppercase">{receiptData.date} • {receiptData.time}</p>
-          </div>
-          <div className="max-w-[80mm] mx-auto space-y-4 text-xs">
-            <div className="text-left font-bold border-b border-dashed border-black pb-2 mb-2">
-              <p>Macmiilka: <span className="uppercase">{receiptData.customerName}</span></p>
-              <p>Taleefan: {receiptData.phone}</p>
+        <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-10 text-black font-body antialiased">
+          <div className="max-w-[400px] mx-auto bg-white border border-zinc-200 p-8 shadow-sm">
+            {/* Minimalist International Header with Official Logo */}
+            <div className="flex flex-col items-center mb-12 text-center">
+               <div className="w-24 h-24 mb-6">
+                  <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+               </div>
+               <h2 className="text-3xl font-black tracking-tighter text-zinc-900 leading-none">QURUX<span className="text-primary">•</span>DUMAR</h2>
+               <p className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.4em] mt-2">Professional Excellence</p>
             </div>
-            
-            <table className="w-full text-left font-bold">
-              <thead>
-                <tr className="border-b border-black">
-                  <th className="pb-1">Item</th>
-                  <th className="pb-1 text-right">Price</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-dashed divide-zinc-200 border-b border-black">
-                {receiptData.items.map((item: any, i: number) => (
-                  <tr key={i}>
-                    <td className="py-2 pr-2 uppercase text-[10px]">{item.name}</td>
-                    <td className="py-2 text-right">${parseFloat(item.price || 0).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            <div className="flex justify-between items-center font-black text-sm pt-2">
-              <span>TOTAL:</span>
-              <span>${receiptData.total}</span>
+
+            {/* Business Contacts Section */}
+            <div className="grid grid-cols-2 gap-4 mb-10 pb-10 border-b border-zinc-100">
+               <div className="space-y-1 text-left">
+                  <p className="text-[7px] font-black uppercase text-zinc-400 tracking-widest">Business</p>
+                  <p className="text-[10px] font-black text-zinc-900">Qurux - Dumar Salon</p>
+                  <p className="text-[9px] font-medium text-zinc-500">+252 61 7643394</p>
+               </div>
+               <div className="text-right space-y-1">
+                  <p className="text-[7px] font-black uppercase text-zinc-400 tracking-widest">Date / Time</p>
+                  <p className="text-[9px] font-black text-zinc-900 uppercase">{receiptData.date}</p>
+                  <p className="text-[9px] font-medium text-zinc-400 uppercase">{receiptData.time}</p>
+               </div>
             </div>
-            
-            <div className="text-center mt-8 pt-4 border-t border-dashed border-black">
-              <p className="text-[10px] font-black uppercase">Waad ku mahadsantahay!</p>
-              <p className="text-[8px] mt-1">Fadlan mar kale soo dhawow.</p>
+
+            {/* Customer Details */}
+            <div className="mb-10 text-left">
+               <p className="text-[7px] font-black uppercase text-zinc-400 tracking-widest mb-2">Billed To</p>
+               <h3 className="text-xs font-black text-zinc-900 uppercase">{receiptData.customer_name}</h3>
+               {receiptData.customer_phone && <p className="text-[9px] font-bold text-zinc-500 mt-1">{receiptData.customer_phone}</p>}
+            </div>
+
+            {/* Itemized Table */}
+            <div className="mb-10">
+               <div className="flex justify-between items-center pb-2 border-b border-zinc-900 mb-4">
+                  <span className="text-[8px] font-black uppercase tracking-widest">Description</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest">Amount</span>
+               </div>
+               <div className="space-y-4">
+                  {receiptData.items.map((item: any, i: number) => (
+                    <div key={i} className="flex justify-between items-baseline">
+                       <div className="flex-1 min-w-0 pr-4 text-left">
+                          <p className="text-[10px] font-black text-zinc-900 uppercase">{item.name}</p>
+                          <p className="text-[8px] font-medium text-zinc-400 mt-0.5">Professional Beauty Service</p>
+                       </div>
+                       <span className="text-[10px] font-black text-zinc-900">${parseFloat(item.price).toFixed(2)}</span>
+                    </div>
+                  ))}
+               </div>
+            </div>
+
+            {/* Summary Grid */}
+            <div className="space-y-2 mb-10 pt-4 border-t border-zinc-50">
+               <div className="flex justify-between items-center text-[9px] font-bold text-zinc-400">
+                  <span className="uppercase">Net Amount</span>
+                  <span>${parseFloat(receiptData.total).toFixed(2)}</span>
+               </div>
+               <div className="flex justify-between items-center pt-4 mt-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900">Total Payable</span>
+                  <span className="text-2xl font-black text-zinc-900 tracking-tighter">${parseFloat(receiptData.total).toFixed(2)}</span>
+               </div>
+            </div>
+
+            {/* Simple Final Footer */}
+            <div className="mt-8 text-center pt-8 border-t border-dashed border-zinc-100">
+               <p className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">Waad ku mahadsantahay booqashadaada</p>
             </div>
           </div>
         </div>
@@ -932,16 +1004,37 @@ const Dashboard = () => {
           </div>
 
           <div className="flex items-center gap-3 relative">
-            <div className="relative">
-              <button 
-                onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="relative text-zinc-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-zinc-50 border border-transparent active:scale-95"
-              >
-                <Bell className="w-4 h-4" />
-                {bookings.filter(b => b.status === 'pending').length > 0 && (
-                  <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-rose-500 border border-white rounded-full animate-pulse" />
-                )}
-              </button>
+            {/* Language Toggle */}
+            <div className="flex items-center bg-zinc-100 p-1 rounded-xl border border-zinc-200">
+               <button 
+                 onClick={() => { setLang('so'); localStorage.setItem('lang', 'so'); }}
+                 className={cn(
+                   "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                   lang === 'so' ? "bg-white text-primary shadow-sm" : "text-zinc-400 hover:text-zinc-600"
+                 )}
+               >
+                 SO
+               </button>
+               <button 
+                 onClick={() => { setLang('en'); localStorage.setItem('lang', 'en'); }}
+                 className={cn(
+                   "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                   lang === 'en' ? "bg-white text-primary shadow-sm" : "text-zinc-400 hover:text-zinc-600"
+                 )}
+               >
+                 EN
+               </button>
+            </div>
+
+            <button 
+              onClick={() => setNotificationsOpen(!notificationsOpen)}
+              className="relative text-zinc-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-zinc-50 border border-transparent active:scale-95"
+            >
+              <Bell className="w-4 h-4" />
+              {bookings.filter(b => b.status === 'pending').length > 0 && (
+                <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-rose-500 border border-white rounded-full animate-pulse" />
+              )}
+            </button>
 
               <AnimatePresence>
                 {notificationsOpen && (
@@ -1006,8 +1099,6 @@ const Dashboard = () => {
                   </>
                 )}
               </AnimatePresence>
-            </div>
-
             <div className="flex items-center gap-2 pl-3 border-l border-zinc-100 ml-1">
               <div className="text-right hidden md:block leading-tight">
                 <p className="text-[10px] font-bold text-zinc-900 leading-none capitalize">
@@ -1054,32 +1145,32 @@ const Dashboard = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 px-2">
                   {(isCashier ? [
-                    { label: 'My Sales Today', value: '$' + cashierTodayRevenue.toLocaleString(), icon: DollarSign, tag: 'INCOME', color: 'bg-emerald-500', shadow: 'shadow-emerald-500/5' },
-                    { label: 'Orders Processed', value: cashierTodayOrders, icon: CheckCircle2, tag: 'ORDERS', color: 'bg-orange-500', shadow: 'shadow-orange-500/5' },
+                    { label: 'My Sales', value: '$' + cashierTodayRevenue.toLocaleString(), icon: DollarSign, tag: 'INCOME', color: 'bg-emerald-500', shadow: 'shadow-emerald-500/5' },
+                    { label: 'Orders', value: cashierTodayOrders, icon: CheckCircle2, tag: 'ORDERS', color: 'bg-orange-500', shadow: 'shadow-orange-500/5' },
                   ] : [
-                    { label: 'Total Clients', value: allClients.length, icon: Users, tag: 'CLIENTS', color: 'bg-rose-500', shadow: 'shadow-rose-500/5' },
-                    { label: 'Today Appointments', value: todaysAptCount, icon: Calendar, tag: 'SCHEDULE', color: 'bg-orange-500', shadow: 'shadow-orange-500/5' },
-                    { label: 'Today Revenue', value: '$' + todayRevenue.toLocaleString(), icon: DollarSign, tag: 'INCOME', color: 'bg-emerald-500', shadow: 'shadow-emerald-500/5' },
-                    { label: 'Active Services', value: dbServices.length, icon: Sparkles, tag: 'SERVICES', color: 'bg-purple-500', shadow: 'shadow-purple-500/5' }
+                    { label: 'Clients', value: allClients.length, icon: Users, tag: 'CLIENTS', color: 'bg-rose-500', shadow: 'shadow-rose-500/5' },
+                    { label: 'Revenue', value: '$' + todayRevenue.toLocaleString(), icon: DollarSign, tag: 'INCOME', color: 'bg-emerald-500', shadow: 'shadow-emerald-500/5' },
+                    { label: 'Total Expenses', value: '$' + expenses.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0).toLocaleString(), icon: TrendingUp, tag: 'EXPENSES', color: 'bg-rose-400', shadow: 'shadow-rose-400/5' },
+                    { label: 'Profit', value: '$' + (todayRevenue - expenses.filter(e => e.date === todayStr).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)).toLocaleString(), icon: CreditCard, tag: 'PROFIT', color: 'bg-indigo-500', shadow: 'shadow-indigo-500/5' }
                   ]).map((stat) => (
                     <div
                       key={stat.label}
                       className={cn(
-                        "bg-white p-5 rounded-2xl border border-zinc-50 relative overflow-hidden group transition-all",
+                        "bg-white p-4 rounded-3xl border border-zinc-50 relative overflow-hidden group transition-all",
                         stat.shadow
                       )}
                     >
-                      <div className="flex items-center justify-between mb-3 relative z-10">
-                        <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-md", stat.color)}>
-                          <stat.icon className="w-5 h-5 stroke-[2.5px]" />
+                      <div className="flex items-center justify-between mb-2 relative z-10">
+                        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-md", stat.color)}>
+                          <stat.icon className="w-4 h-4 stroke-[2.5px]" />
                         </div>
-                        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-300">{stat.tag}</span>
+                        <span className="text-[7px] font-black uppercase tracking-widest text-zinc-300">{stat.tag}</span>
                       </div>
                       <div className="relative z-10">
-                        <h3 className="font-display text-2xl font-black text-zinc-900 tracking-tight mb-0.5">{stat.value}</h3>
-                        <p className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">{stat.label}</p>
+                        <h3 className="font-display text-xl font-black text-zinc-900 tracking-tight mb-0.5">{stat.value}</h3>
+                        <p className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">{stat.label}</p>
                       </div>
                     </div>
                   ))}
@@ -1117,8 +1208,8 @@ const Dashboard = () => {
               <div className="space-y-4 pb-10">
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-2">
                   <div>
-                    <h1 className="font-display text-lg font-black tracking-tight text-[#5D1B54] leading-none uppercase">Appointments</h1>
-                    <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">Maamul ballamaha la dhigtay</p>
+                    <h1 className="font-display text-lg font-black tracking-tight text-[#5D1B54] leading-none uppercase">{t.appointments}</h1>
+                    <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">{t.salesHistory}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button className="flex items-center gap-1.5 bg-white border border-zinc-200 px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:bg-zinc-50 transition-all shadow-sm">
@@ -1240,20 +1331,45 @@ const Dashboard = () => {
               <div className="space-y-4 pb-10 text-left">
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 px-2">
                   <div className="space-y-0.5">
-                    <h1 className="font-display text-xl font-black text-zinc-900 leading-none">Finance & Payments</h1>
-                    <p className="font-body text-zinc-400 font-medium text-[9px] uppercase tracking-widest">Transaction History</p>
+                    <h1 className="font-display text-xl font-black text-zinc-900 leading-none">{t.finance}</h1>
+                    <div className="flex items-center gap-3 mt-2">
+                       {(isAdmin || isCashier) && (
+                         <button 
+                           onClick={() => setFinanceTab('sales')}
+                           className={cn("text-[10px] font-black uppercase tracking-widest pb-1 border-b-2 transition-all", financeTab === 'sales' ? "border-primary text-primary" : "border-transparent text-zinc-400")}
+                         >
+                           Sales
+                         </button>
+                       )}
+                       <button 
+                         onClick={() => setFinanceTab('expenses')}
+                         className={cn("text-[10px] font-black uppercase tracking-widest pb-1 border-b-2 transition-all", financeTab === 'expenses' ? "border-primary text-primary" : "border-transparent text-zinc-400")}
+                       >
+                         Expenses
+                       </button>
+                    </div>
                   </div>
-                  <button onClick={() => setModalType('payment')} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold text-[9px] flex items-center gap-1.5 transition-all shadow-md active:scale-95">
-                    <Plus className="w-3 h-3 stroke-[3px]" /> New Sale
+                  <button 
+                    onClick={() => {
+                        if (financeTab === 'sales') setModalType('payment');
+                        else setModalType('expense');
+                    }} 
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold text-[9px] flex items-center gap-1.5 transition-all shadow-md active:scale-95"
+                  >
+                    <Plus className="w-3 h-3 stroke-[3px]" /> {financeTab === 'sales' ? t.newSale : 'Add Expense'}
                   </button>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 px-2">
                   {[
-                    { label: 'Today', value: financeStats[0], color: 'text-emerald-600', bg: 'bg-emerald-50', icon: Clock },
-                    { label: 'Weekly', value: financeStats[1], color: 'text-blue-600', bg: 'bg-blue-50', icon: TrendingUp },
-                    { label: 'Monthly', value: financeStats[2], color: 'text-indigo-600', bg: 'bg-indigo-50', icon: Calendar },
-                    { label: 'Total', value: financeStats[3], color: 'text-zinc-900', bg: 'bg-zinc-100', icon: DollarSign }
+                    ...(isAdmin || isCashier ? [
+                      { label: 'Revenue', value: financeStats[3], color: 'text-emerald-600', bg: 'bg-emerald-50', icon: DollarSign },
+                    ] : []),
+                    { label: 'Total Expenses', value: expenses.reduce((acc, curr) => acc + (curr.amount || 0), 0), color: 'text-rose-600', bg: 'bg-rose-50', icon: TrendingUp },
+                    ...(isAdmin || isCashier ? [
+                      { label: 'Net Profit', value: financeStats[3] - expenses.reduce((acc, curr) => acc + (curr.amount || 0), 0), color: 'text-zinc-900', bg: 'bg-zinc-100', icon: Sparkles },
+                    ] : []),
+                    { label: 'Monthly Revenue', value: financeStats[2], color: 'text-indigo-600', bg: 'bg-indigo-50', icon: Calendar },
                   ].map((stat) => (
                     <div key={stat.label} className="bg-white p-4 rounded-xl border border-zinc-100 shadow-sm">
                       <div className="flex items-center gap-2 mb-2">
@@ -1269,51 +1385,84 @@ const Dashboard = () => {
 
                 <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden mx-2">
                   <div className="p-4 border-b border-zinc-50 bg-zinc-50/30 flex justify-between items-center text-left">
-                    <h3 className="font-display font-bold text-[9px] uppercase tracking-widest text-zinc-400">Recent Transactions</h3>
+                    <h3 className="font-display font-bold text-[9px] uppercase tracking-widest text-zinc-400">
+                        {financeTab === 'sales' ? 'Recent Transactions' : 'Recent Expenses'}
+                    </h3>
                     <CreditCard className="w-3 h-3 text-zinc-200" />
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="bg-white border-b border-zinc-50">
-                          <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400">Customer</th>
-                          <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400">Service</th>
-                          <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Date</th>
-                          <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-right">Amount</th>
-                          <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {allBookings.slice(0, 10).map((b, i) => (
-                          <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                            <td className="p-3">
-                              <p className="text-[10px] font-bold text-zinc-900">{b.name}</p>
-                              <p className="text-[8px] text-zinc-400">{b.phone}</p>
-                            </td>
-                            <td className="p-3">
-                              <div className="flex items-center gap-2">
-                                {b.image_url && (
-                                  <div className="w-6 h-6 rounded-md overflow-hidden border border-zinc-100 shrink-0">
-                                    <img src={b.image_url} className="w-full h-full object-cover" alt={b.service} />
-                                  </div>
-                                )}
-                                <div className="flex flex-col gap-1 min-w-0">
-                                  <span className="text-[9px] font-bold px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded-md truncate max-w-[100px]">{b.service}</span>
-                                  {b.category === 'Online' && (
-                                    <span className="w-fit text-[6px] font-black bg-sky-50 text-sky-500 px-1 py-0.5 rounded uppercase tracking-[0.2em]">Online</span>
-                                  )}
+                    {financeTab === 'sales' ? (
+                        <table className="w-full text-left">
+                        <thead>
+                            <tr className="bg-white border-b border-zinc-50">
+                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400">Customer</th>
+                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400">Service</th>
+                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Date</th>
+                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-right">Amount</th>
+                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {allBookings.slice(0, 10).map((b, i) => (
+                            <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
+                                <td className="p-3">
+                                <p className="text-[10px] font-bold text-zinc-900">{b.name}</p>
+                                <p className="text-[8px] text-zinc-400">{b.phone}</p>
+                                </td>
+                                <td className="p-3">
+                                <div className="flex items-center gap-2">
+                                    {b.image_url && (
+                                    <div className="w-6 h-6 rounded-md overflow-hidden border border-zinc-100 shrink-0">
+                                        <img src={b.image_url} className="w-full h-full object-cover" alt={b.service} />
+                                    </div>
+                                    )}
+                                    <div className="flex flex-col gap-1 min-w-0">
+                                    <span className="text-[9px] font-bold px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded-md truncate max-w-[100px]">{b.service}</span>
+                                    {b.category === 'Online' && (
+                                        <span className="w-fit text-[6px] font-black bg-sky-50 text-sky-500 px-1 py-0.5 rounded uppercase tracking-[0.2em]">Online</span>
+                                    )}
+                                    </div>
                                 </div>
-                              </div>
-                            </td>
-                            <td className="p-3 text-[9px] text-zinc-400 text-center font-medium">{b.booking_date}</td>
-                            <td className="p-3 text-right font-black text-[10px] text-zinc-900">${b.amount || 0}</td>
-                            <td className="p-3 text-center">
-                              <span className="text-[7px] font-black uppercase tracking-widest px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">Paid</span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                                </td>
+                                <td className="p-3 text-[9px] text-zinc-400 text-center font-medium">{b.booking_date}</td>
+                                <td className="p-3 text-right font-black text-[10px] text-zinc-900">${b.amount || 0}</td>
+                                <td className="p-3 text-center">
+                                <span className="text-[7px] font-black uppercase tracking-widest px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">Paid</span>
+                                </td>
+                            </tr>
+                            ))}
+                        </tbody>
+                        </table>
+                    ) : (
+                        <table className="w-full text-left">
+                        <thead>
+                            <tr className="bg-white border-b border-zinc-50">
+                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400">Title</th>
+                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400">Category</th>
+                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Date</th>
+                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-right">Amount</th>
+                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {expenses.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="p-10 text-center text-zinc-400 text-[10px] font-bold uppercase tracking-widest">No expenses recorded</td>
+                                </tr>
+                            ) : expenses.map((e, i) => (
+                            <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
+                                <td className="p-3 text-[10px] font-bold text-zinc-900">{e.title}</td>
+                                <td className="p-3 text-[9px] font-black text-zinc-400 uppercase">{e.category}</td>
+                                <td className="p-3 text-[9px] text-zinc-400 text-center">{e.date}</td>
+                                <td className="p-3 text-right font-black text-[10px] text-rose-600">-${e.amount}</td>
+                                <td className="p-3 text-center">
+                                    <button onClick={() => { if(confirm('Delete?')) supabase.from('expenses').delete().eq('id', e.id).then(() => fetchExpenses()) }} className="text-zinc-300 hover:text-rose-500"><Trash2 className="w-3 h-3" /></button>
+                                </td>
+                            </tr>
+                            ))}
+                        </tbody>
+                        </table>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1473,6 +1622,7 @@ const Dashboard = () => {
                           <th className="text-left p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Client</th>
                           <th className="text-left p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Contact</th>
                           <th className="text-center p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Visits</th>
+                          <th className="text-center p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Loyalty Points</th>
                           <th className="text-right p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Revenue</th>
                           <th className="text-center p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Actions</th>
                         </tr>
@@ -1499,6 +1649,12 @@ const Dashboard = () => {
                               </td>
                               <td className="p-4 text-center">
                                 <span className="bg-[#FAFAFA] border border-gray-100 px-3 py-0.5 rounded-full text-[9px] font-bold text-charcoal">{client.visits}</span>
+                              </td>
+                              <td className="p-4 text-center">
+                                <div className="flex flex-col items-center">
+                                    <span className="text-[10px] font-black text-amber-500">{(client.spent ? Math.floor(client.spent / 10) : 0)} pts</span>
+                                    <span className="text-[6px] font-bold text-zinc-400 uppercase">Loyalty</span>
+                                </div>
                               </td>
                               <td className="p-4 text-right font-bold text-primary text-[10px]">${client.spent || 0}</td>
                               <td className="p-4 text-center">
@@ -1538,31 +1694,49 @@ const Dashboard = () => {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-zinc-100 bg-zinc-50/50">
-                            <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Professional</th>
+                            <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Staff Member</th>
                             <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Role</th>
+                            <th className="text-center p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Jobs</th>
+                            <th className="text-right p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Approx Earnings</th>
                             <th className="text-center p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {profiles.length === 0 ? (
-                            <tr><td colSpan={3} className="p-10 text-center text-[10px] text-zinc-400">No staff found.</td></tr>
-                          ) : profiles.map((staff, i) => (
+                            <tr><td colSpan={5} className="p-10 text-center text-[10px] text-zinc-400">No staff found.</td></tr>
+                          ) : profiles.map((s, i) => (
                             <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors group">
                               <td className="p-4">
                                 <div className="flex items-center gap-3">
                                   <div className="w-8 h-8 bg-zinc-100 rounded-lg overflow-hidden shadow-sm flex items-center justify-center font-display font-black text-primary text-[10px] uppercase">
-                                    {staff.avatar_url ? <img src={staff.avatar_url} className="w-full h-full object-cover" /> : ((staff.full_name || staff.name)?.[0] || 'S')}
+                                    {s.avatar_url ? <img src={s.avatar_url} className="w-full h-full object-cover" /> : ((s.full_name || s.name)?.[0] || 'S')}
                                   </div>
-                                  <p className="font-display font-bold text-[10px] text-zinc-900 uppercase">{staff.full_name || staff.name || 'Staff'}</p>
+                                  <p className="font-display font-bold text-[10px] text-zinc-900 uppercase">{s.full_name || s.name || 'Staff'}</p>
                                 </div>
                               </td>
                               <td className="p-4">
-                                <p className="text-[9px] font-bold text-zinc-800 uppercase tracking-widest">{staff.role || 'Stylist'}</p>
+                                <span className={cn(
+                                  "px-3 py-1 rounded-full text-[9px] font-bold",
+                                  s.role === 'Admin' ? "bg-zinc-100 text-zinc-600" : "bg-primary/5 text-primary"
+                                )}>
+                                  {s.role || 'Stylist'}
+                                </span>
+                              </td>
+                              <td className="p-4 text-center">
+                                <span className="text-[10px] font-black text-zinc-900">
+                                    {allBookings.filter(b => b.notes?.includes(s.name || s.full_name || '') || b.service?.includes(s.name || s.full_name || '')).length}
+                                </span>
+                              </td>
+                              <td className="p-4 text-right">
+                                <p className="text-[10px] font-black text-emerald-600">
+                                    ${(allBookings.filter(b => b.notes?.includes(s.name || s.full_name || '') || b.service?.includes(s.name || s.full_name || '')).reduce((sum, b) => sum + (b.amount || 0), 0) * 0.3).toFixed(2)}
+                                </p>
+                                <p className="text-[7px] font-bold text-zinc-400 uppercase">30% Comm.</p>
                               </td>
                               <td className="p-4 text-center">
                                 <div className="flex items-center justify-center gap-0.5">
-                                  <button onClick={() => openEditStaff(staff)} className="p-2 text-zinc-300 hover:text-primary transition-all"><Edit className="w-3 h-3" /></button>
-                                  <button onClick={() => deleteStaff(staff.id)} className="p-2 text-rose-300 hover:text-rose-600 transition-all"><Trash2 className="w-3 h-3" /></button>
+                                  <button onClick={() => openEditStaff(s)} className="p-2 text-zinc-300 hover:text-primary transition-all"><Edit className="w-3 h-3" /></button>
+                                  <button onClick={() => deleteStaff(s.id)} className="p-2 text-rose-300 hover:text-rose-600 transition-all"><Trash2 className="w-3 h-3" /></button>
                                 </div>
                               </td>
                             </tr>
@@ -1929,10 +2103,20 @@ const Dashboard = () => {
                                 )}
                               </div>
                             </td>
-                            <td className="p-4">
-                              <p className="font-display font-bold text-[10px] text-zinc-900 uppercase">{prod.name}</p>
-                              <p className="text-[8px] text-emerald-600 font-black uppercase mt-0.5">Stock: {prod.duration || "0"}</p>
-                            </td>
+                             <td className="p-4">
+                               <p className="font-display font-bold text-[10px] text-zinc-900 uppercase">{prod.name}</p>
+                               <div className="flex items-center gap-2 mt-1">
+                                 <p className={cn(
+                                   "text-[8px] font-black uppercase px-2 py-0.5 rounded-full",
+                                   Number(prod.duration) < 5 ? "bg-rose-50 text-rose-500 animate-pulse" : "bg-emerald-50 text-emerald-600"
+                                 )}>
+                                   Stock: {prod.duration || "0"}
+                                 </p>
+                                 {Number(prod.duration) < 5 && (
+                                   <span className="text-[7px] font-black text-rose-400 uppercase tracking-widest">Low Stock!</span>
+                                 )}
+                               </div>
+                             </td>
                             <td className="p-4 text-right font-display font-black text-emerald-600 text-[10px]">${prod.price}</td>
                             <td className="p-4 text-center">
                               <button onClick={() => deleteService(prod.id)} className="p-2 text-rose-300 hover:text-rose-600 transition-all"><Trash2 className="w-3 h-3" /></button>
@@ -2015,15 +2199,17 @@ const Dashboard = () => {
       </main>
       {modalType && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-4 border-b border-zinc-50 flex items-center justify-between bg-zinc-50/30">
               <h3 className="font-display font-black text-sm text-zinc-900 uppercase tracking-widest">
                 {editingId ? 'Edit Record' :
                   modalType === 'appointment' ? 'Add Booking' :
-                    modalType === 'client' ? 'Add Client' :
-                      modalType === 'service' ? 'Add Item' :
-                        modalType === 'staff' ? 'Add Staff' :
-                          modalType === 'rental' ? 'Add Dress' : 'Create'}
+                    modalType === 'payment' ? 'New Sale' :
+                      modalType === 'client' ? 'Add Client' :
+                        modalType === 'service' ? 'Add Item' :
+                          modalType === 'staff' ? 'Add Staff' :
+                            modalType === 'rental' ? 'Add Dress' :
+                              modalType === 'expense' ? 'Add Expense' : 'Create'}
               </h3>
               <button onClick={() => setModalType(null)} className="text-zinc-400 hover:text-zinc-900 transition-colors bg-white p-1.5 rounded-lg border border-zinc-100 shadow-sm">
                 <X className="w-4 h-4" />
@@ -2031,18 +2217,18 @@ const Dashboard = () => {
             </div>
 
             <form className="p-6 space-y-4" onSubmit={handleModalSubmit}>
-              {modalType === 'appointment' && (
+              {(modalType === 'appointment' || modalType === 'payment') && (
                 <div className="space-y-6">
                   {/* Inputs Row 1 */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <input className="w-full px-5 py-3.5 bg-white border border-[#F0F0F0] shadow-[0_2px_10px_rgba(0,0,0,0.01)] rounded-[20px] text-[13px] font-bold text-[#1E1E1E] placeholder-[#B0B0B0] focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all" placeholder="Client Name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                    <input className="w-full px-5 py-3.5 bg-white border border-[#F0F0F0] shadow-[0_2px_10px_rgba(0,0,0,0.01)] rounded-[20px] text-[13px] font-bold text-[#1E1E1E] placeholder-[#B0B0B0] focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all" placeholder="Phone" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <input className="w-full px-4 py-2 bg-white border border-[#F0F0F0] shadow-[0_2px_10px_rgba(0,0,0,0.01)] rounded-[14px] text-xs font-bold text-[#1E1E1E] placeholder-[#B0B0B0] focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all" placeholder="Client Name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                    <input className="w-full px-4 py-2 bg-white border border-[#F0F0F0] shadow-[0_2px_10px_rgba(0,0,0,0.01)] rounded-[14px] text-xs font-bold text-[#1E1E1E] placeholder-[#B0B0B0] focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all" placeholder="Phone" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
                   </div>
 
                   {/* Service Selection */}
-                  <div className="space-y-3">
-                    <label className="text-[11px] font-black text-[#A0A0A0] uppercase tracking-widest pl-1">Service Selection (Up to 10)</label>
-                    <div className="grid grid-cols-3 gap-3 max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-[#A0A0A0] uppercase tracking-widest pl-1">Service Selection</label>
+                    <div className="grid grid-cols-4 gap-2 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
                       {dbServices.map((srv, idx) => {
                         const isSelected = formData.selectedServices?.some(s => s.id === srv.id);
                         return (
@@ -2068,13 +2254,13 @@ const Dashboard = () => {
                                });
                             }} 
                             className={cn(
-                              "relative p-2.5 rounded-[20px] border shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-200 flex flex-col items-center gap-2.5", 
+                              "relative p-2 rounded-[14px] border shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-200 flex flex-col items-center gap-1.5", 
                               isSelected 
                                 ? "border-[#83215D] bg-[#83215D]/[0.02] ring-1 ring-[#83215D]" 
                                 : "border-[#F0F0F0] bg-white hover:border-[#E5E7EB] hover:shadow-md"
                             )}
                           >
-                            <div className="w-full aspect-square rounded-[14px] overflow-hidden bg-[#F9FAFB] flex items-center justify-center">
+                            <div className="w-full aspect-square rounded-[10px] overflow-hidden bg-[#F9FAFB] flex items-center justify-center">
                               {srv.image_url ? (
                                 <img src={srv.image_url} className="w-full h-full object-cover" alt={srv.name} />
                               ) : (
@@ -2097,15 +2283,15 @@ const Dashboard = () => {
                   </div>
 
                   {/* Date & Time Row */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <input type="date" className="w-full px-5 py-3.5 bg-white border border-[#F0F0F0] shadow-[0_2px_10px_rgba(0,0,0,0.01)] rounded-[20px] text-[13px] font-bold text-[#1E1E1E] focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all" required value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
-                    <input type="time" className="w-full px-5 py-3.5 bg-white border border-[#F0F0F0] shadow-[0_2px_10px_rgba(0,0,0,0.01)] rounded-[20px] text-[13px] font-bold text-[#1E1E1E] focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all" required value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <input type="date" className="w-full px-4 py-2 bg-white border border-[#F0F0F0] shadow-[0_2px_10px_rgba(0,0,0,0.01)] rounded-[14px] text-xs font-bold text-[#1E1E1E] focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all" required value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
+                    <input type="time" className="w-full px-4 py-2 bg-white border border-[#F0F0F0] shadow-[0_2px_10px_rgba(0,0,0,0.01)] rounded-[14px] text-xs font-bold text-[#1E1E1E] focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all" required value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
                   </div>
 
                   {/* Amount Row */}
                   <div className="relative">
-                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[14px] font-bold text-[#A0A0A0]">$</span>
-                    <input type="number" className="w-full px-5 py-3.5 pl-9 bg-white border border-[#F0F0F0] shadow-[0_2px_10px_rgba(0,0,0,0.01)] rounded-[20px] text-[15px] font-black text-[#1E1E1E] focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all" placeholder="Amount" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[#A0A0A0]">$</span>
+                    <input type="number" className="w-full px-4 py-2 pl-8 bg-white border border-[#F0F0F0] shadow-[0_2px_10px_rgba(0,0,0,0.01)] rounded-[14px] text-sm font-black text-[#1E1E1E] focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all" placeholder="Amount" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
                   </div>
                 </div>
               )}
@@ -2189,6 +2375,26 @@ const Dashboard = () => {
                       </button>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {modalType === ('expense' as any) && (
+                <div className="space-y-4">
+                   <input className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Expense Title" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                   <div className="grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-zinc-400">$</span>
+                      <input type="number" className="w-full p-3 pl-7 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Amount" required value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
+                    </div>
+                    <select className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })}>
+                       <option value="General">Category</option>
+                       <option value="Rent">Rent</option>
+                       <option value="Supplies">Supplies</option>
+                       <option value="Salary">Salary</option>
+                       <option value="Utility">Utility</option>
+                    </select>
+                   </div>
+                   <input type="date" className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
                 </div>
               )}
 

@@ -111,6 +111,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
   const [notes, setNotes] = useState("");
   const [paid, setPaid] = useState(false);
   const [dbServices, setDbServices] = useState<any[]>(services);
+  const [dbStaff, setDbStaff] = useState<any[]>([]);
   
   const bizName = localStorage.getItem('bizName') || "Qurux Dumar Salon";
   const rawPhone = localStorage.getItem('bizPhone') || "617643394";
@@ -155,8 +156,22 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
         console.error("Error fetching services for modal:", err);
       }
     };
+    const fetchStaff = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('status', 'Active');
+        if (error) throw error;
+        setDbStaff(data || []);
+      } catch (err) {
+        console.error("Error fetching staff for modal:", err);
+      }
+    };
+
     if (isOpen) {
        fetchServices();
+       fetchStaff();
     }
   }, [isOpen]);
 
@@ -250,6 +265,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
       status: "pending",
       image_url: localSelectedImage || selectedService.image || null,
       category: "Online",
+      notes: selectedEmployee !== 'Any' ? `${notes}\n(Assigned to: ${selectedEmployee})` : notes
     };
 
     try {
@@ -405,11 +421,15 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
 
                       <div className="space-y-4">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Prefered Employee</label>
-                        <select className="w-full p-5 bg-[#fdfbf7] border-0 rounded-2xl text-sm font-bold text-charcoal focus:ring-2 focus:ring-primary outline-none">
-                           <option>Any Available Specialist</option>
-                           <option>Deeqa Axmed (Master Artisan)</option>
-                           <option>Layla Cali (Hair Expert)</option>
-                           <option>Hodan Maxamed (Nail Pro)</option>
+                        <select 
+                          value={selectedEmployee}
+                          onChange={(e) => setSelectedEmployee(e.target.value)}
+                          className="w-full p-5 bg-[#fdfbf7] border-0 rounded-2xl text-sm font-bold text-charcoal focus:ring-2 focus:ring-primary outline-none"
+                        >
+                           <option value="Any">Any Available Specialist</option>
+                           {dbStaff.map(s => (
+                             <option key={s.id} value={s.name}>{s.name} ({s.role || 'Stylist'})</option>
+                           ))}
                         </select>
                       </div>
                    </div>

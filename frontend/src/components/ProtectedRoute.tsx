@@ -10,7 +10,7 @@ const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || "")
   .map((e: string) => e.trim().toLowerCase())
   .filter(Boolean);
 
-const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+const ProtectedRoute = ({ children, adminOnly = false }: { children: ReactNode, adminOnly?: boolean }) => {
   const { user, loading: authLoading } = useAuth();
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
@@ -21,6 +21,12 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
         return;
       }
       
+      // If the route doesn't require admin/staff rights, just being logged in is enough
+      if (!adminOnly) {
+        setIsAuthorized(true);
+        return;
+      }
+
       const email = user.email?.toLowerCase() || "";
       if (ADMIN_EMAILS.includes(email)) {
         setIsAuthorized(true);
@@ -39,7 +45,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     if (!authLoading) {
       checkAccess();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, adminOnly]);
 
   if (authLoading || (user && isAuthorized === null)) {
     return (

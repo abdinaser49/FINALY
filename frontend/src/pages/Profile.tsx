@@ -24,46 +24,60 @@ const Profile = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'info' | 'history'>((sessionStorage.getItem('profileTab') as any) || 'info');
+
+  useEffect(() => {
+    // Clear the tab from session storage so it doesn't persist across fresh navigations
+    sessionStorage.removeItem('profileTab');
+  }, []);
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
       
-      setLoading(true);
+      // Initialize from user metadata first
+      setProfile(prev => ({
+        ...prev,
+        full_name: user.user_metadata?.full_name || "",
+        phone: user.user_metadata?.phone || user.phone || "",
+        email: user.email || "",
+        gender: user.user_metadata?.gender || "Female",
+        avatar_url: user.user_metadata?.avatar_url || ""
+      }));
+
       try {
-        // 1. First try to get from profiles table
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', user.id)
           .maybeSingle();
 
-        if (data) {
-          setProfile({
-            full_name: data.full_name || user.user_metadata?.full_name || "",
-            phone: data.phone || user.user_metadata?.phone || "",
-            email: user.email || "",
-            gender: user.user_metadata?.gender || "Female",
-            avatar_url: data.avatar_url || user.user_metadata?.avatar_url || ""
-          });
-        } else {
-          // 2. If no profile record, fall back to metadata
-          setProfile({
-            full_name: user.user_metadata?.full_name || "",
-            phone: user.user_metadata?.phone || "",
-            email: user.email || "",
-            gender: user.user_metadata?.gender || "Female",
-            avatar_url: user.user_metadata?.avatar_url || ""
-          });
+        if (data && !error) {
+          setProfile(prev => ({
+            ...prev,
+            full_name: data.full_name || prev.full_name,
+            phone: data.phone || prev.phone,
+            avatar_url: data.avatar_url || prev.avatar_url,
+          }));
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
-      } finally {
-        setLoading(false);
       }
     };
 
+    const fetchBookings = async () => {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('customer_id', user.id)
+        .order('booking_date', { ascending: false });
+      if (data) setBookings(data);
+    };
+
     fetchProfile();
+    fetchBookings();
   }, [user]);
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -156,13 +170,13 @@ const Profile = () => {
       const filePath = `avatars/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('images')
+        .from('services')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('images')
+        .from('services')
         .getPublicUrl(filePath);
 
       setProfile({ ...profile, avatar_url: publicUrl });
@@ -187,9 +201,32 @@ const Profile = () => {
            <span className="text-zinc-600">Profile Settings</span>
         </div>
 
-        <h1 className="text-5xl font-display font-black text-[#4B0E3D] mb-12 tracking-tight">Profile Settings</h1>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+           <h1 className="text-5xl font-display font-black text-[#4B0E3D] tracking-tight">Profile Settings</h1>
+           <div className="flex items-center gap-2 p-1 bg-white shadow-xl shadow-zinc-200/50 rounded-2xl border border-zinc-100">
+              <button 
+                onClick={() => setActiveTab('info')}
+                className={cn(
+                  "px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                  activeTab === 'info' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-zinc-400 hover:text-zinc-600"
+                )}
+              >
+                Personal Info
+              </button>
+              <button 
+                onClick={() => setActiveTab('history')}
+                className={cn(
+                  "px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                  activeTab === 'history' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-zinc-400 hover:text-zinc-600"
+                )}
+              >
+                My Bookings
+              </button>
+           </div>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        {activeTab === 'info' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
            {/* Profile Card */}
            <motion.div 
              initial={{ opacity: 0, y: 20 }}
@@ -368,7 +405,50 @@ const Profile = () => {
                  </div>
               </div>
            </motion.div>
-        </div>
+          </div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="max-w-4xl mx-auto space-y-6"
+            >
+              {bookings.length === 0 ? (
+                <div className="bg-white p-20 rounded-[3rem] text-center border border-dashed border-zinc-200">
+                  <p className="text-zinc-400 font-bold">No appointments found.</p>
+                  <button 
+                    onClick={() => setIsBookingOpen(true)}
+                    className="mt-6 text-primary font-black uppercase tracking-widest text-xs hover:underline"
+                  >
+                    Book your first visit
+                  </button>
+                </div>
+              ) : (
+                bookings.map((b) => (
+                  <div key={b.id} className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-zinc-200/50 border border-white flex flex-col md:flex-row items-center gap-8 group hover:scale-[1.02] transition-all">
+                    <div className="w-24 h-24 rounded-3xl overflow-hidden shadow-lg shrink-0">
+                      <img src={b.image_url || "/placeholder.svg"} className="w-full h-full object-cover" alt={b.service} />
+                    </div>
+                    <div className="flex-1 text-center md:text-left">
+                       <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
+                          <span className="text-[10px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-500 px-3 py-1 rounded-full">{b.booking_date}</span>
+                          <span className={cn(
+                            "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
+                            b.status === 'confirmed' ? "bg-emerald-100 text-emerald-600" : "bg-primary/10 text-primary"
+                          )}>
+                            {b.status}
+                          </span>
+                       </div>
+                       <h3 className="text-xl font-display font-bold text-charcoal">{b.service}</h3>
+                       <p className="text-zinc-400 text-sm font-medium">{b.start_time} - {b.end_time}</p>
+                    </div>
+                    <div className="text-2xl font-black text-primary">
+                      ${b.amount}
+                    </div>
+                  </div>
+                ))
+              )}
+            </motion.div>
+          )}
       </main>
 
       <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
