@@ -97,10 +97,6 @@ const Profile = () => {
       if (profile.email && profile.email !== user?.email) {
         updates.email = profile.email;
       }
-      // If phone is different from what's stored in user identity
-      if (profile.phone && profile.phone !== user?.phone) {
-        updates.phone = profile.phone;
-      }
       
       if (password) {
         if (password !== confirmPassword) {
@@ -135,8 +131,8 @@ const Profile = () => {
       }
 
       toast.success("Profile updated successfully!");
-      if (password || profile.email !== user?.email || profile.phone !== user?.phone) {
-         toast.info("If you changed email, phone, or password, please check for confirmation messages.");
+      if (password || profile.email !== user?.email) {
+         toast.info("If you changed email or password, please check for confirmation messages.");
       }
       
       // Update local state if updatedUser is returned
