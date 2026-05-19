@@ -30,7 +30,7 @@ const StylistsSection = () => {
         if (error) throw error;
         
         if (data && data.length > 0) {
-          const formattedStaff = data.map((staff, index) => ({
+          const formattedStaff = data.map((staff: any, index) => ({
             name: staff.name || staff.full_name || "Specialist",
             role: staff.role || "Beauty Specialist",
             image: staff.avatar_url || fallbackImages[index % fallbackImages.length]
