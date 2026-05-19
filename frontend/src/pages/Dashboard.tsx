@@ -92,7 +92,14 @@ const Dashboard = () => {
   const [posCart, setPosCart] = useState<any[]>([]);
   const [posPaymentMethod, setPosPaymentMethod] = useState("Cash");
   const [posDiscount, setPosDiscount] = useState(0);
-  const [settingsSubTab, setSettingsSubTab] = useState<'staff' | 'business' | 'security'>('staff');
+  const [settingsSubTab, setSettingsSubTab] = useState<'staff' | 'business' | 'security' | 'database'>('business');
+
+  const [dbClearBookings, setDbClearBookings] = useState(false);
+  const [dbClearExpenses, setDbClearExpenses] = useState(false);
+  const [dbClearCustomers, setDbClearCustomers] = useState(false);
+  const [dbClearServices, setDbClearServices] = useState(false);
+  const [dbConfirmationText, setDbConfirmationText] = useState("");
+  const [dbIsClearing, setDbIsClearing] = useState(false);
   const [financeTab, setFinanceTab] = useState<'sales' | 'expenses'>(isAdmin ? 'sales' : 'expenses');
   const [financeSubTab, setFinanceSubTab] = useState<'sales' | 'expenses'>(isAdmin ? 'sales' : 'expenses');
   const [formData, setFormData] = useState({
@@ -387,6 +394,64 @@ const Dashboard = () => {
       toast.success("Customer deleted successfully");
     } catch (error: any) {
       toast.error("Failed to delete customer: " + error.message);
+    }
+  };
+
+  const handleClearDatabase = async () => {
+    if (dbConfirmationText.toUpperCase() !== 'CLEAR') {
+      toast.error("Fadlan qor erayga 'CLEAR' si aad u xaqiijiso tirtirista!");
+      return;
+    }
+    
+    if (!dbClearBookings && !dbClearExpenses && !dbClearCustomers && !dbClearServices) {
+      toast.error("Fadlan dooro ugu yaraan hal nooc oo xog ah oo aad rabto inaad tirtirto!");
+      return;
+    }
+    
+    setDbIsClearing(true);
+    try {
+      if (dbClearBookings) {
+        // Delete all bookings
+        const { error } = await supabase.from('bookings').delete().neq('name', '___non_existent_name___');
+        if (error) throw new Error("Error clearing bookings: " + error.message);
+      }
+      
+      if (dbClearExpenses) {
+        // Delete all expenses
+        const { error } = await (supabase as any).from('expenses').delete().neq('title', '___non_existent_title___');
+        if (error) throw new Error("Error clearing expenses: " + error.message);
+      }
+      
+      if (dbClearCustomers) {
+        // Delete all customers
+        const { error } = await supabase.from('customers').delete().neq('name', '___non_existent_name___');
+        if (error) throw new Error("Error clearing customers: " + error.message);
+      }
+      
+      if (dbClearServices) {
+        // Delete all services
+        const { error } = await supabase.from('services').delete().neq('name', '___non_existent_name___');
+        if (error) throw new Error("Error clearing services: " + error.message);
+      }
+      
+      toast.success("Xogtii aad dooratay si guul leh ayaa loo tirtiray! 🧹");
+      
+      // Reset checkboxes and text
+      setDbClearBookings(false);
+      setDbClearExpenses(false);
+      setDbClearCustomers(false);
+      setDbClearServices(false);
+      setDbConfirmationText("");
+      
+      // Refresh all state from Supabase
+      fetchBookings();
+      fetchExpenses();
+      fetchCustomers();
+      fetchServices();
+    } catch (err: any) {
+      toast.error(err.message || "Waxaa dhacay qalad inta lagu guda jiray tirtirista xogta.");
+    } finally {
+      setDbIsClearing(false);
     }
   };
 
@@ -1792,6 +1857,7 @@ const Dashboard = () => {
                     {[
                       { id: 'business', label: 'Salon Profile', icon: Store },
                       { id: 'security', label: 'Security & Access', icon: ShieldCheck },
+                      { id: 'database', label: 'Data Reset', icon: Trash2 },
                     ].map(tab => (
                       <button
                         key={tab.id}
@@ -2071,6 +2137,139 @@ const Dashboard = () => {
                         </p>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {settingsSubTab === 'database' && (
+                  <div className="max-w-xl mx-auto bg-white rounded-3xl border border-zinc-100 shadow-2xl p-8 space-y-6 animate-in fade-in-50 slide-in-from-bottom-5 duration-300">
+                    <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                      <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl shadow-sm">
+                        <Trash2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h2 className="text-xs font-black uppercase tracking-widest text-zinc-950">System Data Maintenance</h2>
+                        <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Carefully reset system tables</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-rose-50/50 border border-rose-100/80 p-4 rounded-2xl space-y-2">
+                      <div className="flex items-center gap-2 text-rose-800">
+                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Digniin Aad U Muhiim Ah!</span>
+                      </div>
+                      <p className="text-[9px] font-bold text-rose-700 uppercase tracking-wide leading-relaxed">
+                        Tirtirista xogta waa mid joogto ah oo aan dib loo soo celin karin. Fadlan hubi xogta aad dooranayso ka hor inta aadan gujin badhanka.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Dooro Xogta Aad Rabto Inaad Tirtirto:</label>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <button
+                          type="button"
+                          onClick={() => setDbClearBookings(!dbClearBookings)}
+                          className={cn(
+                            "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                            dbClearBookings 
+                              ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
+                              : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                          )}
+                        >
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-black uppercase tracking-wider">Ballamaha & POS</p>
+                            <p className="text-[8px] font-semibold text-zinc-400 uppercase">Bookings & POS Sales</p>
+                          </div>
+                          <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearBookings ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
+                            {dbClearBookings && <Check className="w-2.5 h-2.5" />}
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setDbClearExpenses(!dbClearExpenses)}
+                          className={cn(
+                            "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                            dbClearExpenses 
+                              ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
+                              : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                          )}
+                        >
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-black uppercase tracking-wider">Kharashaadka</p>
+                            <p className="text-[8px] font-semibold text-zinc-400 uppercase">System Expenses</p>
+                          </div>
+                          <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearExpenses ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
+                            {dbClearExpenses && <Check className="w-2.5 h-2.5" />}
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setDbClearCustomers(!dbClearCustomers)}
+                          className={cn(
+                            "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                            dbClearCustomers 
+                              ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
+                              : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                          )}
+                        >
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-black uppercase tracking-wider">Macaamiisha</p>
+                            <p className="text-[8px] font-semibold text-zinc-400 uppercase">Customer List</p>
+                          </div>
+                          <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearCustomers ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
+                            {dbClearCustomers && <Check className="w-2.5 h-2.5" />}
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setDbClearServices(!dbClearServices)}
+                          className={cn(
+                            "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                            dbClearServices 
+                              ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
+                              : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                          )}
+                        >
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-black uppercase tracking-wider">Adeegyada & Qalabka</p>
+                            <p className="text-[8px] font-semibold text-zinc-400 uppercase">Services & Products</p>
+                          </div>
+                          <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearServices ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
+                            {dbClearServices && <Check className="w-2.5 h-2.5" />}
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 pt-2">
+                      <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Xaqiiji Tirtirista:</label>
+                      <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider pl-1">
+                        Fadlan qor erayga <span className="text-rose-600 font-extrabold font-mono text-[9px] bg-rose-50 px-1 py-0.5 rounded border border-rose-200/50">CLEAR</span> si aad u fasaxdo tirtirista xogta.
+                      </p>
+                      <input 
+                        type="text" 
+                        placeholder="Qor CLEAR halkan..."
+                        className="w-full p-4 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200 focus:border-rose-600 focus:ring-1 focus:ring-rose-600 outline-none transition-all duration-200 text-zinc-900 placeholder:text-zinc-300" 
+                        value={dbConfirmationText} 
+                        onChange={(e) => setDbConfirmationText(e.target.value)}
+                      />
+                    </div>
+
+                    <button 
+                      onClick={handleClearDatabase}
+                      disabled={dbIsClearing || dbConfirmationText.toUpperCase() !== 'CLEAR' || (!dbClearBookings && !dbClearExpenses && !dbClearCustomers && !dbClearServices)}
+                      className="w-full py-4 bg-rose-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 active:scale-[0.98] transition-all shadow-xl shadow-rose-600/10 mt-2 flex items-center justify-center gap-2"
+                    >
+                      {dbIsClearing ? "Tirtirista Waa Guda Jiri..." : (
+                        <>
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Tirtir Xogta La Doortay
+                        </>
+                      )}
+                    </button>
                   </div>
                 )}
               </div>
