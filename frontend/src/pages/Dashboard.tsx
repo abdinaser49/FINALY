@@ -61,6 +61,7 @@ const Dashboard = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [wiAmount, setWiAmount] = useState(""); // New state for POS amount handling
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [lang, setLang] = useState<'en' | 'so'>((localStorage.getItem('lang') as 'en' | 'so') || 'so');
   const t = translations[lang];
@@ -75,7 +76,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<Tab>(isAdmin ? "overview" : "appointments");
 
   useEffect(() => {
-    if (!isAdmin && !isCashier && ["overview", "jobs", "settings", "reports", "users", "staff"].includes(activeTab)) {
+    if (!isAdmin && !isCashier && ["overview", "jobs", "settings", "reports", "users", "staff", "finance"].includes(activeTab)) {
       setActiveTab("appointments");
     } else if (isCashier && ["jobs", "settings", "reports", "users", "staff", "finance"].includes(activeTab)) {
       setActiveTab("walkin");
@@ -115,6 +116,14 @@ const Dashboard = () => {
   });
   const [bizName, setBizName] = useState(localStorage.getItem('bizName') || "Qurux Dumar Salon");
   const [bizPhone, setBizPhone] = useState(localStorage.getItem('bizPhone') || "+252 61 7643394");
+  const [bizEmail, setBizEmail] = useState(localStorage.getItem('bizEmail') || "contact@quruxdumar.com");
+  const [bizAddress, setBizAddress] = useState(localStorage.getItem('bizAddress') || "Mogadishu, Somalia");
+  const [bizHoursStart, setBizHoursStart] = useState(localStorage.getItem('bizHoursStart') || "08:00");
+  const [bizHoursEnd, setBizHoursEnd] = useState(localStorage.getItem('bizHoursEnd') || "20:00");
+  const [maxBookingsPerSlot, setMaxBookingsPerSlot] = useState(parseInt(localStorage.getItem('maxBookingsPerSlot') || "3", 10));
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
 
@@ -248,7 +257,7 @@ const Dashboard = () => {
 
   const fetchExpenses = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('expenses')
         .select('*')
         .order('date', { ascending: false });
@@ -293,7 +302,7 @@ const Dashboard = () => {
       let filteredData = sortedByStatus;
       if (!isAdmin && !isCashier && userProfile?.name) {
          filteredData = filteredData.filter(b => 
-           b.notes?.includes(`Assigned to: ${userProfile.name}`) || 
+           (b as any).notes?.includes(`Assigned to: ${userProfile.name}`) || 
            b.service?.includes(userProfile.name)
          );
       }
@@ -618,7 +627,7 @@ const Dashboard = () => {
           amount: parseFloat(formData.amount) || 0,
           date: formData.date || getLocalDateString()
         };
-        const { error } = await supabase.from('expenses').insert([payload]);
+        const { error } = await (supabase as any).from('expenses').insert([payload]);
         if (error) throw error;
         toast.success("Expense recorded successfully!");
         fetchExpenses();
@@ -626,7 +635,7 @@ const Dashboard = () => {
 
       setModalType(null);
       setEditingId(null);
-      setFormData({ name: "", phone: "", service: "", date: "", time: "", amount: "", description: "", duration: "", image: "", color: "", size: "", weight_kg: "", height_cm: "", serviceId: "", email: "", password: "" });
+      setFormData({ name: "", phone: "", service: "", selectedServices: [], date: "", time: "", amount: "", description: "", duration: "", image: "", color: "", size: "", weight_kg: "", height_cm: "", serviceId: "", email: "", password: "" });
       fetchBookings();
       fetchServices();
       fetchStaff();
@@ -663,7 +672,8 @@ const Dashboard = () => {
         end_time: addHour(new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })),
         customer_id: finalCustomerId,
         image_url: posCart[0]?.image_url || null,
-        category: 'POS'
+        category: 'POS',
+        notes: `Payment Method: ${posPaymentMethod}`
       };
 
       const { error } = await supabase.from('bookings').insert([payload]);
@@ -688,9 +698,10 @@ const Dashboard = () => {
         date: getLocalDateString(),
         time: new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' }),
         items: [...posCart],
-        total: posTotal.toFixed(2)
+        total: posTotal.toFixed(2),
+        paymentMethod: posPaymentMethod
       });
-      setTimeout(() => window.print(), 100);
+      setTimeout(() => { try { window.print(); } catch(e) { console.warn("Print skipped", e); } }, 500);
 
       toast.success(`✅ Order Checked Out! (${posCart.length} items)`);
       setWiName(""); setWiPhone(""); setPosCart([]); setWiAmount("");
@@ -705,6 +716,15 @@ const Dashboard = () => {
 
   // Only show real data — no fake/fallback data
   const allBookings = bookings;
+  // Rentals overdue 24h
+  const overdueRentals = bookings.filter(b => b.category === 'Dress' && (b.created_at ? new Date(b.created_at).getTime() : new Date(b.booking_date).getTime()) <= Date.now() - 24 * 60 * 60 * 1000);
+
+  // Notify admin about overdue rentals
+  useEffect(() => {
+    if (overdueRentals.length > 0) {
+      toast.error(`⏰ ${overdueRentals.length} rental(s) have exceeded 24 hours!`);
+    }
+  }, [overdueRentals]);
 
   const handleSignOut = async () => {
     try {
@@ -740,13 +760,12 @@ const Dashboard = () => {
     { id: "rentals", label: "Rentals", icon: Box },
   ] : [
     { id: "appointments", label: "My Bookings", icon: Calendar },
-    { id: "finance", label: "Expenses", icon: CreditCard },
     { id: "rentals", label: "Rentals", icon: Box },
     { id: "products", label: "Products", icon: ShoppingBag },
   ];
 
-  const sidebarStyles = "fixed lg:static inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-[#6D1B4B] to-[#4A0E32] text-white transform transition-transform duration-500 ease-in-out lg:translate-x-0 shadow-2xl overflow-hidden";
-  const cardStyles = "bg-white border border-zinc-100 shadow-[0_20px_50px_rgba(0,0,0,0.04)] rounded-[2.5rem] overflow-hidden relative transition-all duration-500 hover:shadow-[0_30px_60px_rgba(0,0,0,0.06)] hover:-translate-y-1";
+  const sidebarStyles = "fixed lg:static inset-y-0 left-0 z-50 w-56 bg-gradient-to-b from-[#6D1B4B] to-[#4A0E32] text-white transform transition-transform duration-500 ease-in-out lg:translate-x-0 shadow-xl overflow-hidden";
+  const cardStyles = "bg-white border border-zinc-100/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] rounded-2xl overflow-hidden relative transition-all duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:-translate-y-0.5";
 
   // Unified Local Date Helper (YYYY-MM-DD)
   const getLocalDateString = (date = new Date()) => {
@@ -878,6 +897,8 @@ visits: userBookings.length,
                   <p className="text-[7px] font-black uppercase text-zinc-400 tracking-widest">Date / Time</p>
                   <p className="text-[9px] font-black text-zinc-900 uppercase">{receiptData.date}</p>
                   <p className="text-[9px] font-medium text-zinc-400 uppercase">{receiptData.time}</p>
+                  <p className="text-[7px] font-black uppercase text-zinc-400 tracking-widest mt-1">Method</p>
+                  <p className="text-[9px] font-black text-emerald-600 uppercase">{receiptData.paymentMethod || 'Cash'}</p>
                </div>
             </div>
 
@@ -931,48 +952,52 @@ visits: userBookings.length,
       <div className="print:hidden min-h-screen bg-[#FAFAFA] flex font-body">
         {/* Sidebar */}
         <aside className={cn(sidebarStyles, sidebarOpen ? "translate-x-0" : "-translate-x-full", "bg-[#4B0E3D] border-r-0 shadow-[10px_0_40px_rgba(0,0,0,0.1)] z-[60]")}>
-        <div className="h-full flex flex-col py-10">
-          <div className="px-10 mb-16">
-            <Link to="/" className="flex items-center gap-4 group transition-transform active:scale-95">
-              <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-xl backdrop-blur-xl shrink-0 group-hover:rotate-12 transition-transform">
-                <img src={logo} alt="Logo" className="w-full h-full object-contain p-2" />
+        <div className="h-full flex flex-col py-6">
+          <div className="px-6 mb-8">
+            <Link to="/" className="flex items-center gap-3 group transition-transform active:scale-95">
+              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 shadow-lg backdrop-blur-xl shrink-0 group-hover:rotate-12 transition-transform">
+                <img src={logo} alt="Logo" className="w-full h-full object-contain p-1.5" />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="font-display text-lg font-black tracking-tighter text-white leading-none uppercase">{bizName}</h2>
-                <p className="font-body text-[7px] text-zinc-400 tracking-[0.4em] font-black uppercase mt-0.5">Management</p>
+                <h2 className="font-display text-sm font-black tracking-tighter text-white leading-none uppercase">{bizName}</h2>
+                <p className="font-body text-[6px] text-zinc-400 tracking-[0.4em] font-black uppercase mt-0.5">Management</p>
               </div>
             </Link>
           </div>
-
-          <nav className="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar-light">
+ 
+          <nav className="flex-1 px-3 space-y-1.5 overflow-y-auto custom-scrollbar-light">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
                 className={cn(
-                  "w-full flex items-center gap-3 px-5 py-2.5 font-body text-[10px] font-black uppercase tracking-widest rounded-xl transition-all group relative",
+                  "w-full flex items-center gap-2.5 px-4 py-2 font-body text-[9px] font-black uppercase tracking-widest rounded-xl transition-all group relative",
                   activeTab === item.id
                     ? "bg-white/10 text-white shadow-lg shadow-black/10"
                     : "text-white/40 hover:bg-white/5 hover:text-white"
                 )}
               >
                 {activeTab === item.id && (
-                  <motion.div layoutId="nav-active" className="absolute inset-0 bg-white/10 rounded-2xl border-l-[4px] border-white" />
+                  <motion.div layoutId="nav-active" className="absolute inset-0 bg-white/10 rounded-xl border-l-[3px] border-white" />
                 )}
-                <item.icon className={cn("w-5 h-5 transition-transform group-hover:scale-110 relative z-10", activeTab === item.id ? "text-white opacity-100" : "opacity-30")} />
+                <item.icon className={cn("w-4 h-4 transition-transform group-hover:scale-110 relative z-10", activeTab === item.id ? "text-white opacity-100" : "opacity-30")} />
                 <span className="relative z-10">{item.label}</span>
-              </button>
+{item.id === 'rentals' && overdueRentals.length > 0 && (
+  <span className="ml-2 inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[8px] font-black">
+    {overdueRentals.length}
+  </span>
+)}
+</button>
             ))}
           </nav>
-
-          <div className="mt-auto p-8 space-y-6">
-
+ 
+          <div className="mt-auto p-4 space-y-4">
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center gap-5 px-8 py-5 text-white/40 hover:text-white hover:bg-white/5 transition-all group rounded-2xl"
+              className="w-full flex items-center gap-4 px-4 py-2.5 text-white/40 hover:text-white hover:bg-white/5 transition-all group rounded-xl"
             >
-              <LogOut className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-opacity" />
-              <span className="text-[11px] font-black uppercase tracking-[0.3em]">Sign Out</span>
+              <LogOut className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
+              <span className="text-[9px] font-black uppercase tracking-[0.2em]">Sign Out</span>
             </button>
           </div>
         </div>
@@ -1115,7 +1140,7 @@ visits: userBookings.length,
           </div>
         </header>
 
-        <div className="p-6 pt-2 flex-1 relative">
+        <div className="p-4 pt-1 flex-1 relative">
           <div key={activeTab}>
             {/* Overview */}
             {activeTab === "overview" && (
@@ -1369,7 +1394,9 @@ visits: userBookings.length,
                     ...(isAdmin || isCashier ? [
                       { label: 'Net Profit', value: financeStats[3] - expenses.reduce((acc, curr) => acc + (curr.amount || 0), 0), color: 'text-zinc-900', bg: 'bg-zinc-100', icon: Sparkles },
                     ] : []),
-                    { label: 'Monthly Revenue', value: financeStats[2], color: 'text-indigo-600', bg: 'bg-indigo-50', icon: Calendar },
+                    ...(isAdmin || isCashier ? [
+                      { label: 'Monthly Revenue', value: financeStats[2], color: 'text-indigo-600', bg: 'bg-indigo-50', icon: Calendar },
+                    ] : []),
                   ].map((stat) => (
                     <div key={stat.label} className="bg-white p-4 rounded-xl border border-zinc-100 shadow-sm">
                       <div className="flex items-center gap-2 mb-2">
@@ -1456,7 +1483,7 @@ visits: userBookings.length,
                                 <td className="p-3 text-[9px] text-zinc-400 text-center">{e.date}</td>
                                 <td className="p-3 text-right font-black text-[10px] text-rose-600">-${e.amount}</td>
                                 <td className="p-3 text-center">
-                                    <button onClick={() => { if(confirm('Delete?')) supabase.from('expenses').delete().eq('id', e.id).then(() => fetchExpenses()) }} className="text-zinc-300 hover:text-rose-500"><Trash2 className="w-3 h-3" /></button>
+                                    <button onClick={() => { if(confirm('Delete?')) (supabase as any).from('expenses').delete().eq('id', e.id).then(() => fetchExpenses()) }} className="text-zinc-300 hover:text-rose-500"><Trash2 className="w-3 h-3" /></button>
                                 </td>
                             </tr>
                             ))}
@@ -1751,58 +1778,294 @@ visits: userBookings.length,
 
             {/* System Settings Tab */}
             {activeTab === "settings" && (
-              <div className="space-y-6 pb-10">
-                <div className="px-2">
-                  <h1 className="font-display text-xl font-black text-zinc-900 leading-none">Settings</h1>
-                  <p className="font-body text-zinc-400 font-medium text-[9px] mt-0.5">Business configuration</p>
-                </div>
-
-                <div className="flex items-center gap-2 px-2">
-                  {[
-                    { id: 'business', label: 'Profile', icon: Store },
-                    { id: 'security', label: 'Security', icon: CheckCircle2 },
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setSettingsSubTab(tab.id as any)}
-                      className={cn(
-                        "flex items-center gap-1.5 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
-                        settingsSubTab === tab.id ? "bg-zinc-900 text-white shadow-md" : "bg-white text-zinc-400 border border-zinc-100"
-                      )}
-                    >
-                      <tab.icon className="w-3 h-3" />
-                      {tab.label}
-                    </button>
-                  ))}
+              <div className="space-y-8 pb-12 px-2 max-w-6xl mx-auto">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-zinc-100 pb-5">
+                  <div>
+                    <h1 className="font-display text-2xl font-black text-zinc-950 tracking-tight">Settings</h1>
+                    <p className="font-body text-zinc-400 font-medium text-[10px] mt-0.5 uppercase tracking-wider">Configure your salon system preferences</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 bg-zinc-100/80 p-1 rounded-xl border border-zinc-200 shadow-sm">
+                    {[
+                      { id: 'business', label: 'Salon Profile', icon: Store },
+                      { id: 'security', label: 'Security & Access', icon: ShieldCheck },
+                    ].map(tab => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setSettingsSubTab(tab.id as any)}
+                        className={cn(
+                          "flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                          settingsSubTab === tab.id 
+                            ? "bg-zinc-900 text-white shadow-md transform scale-102" 
+                            : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/50"
+                        )}
+                      >
+                        <tab.icon className={cn("w-3.5 h-3.5", settingsSubTab === tab.id ? "text-white" : "text-zinc-400")} />
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {settingsSubTab === 'business' && (
-                  <div className="grid md:grid-cols-2 gap-4 px-2">
-                    <div className={cardStyles + " p-6 space-y-4"}>
-                      <h2 className="text-[9px] font-black uppercase tracking-widest text-zinc-900 border-b border-zinc-100 pb-2">Salon Identity</h2>
-                      <div className="space-y-3">
-                        <input 
-                          type="text" 
-                          className="w-full p-3 bg-zinc-50 rounded-lg text-[10px] font-bold border border-transparent focus:border-zinc-900 outline-none" 
-                          value={bizName} 
-                          onChange={(e) => setBizName(e.target.value)}
-                        />
-                        <input 
-                          type="text" 
-                          className="w-full p-3 bg-zinc-50 rounded-lg text-[10px] font-bold border border-transparent focus:border-zinc-900 outline-none" 
-                          value={bizPhone} 
-                          onChange={(e) => setBizPhone(e.target.value)}
-                        />
+                  <div className="grid md:grid-cols-2 gap-8 animate-in fade-in-50 slide-in-from-bottom-5 duration-300">
+                    {/* Salon Identity Card */}
+                    <div className={cardStyles + " p-8 space-y-6 bg-white shadow-xl hover:shadow-2xl transition-all duration-300 border-zinc-100/50"}>
+                      <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                        <div className="p-2.5 bg-zinc-900 text-white rounded-xl shadow-md">
+                          <Store className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h2 className="text-xs font-black uppercase tracking-widest text-zinc-950">Salon Identity</h2>
+                          <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Publicly visible details</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Name</label>
+                          <input 
+                            type="text" 
+                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all duration-200 text-zinc-900" 
+                            value={bizName} 
+                            onChange={(e) => setBizName(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Contact Phone</label>
+                          <input 
+                            type="text" 
+                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all duration-200 text-zinc-900" 
+                            value={bizPhone} 
+                            onChange={(e) => setBizPhone(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Email</label>
+                          <input 
+                            type="email" 
+                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all duration-200 text-zinc-900" 
+                            value={bizEmail} 
+                            onChange={(e) => setBizEmail(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Physical Address</label>
+                          <input 
+                            type="text" 
+                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all duration-200 text-zinc-900" 
+                            value={bizAddress} 
+                            onChange={(e) => setBizAddress(e.target.value)}
+                          />
+                        </div>
+
                         <button 
                           onClick={() => {
                             localStorage.setItem('bizName', bizName);
                             localStorage.setItem('bizPhone', bizPhone);
-                            toast.success("Salon Identity Saved!");
+                            localStorage.setItem('bizEmail', bizEmail);
+                            localStorage.setItem('bizAddress', bizAddress);
+                            toast.success("Salon Identity Successfully Saved! ✨");
                           }}
-                          className="bg-zinc-900 text-white w-full py-3 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all font-display"
+                          className="bg-zinc-900 text-white w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-850 active:scale-[0.98] transition-all shadow-lg shadow-zinc-900/10 mt-2"
                         >
-                          Save
+                          Save Identity
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Operational Configuration Card */}
+                    <div className={cardStyles + " p-8 space-y-6 bg-white shadow-xl hover:shadow-2xl transition-all duration-300 border-zinc-100/50"}>
+                      <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                        <div className="p-2.5 bg-primary text-white rounded-xl shadow-md">
+                          <Clock className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h2 className="text-xs font-black uppercase tracking-widest text-zinc-950">Operations & Limits</h2>
+                          <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Control operational thresholds</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Opening Time</label>
+                            <input 
+                              type="time" 
+                              className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all text-zinc-900" 
+                              value={bizHoursStart} 
+                              onChange={(e) => setBizHoursStart(e.target.value)}
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Closing Time</label>
+                            <input 
+                              type="time" 
+                              className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all text-zinc-900" 
+                              value={bizHoursEnd} 
+                              onChange={(e) => setBizHoursEnd(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Booking Double-Booking Cap */}
+                        <div className="space-y-2 bg-[#FAFAFA] p-4 rounded-xl border border-zinc-100/50 mt-2">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <label className="text-[10px] font-black text-zinc-950 uppercase tracking-widest">Double-Booking Cap</label>
+                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Maximum bookings allowed per slot</p>
+                            </div>
+                            <input 
+                              type="number" 
+                              min="1"
+                              max="10"
+                              className="w-16 p-2 bg-white text-center rounded-lg text-xs font-black border border-zinc-200 focus:border-zinc-950 outline-none"
+                              value={maxBookingsPerSlot} 
+                              onChange={(e) => setMaxBookingsPerSlot(parseInt(e.target.value, 10) || 1)}
+                            />
+                          </div>
+                          
+                          <div className="flex items-start gap-2 bg-amber-50/50 border border-amber-100 p-2.5 rounded-lg mt-2">
+                            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                            <p className="text-[7.5px] font-bold text-amber-700 uppercase tracking-wide leading-relaxed">
+                              Attention: Marka boosaska isku waqtiga ah ay buuxsamaan (max: {maxBookingsPerSlot}), slot-kaasi si toos ah ayuu u "disabled" noqonayaa.
+                            </p>
+                          </div>
+                        </div>
+
+                        <button 
+                          onClick={() => {
+                            localStorage.setItem('bizHoursStart', bizHoursStart);
+                            localStorage.setItem('bizHoursEnd', bizHoursEnd);
+                            localStorage.setItem('maxBookingsPerSlot', maxBookingsPerSlot.toString());
+                            toast.success("Operational Configuration Saved Successfully! 🚀");
+                          }}
+                          className="bg-zinc-900 text-white w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-850 active:scale-[0.98] transition-all shadow-lg shadow-zinc-900/10 mt-4"
+                        >
+                          Save Configurations
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {settingsSubTab === 'security' && (
+                  <div className="grid md:grid-cols-2 gap-8 animate-in fade-in-50 slide-in-from-bottom-5 duration-300">
+                    {/* Change Password Card */}
+                    <div className={cardStyles + " p-8 space-y-6 bg-white shadow-xl hover:shadow-2xl transition-all duration-300 border-zinc-100/50"}>
+                      <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                        <div className="p-2.5 bg-rose-600 text-white rounded-xl shadow-md">
+                          <ShieldCheck className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h2 className="text-xs font-black uppercase tracking-widest text-zinc-950">Change Password</h2>
+                          <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Secure your admin credentials</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">New Password</label>
+                          <input 
+                            type="password" 
+                            style={{ WebkitTextSecurity: 'disc' } as any}
+                            placeholder="••••••••"
+                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all duration-200 text-zinc-900" 
+                            value={newPassword} 
+                            onChange={(e) => setNewPassword(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Confirm New Password</label>
+                          <input 
+                            type="password" 
+                            style={{ WebkitTextSecurity: 'disc' } as any}
+                            placeholder="••••••••"
+                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all duration-200 text-zinc-900" 
+                            value={confirmPassword} 
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                          />
+                        </div>
+
+                        <button 
+                          onClick={async () => {
+                            if (!newPassword) {
+                              toast.error("Fadlan qor password-ka cusub!");
+                              return;
+                            }
+                            if (newPassword !== confirmPassword) {
+                              toast.error("Qalad: Password-yada ma isku mid baa!");
+                              return;
+                            }
+                            try {
+                              const { error } = await supabase.auth.updateUser({ password: newPassword });
+                              if (error) throw error;
+                              toast.success("Password-ka waa la bedelay si guul leh! 🔐");
+                              setNewPassword("");
+                              setConfirmPassword("");
+                            } catch (err: any) {
+                              toast.error("Bedelaadda password-ka way guuldareysatay: " + err.message);
+                            }
+                          }}
+                          className="bg-[#83215D] text-white w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#721b50] active:scale-[0.98] transition-all shadow-lg shadow-[#83215D]/10 mt-4"
+                        >
+                          Update Password
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Security Overview / Session Card */}
+                    <div className={cardStyles + " p-8 space-y-6 bg-zinc-950 border-zinc-800 text-white shadow-xl flex flex-col justify-between"}>
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
+                          <div className="p-2.5 bg-white/10 text-white rounded-xl">
+                            <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                          </div>
+                          <div>
+                            <h2 className="text-xs font-black uppercase tracking-widest text-white">Security Status</h2>
+                            <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Real-time session security</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
+                            <div>
+                              <p className="text-[9px] font-black uppercase text-zinc-400">Current Login User</p>
+                              <p className="text-xs font-bold mt-1 text-white">{activeEmail || "admin@example.com"}</p>
+                            </div>
+                            <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-1 rounded-full">ADMIN ACC</span>
+                          </div>
+
+                          <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
+                            <div>
+                              <p className="text-[9px] font-black uppercase text-zinc-400">Session Status</p>
+                              <p className="text-xs font-bold mt-1 text-white">Connected from Mogadishu</p>
+                            </div>
+                            <span className="inline-flex items-center gap-1.5 text-[8px] font-black text-emerald-400 uppercase tracking-widest">
+                              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                              Active Now
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
+                            <div>
+                              <p className="text-[9px] font-black uppercase text-zinc-400">Two-Factor Authentication</p>
+                              <p className="text-xs font-bold mt-1 text-white">OTP Verification via Email</p>
+                            </div>
+                            <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest bg-white/10 px-2.5 py-1 rounded-full">ENABLED</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-6 border-t border-zinc-900 mt-6">
+                        <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest text-center">
+                          Secured by Supabase Authentication Protocol
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -2188,7 +2451,144 @@ visits: userBookings.length,
                           <span>${posCart.reduce((acc, curr) => acc + (curr.price || 0), 0)}</span>
                         </div>
                       </div>
-                      <button onClick={handlePOSComplete} className="w-full bg-zinc-900 text-white py-3 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-lg active:scale-95">Complete Payment</button>
+
+                      {/* Premium Somalia Payment Selector stack */}
+                      <div className="border-t pt-3 space-y-2 text-left">
+                        <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Lacag Bixinta (Payment Method)</label>
+                        <div className="flex flex-col gap-2.5">
+                          {[
+                            {
+                              id: "EVC Plus",
+                              title: "EVC Plus",
+                              subtitle: "Mobile Money",
+                              brandBg: "bg-[#28A745]",
+                              borderSel: "border-[#28A745] ring-1 ring-[#28A745]",
+                              titleColor: "text-[#28A745]",
+                              logoText: (
+                                <div className="flex flex-col items-center justify-center text-white leading-none">
+                                  <span className="text-[10px] font-black tracking-tighter">EVC+</span>
+                                  <span className="text-[5px] font-bold tracking-[0.15em] opacity-90 mt-0.5">PLUS</span>
+                                </div>
+                              ),
+                              rightIcon: (color: string) => (
+                                <svg className={`w-6 h-6 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                                  <line x1="12" y1="18" x2="12" y2="18.01" />
+                                  <line x1="12" y1="7" x2="12" y2="13" />
+                                  <line x1="9" y1="10" x2="15" y2="10" />
+                                </svg>
+                              )
+                            },
+                            {
+                              id: "eDahab",
+                              title: "eDahab",
+                              subtitle: "Mobile Money",
+                              brandBg: "bg-[#D49D26]",
+                              borderSel: "border-[#D49D26] ring-1 ring-[#D49D26]",
+                              titleColor: "text-[#D49D26]",
+                              logoText: (
+                                <div className="flex flex-col items-center justify-center text-white leading-none">
+                                  <span className="text-[9px] font-black italic tracking-tighter">eDahab</span>
+                                </div>
+                              ),
+                              rightIcon: (color: string) => (
+                                <svg className={`w-6 h-6 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="5" y="2" width="14" height="20" rx="2" />
+                                  <path d="M9 12a3 3 0 0 1 6 0c0 .8-.5 1.5-1.2 1.8L12 15.5v.5" />
+                                </svg>
+                              )
+                            },
+                            {
+                              id: "JEEB",
+                              title: "JEEB",
+                              subtitle: "Mobile Money",
+                              brandBg: "bg-[#1E2260]",
+                              borderSel: "border-[#1E2260] ring-1 ring-[#1E2260]",
+                              titleColor: "text-[#1E2260]",
+                              logoText: (
+                                <div className="flex flex-col items-center justify-center text-white leading-none">
+                                  <span className="text-[10px] font-black italic tracking-tighter">JEEB</span>
+                                </div>
+                              ),
+                              rightIcon: (color: string) => (
+                                <svg className={`w-6 h-6 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="5" y="2" width="14" height="20" rx="2" />
+                                  <path d="M12 7v10M10 14h4" />
+                                </svg>
+                              )
+                            },
+                            {
+                              id: "Bank Card",
+                              title: "Bank Card",
+                              subtitle: "Visa, Mastercard",
+                              brandBg: "bg-[#6C757D]",
+                              borderSel: "border-[#6C757D] ring-1 ring-[#6C757D]",
+                              titleColor: "text-[#374151]",
+                              logoText: (
+                                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                                  <line x1="2" y1="10" x2="22" y2="10" />
+                                </svg>
+                              ),
+                              rightIcon: (color: string) => (
+                                <svg className={`w-6 h-6 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="2" y="9" width="16" height="11" rx="2" />
+                                  <path d="M6 5h16v11a2 2 0 0 1-2 2H6" />
+                                </svg>
+                              )
+                            },
+                            {
+                              id: "Cash",
+                              title: "Cash",
+                              subtitle: "Pay with cash",
+                              brandBg: "bg-[#0E5E35]",
+                              borderSel: "border-[#0E5E35] ring-1 ring-[#0E5E35]",
+                              titleColor: "text-[#0E5E35]",
+                              logoText: (
+                                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="2" y="6" width="20" height="12" rx="2" />
+                                  <circle cx="12" cy="12" r="3" />
+                                </svg>
+                              ),
+                              rightIcon: (color: string) => (
+                                <svg className={`w-6 h-6 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="2" y="6" width="20" height="12" rx="2" />
+                                  <circle cx="12" cy="12" r="3" />
+                                </svg>
+                              )
+                            }
+                          ].map((pay) => {
+                            const isSel = posPaymentMethod === pay.id;
+                            return (
+                              <button
+                                key={pay.id}
+                                type="button"
+                                onClick={() => setPosPaymentMethod(pay.id)}
+                                className={cn(
+                                  "w-full h-12 flex items-center border rounded-xl overflow-hidden transition-all duration-300 active:scale-98 shadow-sm text-left bg-white",
+                                  isSel ? pay.borderSel : "border-zinc-200 hover:bg-zinc-50"
+                                )}
+                              >
+                                {/* Left Brand Area */}
+                                <div className={cn("w-14 h-full shrink-0 flex items-center justify-center", pay.brandBg)}>
+                                  {pay.logoText}
+                                </div>
+                                {/* Middle Details Area */}
+                                <div className="flex-1 px-3 py-1 flex flex-col justify-center min-w-0">
+                                  <h4 className={cn("text-[10px] font-black uppercase tracking-wider leading-none", pay.titleColor)}>{pay.title}</h4>
+                                  <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest mt-1">{pay.subtitle}</span>
+                                </div>
+                                {/* Right Indicator Area */}
+                                <div className="pr-4 shrink-0 flex items-center justify-center">
+                                  {pay.rightIcon(isSel ? pay.titleColor : "text-zinc-300")}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <button onClick={handlePOSComplete} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 mt-2">Complete Payment</button>
                     </div>
                   </div>
                 </div>
@@ -2475,7 +2875,7 @@ function WalkinTab({
         items: [...wiCart],
         total: totalValue
       });
-      setTimeout(() => window.print(), 100);
+      setTimeout(() => { try { window.print(); } catch(e) { console.warn("Print skipped", e); } }, 500);
 
       toast.success(`✅ ${customerName} — Walk-in registered (${wiCart.length} item${wiCart.length > 1 ? 's' : ''})!`);
       setWiName(""); setWiPhone(""); setWiCart([]);

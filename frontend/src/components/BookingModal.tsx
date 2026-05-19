@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, Clock, X, Check, Sparkles, Phone, CreditCard, Star } from "lucide-react";
+import { CalendarIcon, Clock, X, Check, Sparkles, Phone, CreditCard, Star, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -110,8 +110,12 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [paid, setPaid] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("EVC Plus");
   const [dbServices, setDbServices] = useState<any[]>(services);
   const [dbStaff, setDbStaff] = useState<any[]>([]);
+  const [slotCounts, setSlotCounts] = useState<Record<string, number>>({});
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const MAX_BOOKINGS_PER_SLOT = parseInt(localStorage.getItem('maxBookingsPerSlot') || "3", 10);
   
   const bizName = localStorage.getItem('bizName') || "Qurux Dumar Salon";
   const rawPhone = localStorage.getItem('bizPhone') || "617643394";
@@ -175,6 +179,46 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
     }
   }, [isOpen]);
 
+  // Fetch booking counts per time slot for the selected date
+  const loadBookedSlots = async (selectedDate: Date) => {
+    setLoadingSlots(true);
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('start_time')
+        .eq('booking_date', dateStr)
+        .neq('status', 'cancelled');
+      if (error) throw error;
+
+      // Convert HH:MM → display format (9:00 AM)
+      const formatToDisplay = (time24: string) => {
+        if (!time24) return '';
+        const [h, m] = time24.split(':').map(Number);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const hour = h > 12 ? h - 12 : h === 0 ? 12 : h;
+        return `${hour}:${String(m).padStart(2, '0')} ${period}`;
+      };
+
+      // Count how many bookings each slot has
+      const counts: Record<string, number> = {};
+      (data || []).forEach((b: any) => {
+        const display = formatToDisplay(b.start_time);
+        counts[display] = (counts[display] || 0) + 1;
+      });
+      setSlotCounts(counts);
+    } catch (e) {
+      console.error('Error loading booked slots:', e);
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  // Reload slots whenever date or step changes
+  useEffect(() => {
+    if (step === 2) loadBookedSlots(date);
+  }, [date, step]);
+
   useEffect(() => {
     if (preselectedService && isOpen && dbServices.length > 0) {
        let found = dbServices.find(s => s.name === preselectedService);
@@ -232,6 +276,10 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
     : [];
 
   const handleConfirm = async () => {
+    if (!paid) {
+      toast.error("Fadlan marka hore xaqiiji lacag bixinta adigoo gujinaya badhanka 'Xaqiiji' ama 'OK' ee kor ku yaal!");
+      return;
+    }
     // Allow Guest Booking (user can be null)
     // Ensure we have a valid customer_id to satisfy NOT NULL constraint
     let finalCustomerIdToSubmit = user?.id || null;
@@ -256,7 +304,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
       service_id: selectedService.id,
       name: name,
       phone: phone,
-      notes: notes,
+      notes: `Payment Method: ${paymentMethod}${selectedEmployee !== 'Any' ? `\n(Assigned to: ${selectedEmployee})` : ''}${notes ? `\nNotes: ${notes}` : ''}`,
       service: selectedService.name,
       booking_date: format(date, "yyyy-MM-dd"),
       start_time: formatTimeToDb(startTime),
@@ -264,8 +312,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
       amount: selectedService.price || 0,
       status: "pending",
       image_url: localSelectedImage || selectedService.image || null,
-      category: "Online",
-      notes: selectedEmployee !== 'Any' ? `${notes}\n(Assigned to: ${selectedEmployee})` : notes
+      category: "Online"
     };
 
     try {
@@ -403,20 +450,49 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                    <div className="space-y-8">
                       <div className="space-y-4">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Available Slots</label>
+                        {loadingSlots ? (
+                          <div className="flex items-center justify-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">
+                            <svg className="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                            Checking availability...
+                          </div>
+                        ) : (
                         <div className="grid grid-cols-3 gap-3">
-                           {timeSlots.map((slot) => (
+                           {timeSlots.map((slot) => {
+                             const count = slotCounts[slot] || 0;
+                             const isFull = count >= MAX_BOOKINGS_PER_SLOT;
+                             const remaining = MAX_BOOKINGS_PER_SLOT - count;
+                             return (
                              <button
                                key={slot}
-                               onClick={() => setStartTime(slot)}
+                               onClick={() => !isFull && setStartTime(slot)}
+                               disabled={isFull}
+                               title={isFull ? 'This slot is fully booked' : `${remaining} spot${remaining !== 1 ? 's' : ''} left`}
                                className={cn(
-                                 "py-4 rounded-2xl font-bold text-xs transition-all border-2",
-                                 startTime === slot ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" : "bg-white text-charcoal border-slate-100 hover:border-primary/50"
+                                 "py-4 rounded-2xl font-bold text-xs transition-all border-2 relative flex flex-col items-center gap-0.5",
+                                 isFull
+                                   ? "bg-slate-100 text-slate-300 border-slate-100 cursor-not-allowed"
+                                   : startTime === slot
+                                   ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                                   : "bg-white text-charcoal border-slate-100 hover:border-primary/50"
                                )}
                              >
-                               {slot}
+                               <span className={isFull ? "line-through" : ""}>{slot}</span>
+                               {isFull ? (
+                                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Full</span>
+                               ) : count > 0 ? (
+                                 <span className={cn(
+                                   "text-[8px] font-black uppercase tracking-wider",
+                                   startTime === slot ? "text-white/70" : "text-amber-500"
+                                 )}>{remaining} left</span>
+                               ) : null}
+                               {isFull && (
+                                 <span className="absolute -top-1.5 -right-1.5 text-[7px] bg-rose-500 text-white rounded-full px-1 font-black uppercase">Full</span>
+                               )}
                              </button>
-                           ))}
+                             );
+                           })}
                         </div>
+                        )}
                       </div>
 
                       <div className="space-y-4">
@@ -494,36 +570,198 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
             )}
 
             {step === 4 && (
-              <motion.div initial={{opacity:0, y: 10}} animate={{opacity:1, y: 0}} exit={{opacity:0, y: -10}} className="space-y-10 flex flex-col items-center py-4">
+              <motion.div initial={{opacity:0, y: 10}} animate={{opacity:1, y: 0}} exit={{opacity:0, y: -10}} className="space-y-8 flex flex-col items-center py-4 w-full max-w-md mx-auto">
                 <div className="text-center space-y-2">
-                   <h3 className="text-3xl font-display font-bold text-charcoal">Secure Payment</h3>
-                   <p className="text-gray-400 text-sm">Please pay to merchant {merchantCode} (EVC Plus)</p>
+                   <h3 className="text-2xl font-display font-bold text-charcoal">Secure Payment</h3>
+                   <p className="text-gray-400 text-xs font-semibold uppercase tracking-widest">Dooro Habka Lacag Bixinta</p>
                 </div>
 
-                <div className="w-full max-w-sm bg-zinc-950 text-white p-8 rounded-[3rem] shadow-2xl relative overflow-hidden group">
-                   <div className="absolute -top-12 -right-12 w-40 h-40 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-colors" />
-                   <div className="flex justify-between items-center opacity-60">
-                      <div className="flex flex-col">
-                        <span className="text-[8px] font-bold uppercase tracking-widest">Merchant</span>
-                        <span className="text-xs font-bold">{bizName.toUpperCase()}</span>
-                      </div>
-                      <Sparkles className="w-5 h-5 text-primary" />
-                   </div>
-                   
-                   <div className="text-center space-y-2 relative z-10">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40">Payment Code</span>
-                      <div className="text-4xl font-mono font-bold tracking-[0.2em] text-primary">{merchantCode}</div>
-                   </div>
+                {/* Somalia Localized Payment Methods Selector List */}
+                <div className="flex flex-col gap-2.5 w-full">
+                  {[
+                    {
+                      id: "EVC Plus",
+                      title: "EVC Plus",
+                      subtitle: "Mobile Money",
+                      brandBg: "bg-[#28A745]",
+                      borderSel: "border-[#28A745] ring-2 ring-[#28A745]/50",
+                      titleColor: "text-[#28A745]",
+                      logoText: (
+                        <div className="flex flex-col items-center justify-center text-white leading-none">
+                          <span className="text-[10px] font-black tracking-tighter">EVC+</span>
+                          <span className="text-[5px] font-bold tracking-[0.15em] opacity-90 mt-0.5">PLUS</span>
+                        </div>
+                      ),
+                      rightIcon: (color: string) => (
+                        <svg className={`w-6 h-6 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                          <line x1="12" y1="18" x2="12" y2="18.01" />
+                          <line x1="12" y1="7" x2="12" y2="13" />
+                          <line x1="9" y1="10" x2="15" y2="10" />
+                        </svg>
+                      )
+                    },
+                    {
+                      id: "eDahab",
+                      title: "eDahab",
+                      subtitle: "Mobile Money",
+                      brandBg: "bg-[#D49D26]",
+                      borderSel: "border-[#D49D26] ring-2 ring-[#D49D26]/50",
+                      titleColor: "text-[#D49D26]",
+                      logoText: (
+                        <div className="flex flex-col items-center justify-center text-white leading-none">
+                          <span className="text-[9px] font-black italic tracking-tighter">eDahab</span>
+                        </div>
+                      ),
+                      rightIcon: (color: string) => (
+                        <svg className={`w-6 h-6 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="5" y="2" width="14" height="20" rx="2" />
+                          <path d="M9 12a3 3 0 0 1 6 0c0 .8-.5 1.5-1.2 1.8L12 15.5v.5" />
+                        </svg>
+                      )
+                    },
+                    {
+                      id: "JEEB",
+                      title: "JEEB",
+                      subtitle: "Mobile Money",
+                      brandBg: "bg-[#1E2260]",
+                      borderSel: "border-[#1E2260] ring-2 ring-[#1E2260]/50",
+                      titleColor: "text-[#1E2260]",
+                      logoText: (
+                        <div className="flex flex-col items-center justify-center text-white leading-none">
+                          <span className="text-[10px] font-black italic tracking-tighter">JEEB</span>
+                        </div>
+                      ),
+                      rightIcon: (color: string) => (
+                        <svg className={`w-6 h-6 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="5" y="2" width="14" height="20" rx="2" />
+                          <path d="M12 7v10M10 14h4" />
+                        </svg>
+                      )
+                    },
+                    {
+                      id: "Bank Card",
+                      title: "Bank Card",
+                      subtitle: "Visa, Mastercard",
+                      brandBg: "bg-[#6C757D]",
+                      borderSel: "border-[#6C757D] ring-2 ring-[#6C757D]/50",
+                      titleColor: "text-[#374151]",
+                      logoText: (
+                        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="2" y="5" width="20" height="14" rx="2" />
+                          <line x1="2" y1="10" x2="22" y2="10" />
+                        </svg>
+                      ),
+                      rightIcon: (color: string) => (
+                        <svg className={`w-6 h-6 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="2" y="9" width="16" height="11" rx="2" />
+                          <path d="M6 5h16v11a2 2 0 0 1-2 2H6" />
+                        </svg>
+                      )
+                    },
+                    {
+                      id: "Cash",
+                      title: "Cash",
+                      subtitle: "Pay with cash",
+                      brandBg: "bg-[#0E5E35]",
+                      borderSel: "border-[#0E5E35] ring-2 ring-[#0E5E35]/50",
+                      titleColor: "text-[#0E5E35]",
+                      logoText: (
+                        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="2" y="6" width="20" height="12" rx="2" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      ),
+                      rightIcon: (color: string) => (
+                        <svg className={`w-6 h-6 ${color}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="2" y="6" width="20" height="12" rx="2" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )
+                    }
+                  ].map((pay) => {
+                    const isSel = paymentMethod === pay.id;
+                    return (
+                      <button
+                        key={pay.id}
+                        type="button"
+                        onClick={() => { setPaymentMethod(pay.id); setPaid(false); }}
+                        className={cn(
+                          "w-full h-14 flex items-center border rounded-2xl overflow-hidden transition-all duration-300 active:scale-98 shadow-sm text-left bg-white",
+                          isSel ? pay.borderSel : "border-zinc-200 hover:bg-zinc-50"
+                        )}
+                      >
+                        {/* Left Brand Area */}
+                        <div className={cn("w-16 h-full shrink-0 flex items-center justify-center", pay.brandBg)}>
+                          {pay.logoText}
+                        </div>
+                        {/* Middle Details Area */}
+                        <div className="flex-1 px-4 py-1 flex flex-col justify-center min-w-0">
+                          <h4 className={cn("text-xs font-black uppercase tracking-wider leading-none", pay.titleColor)}>{pay.title}</h4>
+                          <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mt-1.5">{pay.subtitle}</span>
+                        </div>
+                        {/* Right Indicator Area */}
+                        <div className="pr-5 shrink-0 flex items-center justify-center">
+                          {pay.rightIcon(isSel ? pay.titleColor : "text-zinc-300")}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
 
-                   <button 
-                     onClick={() => setPaid(true)} 
-                     className={cn(
-                       "w-full py-5 rounded-3xl font-bold uppercase tracking-widest text-[10px] transition-all relative z-10", 
-                       paid ? "bg-emerald-500 text-white" : "bg-white text-black hover:bg-primary hover:text-white"
-                     )}
-                   >
-                      {paid ? "✔ Payment Verified" : "I have sent the payment"}
-                   </button>
+                {/* Dynamic Content based on Payment Method */}
+                <div className="w-full bg-zinc-950 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+                   <div className="absolute -top-12 -right-12 w-40 h-40 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-colors" />
+                   
+                   {paymentMethod === "Cash" ? (
+                     <div className="text-center space-y-6 relative z-10 py-4">
+                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Cash Payment</span>
+                       <p className="text-xs font-bold leading-relaxed text-zinc-300">Waxaad lacagta caddaanka ah ku bixin kartaa salon-ka marka aad timaado ballantaada.</p>
+                       <button 
+                         onClick={() => setPaid(true)} 
+                         className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[9px] bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                       >
+                         {paid ? "✔ OK, waan ku bixinayaa cash" : "OK, waan ku bixinayaa cash"}
+                       </button>
+                     </div>
+                   ) : paymentMethod === "Bank Card" ? (
+                     <div className="text-center space-y-6 relative z-10 py-4">
+                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Bank Card</span>
+                       <p className="text-xs font-bold leading-relaxed text-zinc-300">Fadlan ku bixi kaarkaaga bangiga xarunta salon-ka markaad timaado adigoo isticmaalaya POS mashiinka.</p>
+                       <button 
+                         onClick={() => setPaid(true)} 
+                         className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[9px] bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                       >
+                         {paid ? "✔ OK, waan ku bixinayaa kaar" : "OK, waan ku bixinayaa kaar"}
+                       </button>
+                     </div>
+                   ) : (
+                     <div className="space-y-6 relative z-10">
+                       <div className="flex justify-between items-center opacity-60">
+                          <div className="flex flex-col">
+                            <span className="text-[8px] font-bold uppercase tracking-widest">Merchant</span>
+                            <span className="text-xs font-bold">{bizName.toUpperCase()}</span>
+                          </div>
+                          <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/10 text-white">{paymentMethod}</span>
+                       </div>
+                       
+                       <div className="text-center space-y-2">
+                          <span className="text-[9px] font-black uppercase tracking-[0.3em] opacity-40">Payment Code</span>
+                          <div className="text-4xl font-mono font-black tracking-[0.2em] text-primary">{merchantCode}</div>
+                          <p className="text-[9px] text-zinc-400 font-bold uppercase mt-1">Fadlan u dir lacagta merchant-ka kor ku xusan</p>
+                       </div>
+
+                       <button 
+                         onClick={() => setPaid(true)} 
+                         className={cn(
+                           "w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[9px] transition-all", 
+                           paid ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "bg-white text-black hover:bg-primary hover:text-white"
+                         )}
+                       >
+                          {paid ? "✔ Payment Verified" : "Waan diray lacagta"}
+                       </button>
+                     </div>
+                   )}
                 </div>
               </motion.div>
             )}
@@ -599,14 +837,17 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                         </button>
                        ) : (
                          <button 
-                          onClick={handleConfirm}
-                          className={cn(
-                            "px-12 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-xl active:scale-95",
-                            paid ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-500/20" : "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
-                          )}
-                        >
-                          Confirm & Complete Booking
-                        </button>
+                           onClick={handleConfirm}
+                           className={cn(
+                             "px-12 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center gap-2",
+                             paid 
+                               ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-500/20" 
+                               : "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
+                           )}
+                         >
+                           {!paid && <span className="text-[10px]">🔒</span>}
+                           {paid ? "Confirm & Complete Booking" : "Fadlan Xaqiiji Lacag Bixinta"}
+                         </button>
                        )}
                     </div>
           </div>
@@ -626,6 +867,3 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
 };
 
 export default BookingModal;
-
-// Simple internal component for cleaner structure
-const ArrowLeft = ({ className }: { className?: string }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;

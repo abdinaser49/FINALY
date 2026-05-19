@@ -1,17 +1,50 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+
 import stylist1 from "@/assets/staff.jpeg";
 import stylist2 from "@/assets/staf2.jpeg";
 import stylist3 from "@/assets/staf3.jpeg";
 import stylist4 from "@/assets/st4.jpeg";
 
-const stylists = [
+const defaultStylists = [
   { name: "Deeqa Axmed", role: "Senior Hair Stylist", image: stylist1 },
   { name: "Layla Cali", role: "Nail Artist", image: stylist2 },
   { name: "Hodan Maxamed", role: "Skin Care Expert", image: stylist3 },
   { name: "Sahra Cabdi", role: "Henna & Hair Removal Expert", image: stylist4 },
 ];
 
+const fallbackImages = [stylist1, stylist2, stylist3, stylist4];
+
 const StylistsSection = () => {
+  const [stylists, setStylists] = useState<any[]>(defaultStylists);
+
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('status', 'Active');
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const formattedStaff = data.map((staff, index) => ({
+            name: staff.name || staff.full_name || "Specialist",
+            role: staff.role || "Beauty Specialist",
+            image: staff.avatar_url || fallbackImages[index % fallbackImages.length]
+          }));
+          setStylists(formattedStaff);
+        }
+      } catch (err) {
+        console.error("Error fetching staff:", err);
+      }
+    };
+
+    fetchStaff();
+  }, []);
+
   return (
     <section className="py-24 md:py-32 bg-[#fdfbf7]" id="team">
       <div className="max-w-7xl mx-auto px-6">
@@ -28,7 +61,7 @@ const StylistsSection = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
           {stylists.map((stylist, i) => (
             <motion.div
-              key={stylist.name}
+              key={i} // Using index as key since names might duplicate dynamically
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
