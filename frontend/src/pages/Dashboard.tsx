@@ -63,7 +63,7 @@ const Dashboard = () => {
   const [uploading, setUploading] = useState(false);
   const [wiAmount, setWiAmount] = useState(""); // New state for POS amount handling
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [lang, setLang] = useState<'en' | 'so'>((localStorage.getItem('lang') as 'en' | 'so') || 'so');
+  const [lang, setLang] = useState<'en' | 'so'>('en');
   const t = translations[lang];
   const [expenses, setExpenses] = useState<any[]>([]);
 
@@ -399,12 +399,12 @@ const Dashboard = () => {
 
   const handleClearDatabase = async () => {
     if (dbConfirmationText.toUpperCase() !== 'CLEAR') {
-      toast.error("Fadlan qor erayga 'CLEAR' si aad u xaqiijiso tirtirista!");
+      toast.error("Please type the word 'CLEAR' to confirm deletion!");
       return;
     }
     
     if (!dbClearBookings && !dbClearExpenses && !dbClearCustomers && !dbClearServices) {
-      toast.error("Fadlan dooro ugu yaraan hal nooc oo xog ah oo aad rabto inaad tirtirto!");
+      toast.error("Please select at least one type of data to delete!");
       return;
     }
     
@@ -434,7 +434,7 @@ const Dashboard = () => {
         if (error) throw new Error("Error clearing services: " + error.message);
       }
       
-      toast.success("Xogtii aad dooratay si guul leh ayaa loo tirtiray! 🧹");
+      toast.success("The selected data was successfully deleted! 🧹");
       
       // Reset checkboxes and text
       setDbClearBookings(false);
@@ -449,7 +449,7 @@ const Dashboard = () => {
       fetchCustomers();
       fetchServices();
     } catch (err: any) {
-      toast.error(err.message || "Waxaa dhacay qalad inta lagu guda jiray tirtirista xogta.");
+      toast.error(err.message || "An error occurred during data deletion.");
     } finally {
       setDbIsClearing(false);
     }
@@ -566,12 +566,12 @@ const Dashboard = () => {
         );
 
         if (concurrentBookings.length >= 3) {
-          toast.error("Waqtigan waa buuxaa! (Max 3 qof hal mar). Fadlan dooro waqti kale.");
+          toast.error("This slot is full! (Max 3 people at a time). Please choose another slot.");
           return;
         }
 
         if (!formData.selectedServices || formData.selectedServices.length === 0) {
-          toast.error("Fadlan dooro ugu yaraan hal adeeg!");
+          toast.error("Please select at least one service!");
           return;
         }
 
@@ -657,7 +657,7 @@ const Dashboard = () => {
           });
           
           if (signUpError) {
-             toast.error("Diiwaangelinta Login-ka waa diiday: " + signUpError.message);
+             toast.error("Login registration failed: " + signUpError.message);
              return;
           }
         }
@@ -683,7 +683,7 @@ const Dashboard = () => {
           : await supabase.from('customers').insert([payload]);
 
         if (error) throw error;
-        toast.success(editingId ? "Macmiilka waa la badalay." : "Hambalyo! Macmiilka si fiican ayaa loo xareeyay.");
+        toast.success(editingId ? "Customer updated." : "Congratulations! Customer successfully registered.");
         fetchCustomers();
       } else if (modalType === 'expense') {
         const payload = {
@@ -706,12 +706,12 @@ const Dashboard = () => {
       fetchStaff();
       fetchCustomers();
     } catch (error: any) {
-      toast.error("Xogta lama soo xareyn karo: " + error.message);
+      toast.error("Unable to save data: " + error.message);
     }
   };
 
   const handlePOSComplete = async () => {
-    if (posCart.length === 0) { toast.error("Fadlan dambiisha wax ku dar!"); return; }
+    if (posCart.length === 0) { toast.error("Please add items to the cart!"); return; }
     
     const posTotal = posCart.reduce((acc, curr) => acc + (Number(curr.price) || 0), 0);
 
@@ -1097,28 +1097,6 @@ const Dashboard = () => {
           </div>
 
           <div className="flex items-center gap-3 relative">
-            {/* Language Toggle */}
-            <div className="flex items-center bg-zinc-100 p-1 rounded-xl border border-zinc-200">
-               <button 
-                 onClick={() => { setLang('so'); localStorage.setItem('lang', 'so'); }}
-                 className={cn(
-                   "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
-                   lang === 'so' ? "bg-white text-primary shadow-sm" : "text-zinc-400 hover:text-zinc-600"
-                 )}
-               >
-                 SO
-               </button>
-               <button 
-                 onClick={() => { setLang('en'); localStorage.setItem('lang', 'en'); }}
-                 className={cn(
-                   "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
-                   lang === 'en' ? "bg-white text-primary shadow-sm" : "text-zinc-400 hover:text-zinc-600"
-                 )}
-               >
-                 EN
-               </button>
-            </div>
-
             <button 
               onClick={() => setNotificationsOpen(!notificationsOpen)}
               className="relative text-zinc-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-zinc-50 border border-transparent active:scale-95"
@@ -2001,7 +1979,7 @@ const Dashboard = () => {
                           <div className="flex items-start gap-2 bg-amber-50/50 border border-amber-100 p-2.5 rounded-lg mt-2">
                             <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                             <p className="text-[7.5px] font-bold text-amber-700 uppercase tracking-wide leading-relaxed">
-                              Attention: Marka boosaska isku waqtiga ah ay buuxsamaan (max: {maxBookingsPerSlot}), slot-kaasi si toos ah ayuu u "disabled" noqonayaa.
+                              Attention: When bookings for the same time slot are full (max: {maxBookingsPerSlot}), that slot will automatically become disabled.
                             </p>
                           </div>
                         </div>
@@ -2064,21 +2042,21 @@ const Dashboard = () => {
                         <button 
                           onClick={async () => {
                             if (!newPassword) {
-                              toast.error("Fadlan qor password-ka cusub!");
+                              toast.error("Please enter your new password!");
                               return;
                             }
                             if (newPassword !== confirmPassword) {
-                              toast.error("Qalad: Password-yada ma isku mid baa!");
+                              toast.error("Error: Passwords do not match!");
                               return;
                             }
                             try {
                               const { error } = await supabase.auth.updateUser({ password: newPassword });
                               if (error) throw error;
-                              toast.success("Password-ka waa la bedelay si guul leh! 🔐");
+                              toast.success("Password updated successfully! 🔐");
                               setNewPassword("");
                               setConfirmPassword("");
                             } catch (err: any) {
-                              toast.error("Bedelaadda password-ka way guuldareysatay: " + err.message);
+                              toast.error("Failed to update password: " + err.message);
                             }
                           }}
                           className="bg-[#83215D] text-white w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#721b50] active:scale-[0.98] transition-all shadow-lg shadow-[#83215D]/10 mt-4"
@@ -2155,15 +2133,15 @@ const Dashboard = () => {
                     <div className="bg-rose-50/50 border border-rose-100/80 p-4 rounded-2xl space-y-2">
                       <div className="flex items-center gap-2 text-rose-800">
                         <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Digniin Aad U Muhiim Ah!</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Crucial Warning!</span>
                       </div>
                       <p className="text-[9px] font-bold text-rose-700 uppercase tracking-wide leading-relaxed">
-                        Tirtirista xogta waa mid joogto ah oo aan dib loo soo celin karin. Fadlan hubi xogta aad dooranayso ka hor inta aadan gujin badhanka.
+                        Data deletion is permanent and cannot be undone. Please double check the selected data before clicking the button.
                       </p>
                     </div>
 
                     <div className="space-y-3">
-                      <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Dooro Xogta Aad Rabto Inaad Tirtirto:</label>
+                      <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Select the Data You Want to Delete:</label>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <button
@@ -2177,7 +2155,7 @@ const Dashboard = () => {
                           )}
                         >
                           <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase tracking-wider">Ballamaha & POS</p>
+                            <p className="text-[10px] font-black uppercase tracking-wider">Bookings & POS</p>
                             <p className="text-[8px] font-semibold text-zinc-400 uppercase">Bookings & POS Sales</p>
                           </div>
                           <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearBookings ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
@@ -2196,7 +2174,7 @@ const Dashboard = () => {
                           )}
                         >
                           <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase tracking-wider">Kharashaadka</p>
+                            <p className="text-[10px] font-black uppercase tracking-wider">Expenses</p>
                             <p className="text-[8px] font-semibold text-zinc-400 uppercase">System Expenses</p>
                           </div>
                           <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearExpenses ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
@@ -2215,7 +2193,7 @@ const Dashboard = () => {
                           )}
                         >
                           <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase tracking-wider">Macaamiisha</p>
+                            <p className="text-[10px] font-black uppercase tracking-wider">Customers</p>
                             <p className="text-[8px] font-semibold text-zinc-400 uppercase">Customer List</p>
                           </div>
                           <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearCustomers ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
@@ -2234,7 +2212,7 @@ const Dashboard = () => {
                           )}
                         >
                           <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase tracking-wider">Adeegyada & Qalabka</p>
+                            <p className="text-[10px] font-black uppercase tracking-wider">Services & Products</p>
                             <p className="text-[8px] font-semibold text-zinc-400 uppercase">Services & Products</p>
                           </div>
                           <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearServices ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
@@ -2245,13 +2223,13 @@ const Dashboard = () => {
                     </div>
 
                     <div className="space-y-2 pt-2">
-                      <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Xaqiiji Tirtirista:</label>
+                      <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Confirm Deletion:</label>
                       <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider pl-1">
-                        Fadlan qor erayga <span className="text-rose-600 font-extrabold font-mono text-[9px] bg-rose-50 px-1 py-0.5 rounded border border-rose-200/50">CLEAR</span> si aad u fasaxdo tirtirista xogta.
+                        Please type the word <span className="text-rose-600 font-extrabold font-mono text-[9px] bg-rose-50 px-1 py-0.5 rounded border border-rose-200/50">CLEAR</span> to authorize data deletion.
                       </p>
                       <input 
                         type="text" 
-                        placeholder="Qor CLEAR halkan..."
+                        placeholder="Type CLEAR here..."
                         className="w-full p-4 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200 focus:border-rose-600 focus:ring-1 focus:ring-rose-600 outline-none transition-all duration-200 text-zinc-900 placeholder:text-zinc-300" 
                         value={dbConfirmationText} 
                         onChange={(e) => setDbConfirmationText(e.target.value)}
@@ -2263,10 +2241,10 @@ const Dashboard = () => {
                       disabled={dbIsClearing || dbConfirmationText.toUpperCase() !== 'CLEAR' || (!dbClearBookings && !dbClearExpenses && !dbClearCustomers && !dbClearServices)}
                       className="w-full py-4 bg-rose-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 active:scale-[0.98] transition-all shadow-xl shadow-rose-600/10 mt-2 flex items-center justify-center gap-2"
                     >
-                      {dbIsClearing ? "Tirtirista Waa Guda Jiri..." : (
+                      {dbIsClearing ? "Deleting in progress..." : (
                         <>
                           <Trash2 className="w-3.5 h-3.5" />
-                          Tirtir Xogta La Doortay
+                          Delete Selected Data
                         </>
                       )}
                     </button>
@@ -3025,7 +3003,7 @@ function WalkinTab({
   useEffect(() => { fetchWalkinToday(); }, []);
 
   const saveWalkin = async () => {
-    if (wiCart.length === 0) { toast.error("Fadlan dooro ugu yaraan hal adeeg!"); return; }
+    if (wiCart.length === 0) { toast.error("Please select at least one service!"); return; }
     setWiSaving(true);
 
     const customerName = wiName.trim() || "Guest Customer";
