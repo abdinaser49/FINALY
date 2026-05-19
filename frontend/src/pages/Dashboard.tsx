@@ -1069,7 +1069,7 @@ const Dashboard = () => {
       {/* ─── Main Application (Hidden during print) ─────────────────────── */}
       <div className="print:hidden min-h-screen bg-[#FAFAFA] flex font-body">
         {/* Sidebar */}
-        <aside className={cn(sidebarStyles, sidebarOpen ? "translate-x-0" : "-translate-x-full", "bg-[#4B0E3D] border-r-0 shadow-[10px_0_40px_rgba(0,0,0,0.1)] z-[60]")}>
+        <aside className={cn(sidebarStyles, sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0", "bg-[#4B0E3D] border-r-0 shadow-[10px_0_40px_rgba(0,0,0,0.1)] z-[60]")}>
         <div className="h-full flex flex-col py-6">
           <div className="px-6 mb-8">
             <Link to="/" className="flex items-center gap-3 group transition-transform active:scale-95">
