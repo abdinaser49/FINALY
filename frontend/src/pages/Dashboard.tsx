@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Calendar, Users, Settings, LogOut, Menu, X,
   ChevronDown, Bell, Search, Plus, MoreHorizontal, Edit, Trash2, Copy, MoreVertical, ChevronLeft, ChevronRight,
   Phone, CheckCircle2, Check, Clock, DollarSign, Briefcase, TrendingUp,
-  ArrowUpRight, ArrowDownRight, CreditCard, Sparkles, Scissors, Box, UserPlus,
+  ArrowUpRight, ArrowDownRight, CreditCard, Sparkles, Scissors, Box, Shirt, UserPlus,
   Upload, Loader2, ImagePlus, ShoppingBag, Store, AlertTriangle, Download, XCircle, ShieldCheck, CalendarCheck
 } from "lucide-react";
 import { toast } from "sonner";
@@ -1102,7 +1102,7 @@ const Dashboard = () => {
                   <motion.div layoutId="nav-active" className="absolute inset-0 bg-white/10 rounded-xl border-l-[3px] border-white" />
                 )}
                 <item.icon className={cn("w-4 h-4 transition-transform group-hover:scale-110 relative z-10", activeTab === item.id ? "text-white opacity-100" : "opacity-30")} />
-                <span className="relative z-10">{item.label}</span>
+                <span className="relative z-10">{(t as any)[item.id] || item.label}</span>
 {item.id === 'rentals' && overdueRentals.length > 0 && (
   <span className="ml-2 inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[8px] font-black">
     {overdueRentals.length}
@@ -1150,6 +1150,20 @@ const Dashboard = () => {
           </div>
 
           <div className="flex items-center gap-3 relative">
+            {/* Premium Language Switcher */}
+            <button
+              onClick={() => {
+                const nextLang = lang === 'en' ? 'so' : 'en';
+                setLang(nextLang);
+                toast.success(nextLang === 'so' ? "Nidaamka waxaa loo beddelay Soomaali! 🇸🇴" : "System switched to English! 🇬🇧");
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-100 hover:bg-zinc-50 hover:border-zinc-200 transition-all font-display text-[9px] font-black uppercase tracking-widest text-[#5D1B54] bg-[#5D1B54]/5 active:scale-95 shadow-sm shrink-0"
+              title="Change Language / Luqadda Beddel"
+            >
+              <span className="text-[11px] leading-none shrink-0">{lang === 'en' ? '🇬🇧' : '🇸🇴'}</span>
+              <span>{lang === 'en' ? 'EN' : 'SO'}</span>
+            </button>
+
             <button 
               onClick={() => setNotificationsOpen(!notificationsOpen)}
               className="relative text-zinc-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-zinc-50 border border-transparent active:scale-95"
@@ -1269,36 +1283,37 @@ const Dashboard = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 px-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2 mt-4">
                   {(isCashier ? [
-                    { label: 'My Sales', value: '$' + cashierTodayRevenue.toLocaleString(), icon: DollarSign, tag: 'INCOME', color: 'bg-emerald-500', shadow: 'shadow-emerald-500/5' },
-                    { label: 'Orders', value: cashierTodayOrders, icon: CheckCircle2, tag: 'ORDERS', color: 'bg-orange-500', shadow: 'shadow-orange-500/5' },
+                    { label: 'My Sales', value: '$' + cashierTodayRevenue.toLocaleString(), icon: DollarSign, color: 'bg-[#10C871]', shadow: 'shadow-[#10C871]/30', subtext: '+12% from yesterday' },
+                    { label: 'Orders', value: cashierTodayOrders, icon: CheckCircle2, color: 'bg-[#EE2A7B]', shadow: 'shadow-[#EE2A7B]/30', subtext: '+4 from yesterday' },
                   ] : [
-                    { label: 'Clients', value: allClients.length, icon: Users, tag: 'CLIENTS', color: 'bg-rose-500', shadow: 'shadow-rose-500/5' },
-                    { label: 'Revenue', value: '$' + todayRevenue.toLocaleString(), icon: DollarSign, tag: 'INCOME', color: 'bg-emerald-500', shadow: 'shadow-emerald-500/5' },
-                    { label: 'Total Expenses', value: '$' + expenses.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0).toLocaleString(), icon: TrendingUp, tag: 'EXPENSES', color: 'bg-rose-400', shadow: 'shadow-rose-400/5' },
-                    { label: 'Profit', value: '$' + (todayRevenue - expenses.filter(e => e.date === todayStr).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)).toLocaleString(), icon: CreditCard, tag: 'PROFIT', color: 'bg-indigo-500', shadow: 'shadow-indigo-500/5' }
-                  ]).map((stat) => (
+                    { label: 'Total Clients', value: allClients.length, icon: Users, color: 'bg-[#EE2A7B]', shadow: 'shadow-[#EE2A7B]/30', subtext: '+12 this month' },
+                    { label: "Today's Appointments", value: bookings.filter(b => b.booking_date === todayStr).length, icon: Calendar, color: 'bg-[#FFC4D9]', shadow: 'shadow-[#FFC4D9]/40', subtext: '+4 from yesterday', iconColor: 'text-[#EE2A7B]' },
+                    { label: "Today's Revenue", value: '$' + todayRevenue.toLocaleString(), icon: DollarSign, color: 'bg-[#10C871]', shadow: 'shadow-[#10C871]/30', subtext: '+18% from yesterday' },
+                    { label: 'Active Rentals', value: dbServices.filter(s => s.category === 'Dress').length, icon: Shirt, color: 'bg-[#AB92FF]', shadow: 'shadow-[#AB92FF]/30', subtext: '+6 this month', iconColor: 'text-[#5D1B54]' }
+                  ]).map((stat, i) => (
                     <div
-                      key={stat.label}
-                      className={cn(
-                        "bg-white p-4 rounded-3xl border border-zinc-50 relative overflow-hidden group transition-all",
-                        stat.shadow
-                      )}
+                      key={i}
+                      className="bg-white p-6 rounded-[24px] border border-zinc-100/50 shadow-[0_4px_24px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:-translate-y-1 relative overflow-hidden group"
                     >
-                      <div className="flex items-center justify-between mb-2 relative z-10">
-                        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-md", stat.color)}>
-                          <stat.icon className="w-4 h-4 stroke-[2.5px]" />
+                      <div className="flex items-start gap-4">
+                        <div className={cn("w-[60px] h-[60px] rounded-full flex items-center justify-center shrink-0 shadow-lg relative z-10 transition-transform group-hover:scale-105", stat.color, stat.shadow)}>
+                          <stat.icon className={cn("w-7 h-7 stroke-[2px]", stat.iconColor || 'text-white')} />
                         </div>
-                        <span className="text-[7px] font-black uppercase tracking-widest text-zinc-300">{stat.tag}</span>
+                        <div className="flex-1 min-w-0 pt-1 relative z-10">
+                          <p className="text-[13px] font-bold text-zinc-500 mb-1 leading-none">{stat.label}</p>
+                          <h3 className="font-display text-[28px] font-black text-zinc-900 tracking-tight leading-none">{stat.value}</h3>
+                        </div>
                       </div>
-                      <div className="relative z-10">
-                        <h3 className="font-display text-xl font-black text-zinc-900 tracking-tight mb-0.5">{stat.value}</h3>
-                        <p className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">{stat.label}</p>
+                      <div className="mt-6 flex items-center gap-1.5 relative z-10">
+                         <span className="text-[11px] font-bold text-zinc-500">{stat.subtext}</span>
+                         <ArrowUpRight className="w-4 h-4 text-[#10C871]" />
                       </div>
                     </div>
                   ))}
                 </div>
+
 
                 {/* Quick Action Hub */}
                 <div className="px-2 mt-4 text-left">
@@ -1948,56 +1963,113 @@ const Dashboard = () => {
 
             {/* Rentals */}
             {activeTab === "rentals" && (
-              <div className="space-y-6 pb-10">
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 px-2">
-                  <div className="space-y-0.5">
-                    <h1 className="font-display text-xl font-black text-zinc-900 leading-none">Dress Rentals</h1>
-                    <p className="font-body text-zinc-400 font-medium text-[9px]">Collection management center</p>
+              <div className="space-y-6 pb-10 text-left px-2">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-zinc-100/50 pb-5">
+                  <div>
+                    <h1 className="font-display text-2xl font-black text-zinc-900 leading-none tracking-tight">Dress Rentals</h1>
+                    <p className="font-body text-zinc-400 font-medium text-[10px] uppercase tracking-wider mt-1.5">Collection management center</p>
                   </div>
-                  <button onClick={() => setModalType('rental')} className="bg-primary text-white px-4 py-2 rounded-lg font-body text-[9px] flex items-center gap-1.5 hover:bg-primary/90 transition-all shadow-md active:scale-95">
-                    <Plus className="w-3 h-3" /> Add Rental
+                  <button 
+                    onClick={() => {
+                      setEditingId(null);
+                      setFormData({ name: "", phone: "", service: "", selectedServices: [], date: "", time: "", amount: "", description: "", duration: "", image: "", color: "", size: "", weight_kg: "", height_cm: "", serviceId: "", email: "", password: "" });
+                      setModalType('rental');
+                    }} 
+                    className="bg-[#5D1B54] text-white px-5 py-2.5 rounded-xl font-body text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-[#5D1B54]/95 transition-all shadow-lg shadow-[#5D1B54]/20 active:scale-95 shrink-0"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[3px]" /> Add Dress
                   </button>
                 </div>
 
-                <div className={cardStyles}>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-gray-100 bg-[#FAFAFA]">
-                          <th className="text-left p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Image</th>
-                          <th className="text-left p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Dress Name</th>
-                          <th className="text-center p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Price</th>
-                          <th className="text-center p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {dbServices.filter(s => s.category === 'Dress').length === 0 ? (
-                          <tr>
-                            <td colSpan={4} className="p-10 text-center text-primary/60 font-body text-[10px]">No dresses yet.</td>
-                          </tr>
-                        ) : dbServices.filter(s => s.category === 'Dress').map((dress, i) => (
-                          <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-primary/[0.02] transition-colors group">
-                            <td className="p-4">
-                              <div className="w-10 h-10 bg-zinc-50 rounded-lg border border-zinc-100 overflow-hidden flex items-center justify-center">
-                                {dress.image_url ? <img src={dress.image_url} className="w-full h-full object-cover" alt="Dress" /> : <Box className="w-4 h-4 text-zinc-200" />}
-                              </div>
-                            </td>
-                            <td className="p-4">
-                              <p className="font-display font-bold text-[10px] text-zinc-900 uppercase tracking-tight">{dress.name}</p>
-                            </td>
-                            <td className="p-4 text-center">
-                              <p className="text-[10px] font-black text-emerald-600">${dress.price}</p>
-                            </td>
-                            <td className="p-4 text-center">
-                              <button onClick={() => deleteService(dress.id)} className="p-2 text-rose-300 hover:text-rose-600 transition-all"><Trash2 className="w-3 h-3" /></button>
-                              <button onClick={() => openEditService(dress, true)} className="p-2 text-zinc-300 hover:text-primary transition-all"><Edit className="w-3 h-3" /></button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                {dbServices.filter(s => s.category === 'Dress').length === 0 ? (
+                    <div className="bg-white border border-zinc-100 rounded-3xl p-16 text-center space-y-4 shadow-sm">
+<div className="w-16 h-16 bg-[#5D1B54]/5 rounded-full flex items-center justify-center mx-auto text-[#5D1B54]">
+                      <Shirt className="w-6 h-6 stroke-[1.5px]" />
+                    </div>
+                    <div>
+                      <h3 className="font-display font-black text-sm text-zinc-950 uppercase tracking-widest">No Dresses in Collection</h3>
+                      <p className="text-[10px] font-medium text-zinc-400 mt-1 uppercase tracking-wide">Start building your premium rental collection today.</p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {dbServices.filter(s => s.category === 'Dress').map((dress, i) => (
+                      <div 
+                        key={i} 
+                        className="group bg-white rounded-3xl border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] overflow-hidden transition-all duration-500 hover:-translate-y-1.5 flex flex-col relative"
+                      >
+                        {/* Premium Image Header with overlays */}
+                        <div className="aspect-[4/5] bg-zinc-50 relative overflow-hidden shrink-0">
+                          {dress.image_url ? (
+                            <img 
+                              src={dress.image_url} 
+                              alt={dress.name} 
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-zinc-300">
+                              <Box className="w-12 h-12 stroke-[1px]" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
+
+                          {/* Quick Actions Floating */}
+                          <div className="absolute top-4 right-4 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                            <button 
+                              onClick={() => openEditService(dress, true)} 
+                              className="p-2 bg-white/95 backdrop-blur-md text-zinc-700 hover:text-[#5D1B54] rounded-xl transition-all shadow-md active:scale-90"
+                              title="Edit Dress"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                            <button 
+                              onClick={() => deleteService(dress.id)} 
+                              className="p-2 bg-white/95 backdrop-blur-md text-rose-500 hover:bg-rose-50 rounded-xl transition-all shadow-md active:scale-90"
+                              title="Delete Dress"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          {/* Price Tag Overlay */}
+                          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
+                            <div>
+                              <span className="text-[7px] font-black tracking-widest text-white/60 uppercase block mb-0.5">RENTAL PRICE</span>
+                              <span className="text-xl font-display font-black text-white leading-none tracking-tight">${dress.price} <span className="text-[9px] font-medium text-white/70">/ Day</span></span>
+                            </div>
+                            <span className="px-2.5 py-1 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">
+                              Available
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Details Area */}
+                        <div className="p-5 flex-1 flex flex-col justify-between">
+                          <div>
+                            <h3 className="font-display font-black text-xs text-zinc-950 uppercase tracking-tight truncate leading-none">
+                              {dress.name}
+                            </h3>
+                            <p className="text-[9px] font-medium text-zinc-400 mt-2 uppercase tracking-wide leading-relaxed line-clamp-2">
+                              {dress.description || "Premium high-quality formal gown from our exclusive collection."}
+                            </p>
+                          </div>
+
+                          {/* Spec badges grid */}
+                          <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-zinc-50">
+                            <div className="bg-zinc-50 border border-zinc-100 p-2 rounded-xl text-center">
+                              <span className="text-[6.5px] font-black text-zinc-400 uppercase tracking-widest block">COLOR</span>
+                              <span className="text-[9px] font-black text-zinc-800 uppercase tracking-tight block mt-0.5">{dress.color || 'Royal Gold'}</span>
+                            </div>
+                            <div className="bg-zinc-50 border border-zinc-100 p-2 rounded-xl text-center">
+                              <span className="text-[6.5px] font-black text-zinc-400 uppercase tracking-widest block">SIZE</span>
+                              <span className="text-[9px] font-black text-zinc-800 uppercase tracking-tight block mt-0.5">{dress.size || 'M / L'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -3325,9 +3397,9 @@ const Dashboard = () => {
                 </div>
               )}
 
-              {(modalType === 'service' || modalType === 'rental') && (
+              {modalType === 'service' && (
                 <div className="space-y-4">
-                  <input className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Item Name" required value={modalType === 'service' ? formData.service : formData.name} onChange={(e) => setFormData(modalType === 'service' ? { ...formData, service: e.target.value } : { ...formData, name: e.target.value })} />
+                  <input className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Item Name" required value={formData.service} onChange={(e) => setFormData({ ...formData, service: e.target.value })} />
                   <div className="grid grid-cols-2 gap-3">
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-zinc-400">$</span>
@@ -3336,13 +3408,6 @@ const Dashboard = () => {
                     <input className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Duration/Stock" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} />
                   </div>
                   <textarea className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none min-h-[80px]" placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-
-                  {modalType === 'rental' && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <input className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Color" value={formData.color} onChange={(e) => setFormData({ ...formData, color: e.target.value })} />
-                      <input className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Size" value={formData.size} onChange={(e) => setFormData({ ...formData, size: e.target.value })} />
-                    </div>
-                  )}
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Image</label>
@@ -3357,6 +3422,67 @@ const Dashboard = () => {
                         </button>
                         <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
                       </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {modalType === 'rental' && (
+                <div className="space-y-5">
+                  <div className="flex flex-col items-center">
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full h-40 rounded-2xl bg-zinc-50 border-2 border-dashed border-zinc-200 hover:border-[#5D1B54]/50 hover:bg-[#5D1B54]/5 flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all group relative shadow-sm"
+                    >
+                      {formData.image ? (
+                        <>
+                          <img src={formData.image} className="w-full h-full object-contain" />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><Upload className="w-3.5 h-3.5" /> Change Photo</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center text-zinc-400 group-hover:text-[#5D1B54] transition-colors">
+                          {uploading ? <Loader2 className="w-8 h-8 animate-spin mb-2 text-[#5D1B54]" /> : <ImagePlus className="w-8 h-8 mb-2 stroke-[1.5px]" />}
+                          <span className="text-[10px] font-black uppercase tracking-widest">{uploading ? 'Uploading...' : 'Upload Dress Photo'}</span>
+                        </div>
+                      )}
+                    </div>
+                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="relative mt-2">
+                      <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Dress Title</label>
+                      <input className="w-full p-4 bg-transparent border-2 border-zinc-100 rounded-xl text-sm font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 shadow-sm relative z-0" placeholder="e.g. Royal Red Velvet Gown" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="relative">
+                        <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Rental Price / Day</label>
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[12px] font-black text-zinc-400 z-10">$</div>
+                        <input type="number" className="w-full p-4 pl-8 bg-transparent border-2 border-zinc-100 rounded-xl text-sm font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 shadow-sm relative z-0" placeholder="0.00" required value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
+                      </div>
+                      <div className="relative">
+                        <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Stock / Qty</label>
+                        <input type="number" className="w-full p-4 bg-transparent border-2 border-zinc-100 rounded-xl text-sm font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 shadow-sm relative z-0" placeholder="1" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="relative">
+                        <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Color</label>
+                        <input className="w-full p-4 bg-transparent border-2 border-zinc-100 rounded-xl text-sm font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 shadow-sm relative z-0" placeholder="e.g. Navy Blue" value={formData.color} onChange={(e) => setFormData({ ...formData, color: e.target.value })} />
+                      </div>
+                      <div className="relative">
+                        <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Size</label>
+                        <input className="w-full p-4 bg-transparent border-2 border-zinc-100 rounded-xl text-sm font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 shadow-sm relative z-0" placeholder="e.g. S, M, L" value={formData.size} onChange={(e) => setFormData({ ...formData, size: e.target.value })} />
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Description & Care Info</label>
+                      <textarea className="w-full p-4 bg-transparent border-2 border-zinc-100 rounded-xl text-xs font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 min-h-[100px] resize-none shadow-sm relative z-0" placeholder="Provide details about the dress material, care instructions, or any notable features..." value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
                     </div>
                   </div>
                 </div>
@@ -3612,4 +3738,3 @@ function WalkinTab({
 };
 
 export default Dashboard;
-
