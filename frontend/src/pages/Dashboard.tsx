@@ -393,7 +393,7 @@ const Dashboard = () => {
   const downloadTransactionsCSV = () => {
     const headers = ["Client Name", "Date", "Service", "Amount", "Status"];
     const rows = allBookings
-      .filter(b => b.status !== 'cancelled')
+      .filter(b => b.status === 'confirmed')
       .map(b => [
         `"${b.name || 'Guest'}"`,
         `"${new Date(b.created_at || b.booking_date).toLocaleDateString()}"`,
@@ -805,26 +805,29 @@ const Dashboard = () => {
     const createdAt = b.created_at ? b.created_at.split('T')[0] : null;
     const bookingDate = new Date(dateStr);
     
-    totalRevenue += amt;
-    
-    // Revenue is counted for "Today" if either it's scheduled for today OR was created/paid today
-    if (dateStr === todayStr || createdAt === todayStr) {
-      todayRevenue += amt;
+    // Only count CONFIRMED bookings in Finance calculations (today, week, month, total, cashier, and daily chart)
+    if (b.status === 'confirmed') {
+      totalRevenue += amt;
+      
+      // Revenue is counted for "Today" if either it's scheduled for today OR was created/paid today
+      if (dateStr === todayStr || createdAt === todayStr) {
+        todayRevenue += amt;
+      }
+
+      if (b.customer_id === user?.id && (dateStr === todayStr || createdAt === todayStr)) {
+        cashierTodayRevenue += amt;
+        cashierTodayOrders++;
+      }
+      
+      if (bookingDate >= startOfWeek) weekRevenue += amt;
+      if (bookingDate >= startOfMonth) monthRevenue += amt;
+
+      revenueByDay[dateStr] = (revenueByDay[dateStr] || 0) + amt;
     }
 
     if (dateStr === todayStr) {
       todaysAptCount++;
     }
-
-    if (b.customer_id === user?.id && (dateStr === todayStr || createdAt === todayStr)) {
-      cashierTodayRevenue += amt;
-      cashierTodayOrders++;
-    }
-    
-    if (bookingDate >= startOfWeek) weekRevenue += amt;
-    if (bookingDate >= startOfMonth) monthRevenue += amt;
-
-    revenueByDay[dateStr] = (revenueByDay[dateStr] || 0) + amt;
     
     const srv = b.service || "Other";
     serviceCount[srv] = (serviceCount[srv] || 0) + 1;
@@ -866,8 +869,8 @@ const Dashboard = () => {
       name: name,
       email: lastBooking?.email || `${name.toLowerCase().replace(/\s/g, '')}@example.com`,
       phone: lastBooking?.phone || "061XXXXXXX",
-visits: userBookings.length,
-      spent: userBookings.reduce((acc, b) => acc + (Number(b.amount) || 0), 0)
+      visits: userBookings.filter(b => b.status === 'confirmed').length,
+      spent: userBookings.filter(b => b.status === 'confirmed').reduce((acc, b) => acc + (Number(b.amount) || 0), 0)
     };
   });
 
@@ -1430,7 +1433,7 @@ visits: userBookings.length,
                             </tr>
                         </thead>
                         <tbody>
-                            {allBookings.slice(0, 10).map((b, i) => (
+                            {allBookings.filter(b => b.status === 'confirmed').slice(0, 10).map((b, i) => (
                             <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
                                 <td className="p-3">
                                 <p className="text-[10px] font-bold text-zinc-900">{b.name}</p>
@@ -2245,7 +2248,7 @@ visits: userBookings.length,
                       </thead>
                       <tbody className="divide-y divide-zinc-100 bg-white">
                         {(() => {
-                          const filtered = allBookings.filter(b => b.status !== 'cancelled').sort((a,b) => {
+                          const filtered = allBookings.filter(b => b.status === 'confirmed').sort((a,b) => {
                             const val = new Date(b.created_at || b.booking_date).getTime() - new Date(a.created_at || a.booking_date).getTime() || ((b.id||0) - (a.id||0));
                             return reportsSortLatest ? val : -val;
                           });
@@ -2295,7 +2298,7 @@ visits: userBookings.length,
                   {/* Footer / Pagination */}
                   <div className="flex items-center justify-between p-6 border-t border-zinc-100">
                     {(() => {
-                      const filtered = allBookings.filter(b => b.status !== 'cancelled');
+                      const filtered = allBookings.filter(b => b.status === 'confirmed');
                       const perPage = 10;
                       const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
                       
