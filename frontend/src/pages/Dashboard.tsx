@@ -2452,132 +2452,227 @@ const Dashboard = () => {
                     )}
 
                     {settingsSubTab === 'database' && (
-                      <div className="max-w-xl mx-auto bg-white rounded-3xl shadow-sm p-6 space-y-6 animate-in fade-in-30 duration-200">
-                        <div className="flex items-center gap-3 border-b border-zinc-50 pb-4">
-                          <div className="p-2.5 bg-rose-50 text-rose-500 rounded-xl">
-                            <Trash2 className="w-5 h-5" />
+                      <div className="max-w-2xl mx-auto bg-white/95 backdrop-blur-xl border border-zinc-100 shadow-[0_20px_50px_rgba(0,0,0,0.03)] rounded-[32px] p-8 space-y-8 animate-in fade-in-50 slide-in-from-bottom-6 duration-500">
+                        {/* Header */}
+                        <div className="flex items-center gap-4 border-b border-zinc-100 pb-5">
+                          <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center border border-rose-100/50 shadow-inner shrink-0 relative group">
+                            <div className="absolute inset-0 bg-rose-500/10 rounded-2xl filter blur-sm group-hover:blur-md transition-all duration-300" />
+                            <Trash2 className="w-5 h-5 text-rose-600 relative z-10 transition-transform group-hover:scale-110" />
                           </div>
                           <div>
-                            <h2 className="text-xs font-black uppercase tracking-wider text-zinc-900">System Data Maintenance</h2>
-                            <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Carefully reset system tables</p>
+                            <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900 leading-tight">Nadiifinta & Dib-u-dejinta Xogta</h2>
+                            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Si taxaddar leh u tirtir qaybaha kala duwan ee xogta nidaamka</p>
                           </div>
                         </div>
 
-                        <div className="bg-rose-50/50 border border-rose-100 p-4 rounded-2xl space-y-2">
-                          <div className="flex items-center gap-2 text-rose-800">
-                            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                            <span className="text-[9px] font-black uppercase tracking-widest">Crucial Warning!</span>
+                        {/* Crucial Warning */}
+                        <div className="relative overflow-hidden bg-gradient-to-br from-rose-50 via-white to-rose-50/20 border border-rose-200/60 p-5 rounded-2xl shadow-[0_4px_20px_rgba(244,63,94,0.05)] space-y-2">
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full filter blur-xl -mr-4 -mt-4" />
+                          <div className="flex items-center gap-2.5 text-rose-800">
+                            <div className="w-6 h-6 rounded-lg bg-rose-500/15 flex items-center justify-center">
+                              <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-rose-800">DIGNIIN XASAASI AH!</span>
                           </div>
-                          <p className="text-[8px] font-bold text-rose-700 uppercase tracking-wide leading-relaxed">
-                            Data deletion is permanent and cannot be undone. Please double check the selected data before clicking the button.
+                          <p className="text-[9.5px] font-bold text-rose-950/80 uppercase tracking-wide leading-relaxed pl-8">
+                            Tirtirista xogta waa mid joogto ah oo aan marnaba dib loo soo celin karin. Fadlan laba jeer hubi qaybaha aad dooratay ka hor inta aanad fulin hawlgalkan.
                           </p>
                         </div>
 
-                        <div className="space-y-3">
-                          <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Select table categories to delete:</label>
+                        {/* Select Category Grid */}
+                        <div className="space-y-4">
+                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Dooro nooca xogta aad rabto in la tirtiro:</label>
                           
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Bookings & POS */}
                             <button
                               type="button"
                               onClick={() => setDbClearBookings(!dbClearBookings)}
                               className={cn(
-                                "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                                "flex items-center gap-4 p-4.5 rounded-2xl border transition-all duration-300 text-left relative overflow-hidden group active:scale-[0.98]",
                                 dbClearBookings 
-                                  ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
-                                  : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                                  ? "bg-rose-50/50 border-rose-300 text-rose-950 shadow-sm shadow-rose-500/5 ring-1 ring-rose-500/30" 
+                                  : "bg-zinc-50/50 hover:bg-zinc-50 border-zinc-200/60 hover:border-zinc-300/80 text-zinc-700"
                               )}
                             >
-                              <div className="space-y-1">
-                                <p className="text-[9px] font-black uppercase tracking-wider">Bookings & POS</p>
-                                <p className="text-[7.5px] font-semibold text-zinc-400 uppercase">Bookings & POS Sales</p>
+                              <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300",
+                                dbClearBookings 
+                                  ? "bg-rose-500/10 border-rose-200 text-rose-600 shadow-sm" 
+                                  : "bg-white border-zinc-200/80 text-zinc-400 group-hover:text-zinc-600"
+                              )}>
+                                <Calendar className="w-4 h-4 stroke-[2.5px]" />
                               </div>
-                              <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0", dbClearBookings ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
-                                {dbClearBookings && <Check className="w-2.5 h-2.5" />}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Ballamaha & POS-ka</p>
+                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">Diiwaanka Ballamaha & Iibka</p>
+                              </div>
+                              <div className={cn(
+                                "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
+                                dbClearBookings 
+                                  ? "bg-rose-600 border-rose-600 text-white shadow-md shadow-rose-600/20 scale-110" 
+                                  : "border-zinc-300/80 bg-white"
+                              )}>
+                                {dbClearBookings ? <Check className="w-3 h-3 stroke-[3px]" /> : <div className="w-1.5 h-1.5 rounded-full bg-transparent group-hover:bg-zinc-200 transition-colors" />}
                               </div>
                             </button>
 
+                            {/* Expenses */}
                             <button
                               type="button"
                               onClick={() => setDbClearExpenses(!dbClearExpenses)}
                               className={cn(
-                                "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                                "flex items-center gap-4 p-4.5 rounded-2xl border transition-all duration-300 text-left relative overflow-hidden group active:scale-[0.98]",
                                 dbClearExpenses 
-                                  ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
-                                  : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                                  ? "bg-rose-50/50 border-rose-300 text-rose-950 shadow-sm shadow-rose-500/5 ring-1 ring-rose-500/30" 
+                                  : "bg-zinc-50/50 hover:bg-zinc-50 border-zinc-200/60 hover:border-zinc-300/80 text-zinc-700"
                               )}
                             >
-                              <div className="space-y-1">
-                                <p className="text-[9px] font-black uppercase tracking-wider">Expenses</p>
-                                <p className="text-[7.5px] font-semibold text-zinc-400 uppercase">System Expenses</p>
+                              <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300",
+                                dbClearExpenses 
+                                  ? "bg-rose-500/10 border-rose-200 text-rose-600 shadow-sm" 
+                                  : "bg-white border-zinc-200/80 text-zinc-400 group-hover:text-zinc-600"
+                              )}>
+                                <CreditCard className="w-4 h-4 stroke-[2.5px]" />
                               </div>
-                              <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0", dbClearExpenses ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
-                                {dbClearExpenses && <Check className="w-2.5 h-2.5" />}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Kharashaadka</p>
+                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">Diiwaanka kharashyada nidaamka</p>
+                              </div>
+                              <div className={cn(
+                                "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
+                                dbClearExpenses 
+                                  ? "bg-rose-600 border-rose-600 text-white shadow-md shadow-rose-600/20 scale-110" 
+                                  : "border-zinc-300/80 bg-white"
+                              )}>
+                                {dbClearExpenses ? <Check className="w-3 h-3 stroke-[3px]" /> : <div className="w-1.5 h-1.5 rounded-full bg-transparent group-hover:bg-zinc-200 transition-colors" />}
                               </div>
                             </button>
 
+                            {/* Customers */}
                             <button
                               type="button"
                               onClick={() => setDbClearCustomers(!dbClearCustomers)}
                               className={cn(
-                                "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                                "flex items-center gap-4 p-4.5 rounded-2xl border transition-all duration-300 text-left relative overflow-hidden group active:scale-[0.98]",
                                 dbClearCustomers 
-                                  ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
-                                  : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                                  ? "bg-rose-50/50 border-rose-300 text-rose-950 shadow-sm shadow-rose-500/5 ring-1 ring-rose-500/30" 
+                                  : "bg-zinc-50/50 hover:bg-zinc-50 border-zinc-200/60 hover:border-zinc-300/80 text-zinc-700"
                               )}
                             >
-                              <div className="space-y-1">
-                                <p className="text-[9px] font-black uppercase tracking-wider">Customers</p>
-                                <p className="text-[7.5px] font-semibold text-zinc-400 uppercase">Customer List</p>
+                              <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300",
+                                dbClearCustomers 
+                                  ? "bg-rose-500/10 border-rose-200 text-rose-600 shadow-sm" 
+                                  : "bg-white border-zinc-200/80 text-zinc-400 group-hover:text-zinc-600"
+                              )}>
+                                <Users className="w-4 h-4 stroke-[2.5px]" />
                               </div>
-                              <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0", dbClearCustomers ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
-                                {dbClearCustomers && <Check className="w-2.5 h-2.5" />}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Macaamiisha</p>
+                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">Liiska Macaamiisha la diiwaan geliyey</p>
+                              </div>
+                              <div className={cn(
+                                "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
+                                dbClearCustomers 
+                                  ? "bg-rose-600 border-rose-600 text-white shadow-md shadow-rose-600/20 scale-110" 
+                                  : "border-zinc-300/80 bg-white"
+                              )}>
+                                {dbClearCustomers ? <Check className="w-3 h-3 stroke-[3px]" /> : <div className="w-1.5 h-1.5 rounded-full bg-transparent group-hover:bg-zinc-200 transition-colors" />}
                               </div>
                             </button>
 
+                            {/* Services & Products */}
                             <button
                               type="button"
                               onClick={() => setDbClearServices(!dbClearServices)}
                               className={cn(
-                                "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                                "flex items-center gap-4 p-4.5 rounded-2xl border transition-all duration-300 text-left relative overflow-hidden group active:scale-[0.98]",
                                 dbClearServices 
-                                  ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
-                                  : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                                  ? "bg-rose-50/50 border-rose-300 text-rose-950 shadow-sm shadow-rose-500/5 ring-1 ring-rose-500/30" 
+                                  : "bg-zinc-50/50 hover:bg-zinc-50 border-zinc-200/60 hover:border-zinc-300/80 text-zinc-700"
                               )}
                             >
-                              <div className="space-y-1">
-                                <p className="text-[9px] font-black uppercase tracking-wider">Services & Products</p>
-                                <p className="text-[7.5px] font-semibold text-zinc-400 uppercase">Catalog Services & Products</p>
+                              <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300",
+                                dbClearServices 
+                                  ? "bg-rose-500/10 border-rose-200 text-rose-600 shadow-sm" 
+                                  : "bg-white border-zinc-200/80 text-zinc-400 group-hover:text-zinc-600"
+                              )}>
+                                <Scissors className="w-4 h-4 stroke-[2.5px]" />
                               </div>
-                              <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0", dbClearServices ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
-                                {dbClearServices && <Check className="w-2.5 h-2.5" />}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Adeegyada & Alaabta</p>
+                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">Adeegyada & Alaabta diiwaangashan</p>
+                              </div>
+                              <div className={cn(
+                                "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
+                                dbClearServices 
+                                  ? "bg-rose-600 border-rose-600 text-white shadow-md shadow-rose-600/20 scale-110" 
+                                  : "border-zinc-300/80 bg-white"
+                              )}>
+                                {dbClearServices ? <Check className="w-3 h-3 stroke-[3px]" /> : <div className="w-1.5 h-1.5 rounded-full bg-transparent group-hover:bg-zinc-200 transition-colors" />}
                               </div>
                             </button>
                           </div>
                         </div>
 
-                        <div className="space-y-2 pt-2">
-                          <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Confirm Deletion:</label>
-                          <p className="text-[7.5px] font-bold text-zinc-500 uppercase tracking-wider pl-1">
-                            Please type the word <span className="text-rose-600 font-extrabold font-mono text-[9px] bg-rose-50 px-1 py-0.5 rounded border border-rose-200/50">CLEAR</span> to authorize data deletion.
+                        {/* Confirmation text */}
+                        <div className="space-y-4 pt-4 border-t border-zinc-100">
+                          <div className="flex justify-between items-center pl-1">
+                            <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Xaqiiji Tirtirista:</label>
+                            {dbConfirmationText.toUpperCase() === 'CLEAR' ? (
+                              <span className="text-[8.5px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 uppercase tracking-widest flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3" /> Furan (Unlocked)
+                              </span>
+                            ) : (
+                              <span className="text-[8.5px] font-black text-rose-400 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100/50 uppercase tracking-widest flex items-center gap-1">
+                                <XCircle className="w-3 h-3" /> Qufulan (Locked)
+                              </span>
+                            )}
+                          </div>
+                          
+                          <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider pl-1">
+                            Fadlan ku qor kelmada <span className="text-rose-600 font-extrabold font-mono text-[9.5px] bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200/50">CLEAR</span> sanduuqa hoose si aad u xaqiijiso tirtirista xogta.
                           </p>
-                          <input 
-                            type="text" 
-                            placeholder="Type CLEAR here..."
-                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200 focus:border-rose-600 focus:ring-1 focus:ring-rose-600 outline-none transition-all duration-200 text-zinc-900 placeholder:text-zinc-300" 
-                            value={dbConfirmationText} 
-                            onChange={(e) => setDbConfirmationText(e.target.value)}
-                          />
+                          
+                          <div className="relative group">
+                            <input 
+                              type="text" 
+                              placeholder="Qor CLEAR halkan..."
+                              className={cn(
+                                "w-full p-4 pl-5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-2xl text-xs font-black border focus:ring-1 outline-none transition-all duration-300 text-zinc-900 placeholder:text-zinc-300",
+                                dbConfirmationText.toUpperCase() === 'CLEAR'
+                                  ? "border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500"
+                                  : "border-zinc-200/80 focus:border-rose-500 focus:ring-rose-500"
+                              )}
+                              value={dbConfirmationText} 
+                              onChange={(e) => setDbConfirmationText(e.target.value)}
+                            />
+                          </div>
                         </div>
 
+                        {/* Submit Button */}
                         <button 
                           onClick={handleClearDatabase}
                           disabled={dbIsClearing || dbConfirmationText.toUpperCase() !== 'CLEAR' || (!dbClearBookings && !dbClearExpenses && !dbClearCustomers && !dbClearServices)}
-                          className="w-full py-3.5 bg-rose-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 active:scale-[0.98] transition-all shadow-xl shadow-rose-600/10 mt-2 flex items-center justify-center gap-2"
+                          className={cn(
+                            "w-full py-4.5 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2",
+                            dbConfirmationText.toUpperCase() === 'CLEAR' && (dbClearBookings || dbClearExpenses || dbClearCustomers || dbClearServices)
+                              ? "bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white shadow-xl shadow-rose-600/20 cursor-pointer"
+                              : "bg-zinc-100 border border-zinc-200/50 text-zinc-400 cursor-not-allowed"
+                          )}
                         >
-                          {dbIsClearing ? "Deleting in progress..." : (
+                          {dbIsClearing ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              Xogta waa la nadiifinayaa...
+                            </>
+                          ) : (
                             <>
                               <Trash2 className="w-3.5 h-3.5" />
-                              Delete Selected Data
+                              Nadiifi Xogta La Doortay
                             </>
                           )}
                         </button>
