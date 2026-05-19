@@ -2143,432 +2143,448 @@ const Dashboard = () => {
 
             {/* System Settings Tab */}
             {activeTab === "settings" && (
-              <div className="space-y-8 pb-12 px-2 max-w-6xl mx-auto">
+              <div className="space-y-6 pb-12 px-2 max-w-6xl mx-auto text-left">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-zinc-100 pb-5">
                   <div>
-                    <h1 className="font-display text-2xl font-black text-zinc-950 tracking-tight">Settings</h1>
-                    <p className="font-body text-zinc-400 font-medium text-[10px] mt-0.5 uppercase tracking-wider">Configure your salon system preferences</p>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 bg-zinc-100/80 p-1 rounded-xl border border-zinc-200 shadow-sm">
-                    {[
-                      { id: 'business', label: 'Salon Profile', icon: Store },
-                      { id: 'security', label: 'Security & Access', icon: ShieldCheck },
-                      { id: 'database', label: 'Data Reset', icon: Trash2 },
-                    ].map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setSettingsSubTab(tab.id as any)}
-                        className={cn(
-                          "flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-                          settingsSubTab === tab.id 
-                            ? "bg-zinc-900 text-white shadow-md transform scale-102" 
-                            : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/50"
-                        )}
-                      >
-                        <tab.icon className={cn("w-3.5 h-3.5", settingsSubTab === tab.id ? "text-white" : "text-zinc-400")} />
-                        {tab.label}
-                      </button>
-                    ))}
+                    <h1 className="font-display text-2xl font-black text-zinc-950 tracking-tight">System Settings</h1>
+                    <p className="font-body text-zinc-400 font-medium text-[10px] mt-0.5 uppercase tracking-wider">Configure your salon's core configuration and preferences</p>
                   </div>
                 </div>
 
-                {settingsSubTab === 'business' && (
-                  <div className="grid md:grid-cols-2 gap-8 animate-in fade-in-50 slide-in-from-bottom-5 duration-300">
-                    {/* Salon Identity Card */}
-                    <div className={cardStyles + " p-8 space-y-6 bg-white shadow-xl hover:shadow-2xl transition-all duration-300 border-zinc-100/50"}>
-                      <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
-                        <div className="p-2.5 bg-zinc-900 text-white rounded-xl shadow-md">
-                          <Store className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h2 className="text-xs font-black uppercase tracking-widest text-zinc-950">Salon Identity</h2>
-                          <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Publicly visible details</p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Name</label>
-                          <input 
-                            type="text" 
-                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all duration-200 text-zinc-900" 
-                            value={bizName} 
-                            onChange={(e) => setBizName(e.target.value)}
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Contact Phone</label>
-                          <input 
-                            type="text" 
-                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all duration-200 text-zinc-900" 
-                            value={bizPhone} 
-                            onChange={(e) => setBizPhone(e.target.value)}
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Email</label>
-                          <input 
-                            type="email" 
-                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all duration-200 text-zinc-900" 
-                            value={bizEmail} 
-                            onChange={(e) => setBizEmail(e.target.value)}
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Physical Address</label>
-                          <input 
-                            type="text" 
-                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all duration-200 text-zinc-900" 
-                            value={bizAddress} 
-                            onChange={(e) => setBizAddress(e.target.value)}
-                          />
-                        </div>
-
-                        <button 
-                          onClick={() => {
-                            localStorage.setItem('bizName', bizName);
-                            localStorage.setItem('bizPhone', bizPhone);
-                            localStorage.setItem('bizEmail', bizEmail);
-                            localStorage.setItem('bizAddress', bizAddress);
-                            toast.success("Salon Identity Successfully Saved! ✨");
-                          }}
-                          className="bg-zinc-900 text-white w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-850 active:scale-[0.98] transition-all shadow-lg shadow-zinc-900/10 mt-2"
+                <div className="grid lg:grid-cols-12 gap-8 items-start">
+                  {/* Left Column: Vertical Premium Navigation Options */}
+                  <div className="lg:col-span-4 bg-white border border-zinc-100 rounded-3xl shadow-sm p-4 space-y-2">
+                    {[
+                      { id: 'business', label: 'Salon Profile', desc: 'Identity details, opening hours & capacity limits', icon: Store, color: 'bg-primary/10 text-primary' },
+                      { id: 'security', label: 'Security & Access', desc: 'Manage password, credentials & active session info', icon: ShieldCheck, color: 'text-indigo-500 bg-indigo-50' },
+                      { id: 'database', label: 'Data Reset', desc: 'Clean system tables, reset expenses, client records', icon: Trash2, color: 'bg-rose-50 text-rose-500' },
+                    ].map(tab => {
+                      const isSubSelected = settingsSubTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setSettingsSubTab(tab.id as any)}
+                          className={cn(
+                            "w-full flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 text-left border relative group",
+                            isSubSelected 
+                              ? "bg-primary/5 border-primary shadow-sm ring-1 ring-primary" 
+                              : "bg-white border-transparent hover:border-zinc-200/50 hover:bg-zinc-50/50"
+                          )}
                         >
-                          Save Identity
+                          <div className={cn("p-2.5 rounded-xl shrink-0 transition-colors", tab.color)}>
+                            <tab.icon className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h3 className={cn("text-xs font-black uppercase tracking-wider", isSubSelected ? "text-primary" : "text-zinc-800")}>
+                              {tab.label}
+                            </h3>
+                            <p className="text-[9px] font-medium text-zinc-400 mt-1 uppercase leading-normal">
+                              {tab.desc}
+                            </p>
+                          </div>
                         </button>
-                      </div>
-                    </div>
+                      );
+                    })}
+                  </div>
 
-                    {/* Operational Configuration Card */}
-                    <div className={cardStyles + " p-8 space-y-6 bg-white shadow-xl hover:shadow-2xl transition-all duration-300 border-zinc-100/50"}>
-                      <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
-                        <div className="p-2.5 bg-primary text-white rounded-xl shadow-md">
-                          <Clock className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h2 className="text-xs font-black uppercase tracking-widest text-zinc-950">Operations & Limits</h2>
-                          <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Control operational thresholds</p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Opening Time</label>
-                            <input 
-                              type="time" 
-                              className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all text-zinc-900" 
-                              value={bizHoursStart} 
-                              onChange={(e) => setBizHoursStart(e.target.value)}
-                            />
-                          </div>
-
-                          <div className="space-y-1">
-                            <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Closing Time</label>
-                            <input 
-                              type="time" 
-                              className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 outline-none transition-all text-zinc-900" 
-                              value={bizHoursEnd} 
-                              onChange={(e) => setBizHoursEnd(e.target.value)}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Booking Double-Booking Cap */}
-                        <div className="space-y-2 bg-[#FAFAFA] p-4 rounded-xl border border-zinc-100/50 mt-2">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <label className="text-[10px] font-black text-zinc-950 uppercase tracking-widest">Double-Booking Cap</label>
-                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Maximum bookings allowed per slot</p>
+                  {/* Right Column: Selected settings tab block */}
+                  <div className="lg:col-span-8 space-y-6">
+                    {settingsSubTab === 'business' && (
+                      <div className="grid md:grid-cols-2 gap-6 animate-in fade-in-30 duration-200">
+                        {/* Salon Identity Card */}
+                        <div className="bg-white border border-zinc-100 rounded-3xl shadow-sm p-6 space-y-6">
+                          <div className="flex items-center gap-3 border-b border-zinc-50 pb-4">
+                            <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
+                              <Store className="w-5 h-5" />
                             </div>
-                            <input 
-                              type="number" 
-                              min="1"
-                              max="10"
-                              className="w-16 p-2 bg-white text-center rounded-lg text-xs font-black border border-zinc-200 focus:border-zinc-950 outline-none"
-                              value={maxBookingsPerSlot} 
-                              onChange={(e) => setMaxBookingsPerSlot(parseInt(e.target.value, 10) || 1)}
-                            />
+                            <div>
+                              <h2 className="text-xs font-black uppercase tracking-wider text-zinc-900">Salon Identity</h2>
+                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Manage Salon contact information</p>
+                            </div>
                           </div>
-                          
-                          <div className="flex items-start gap-2 bg-amber-50/50 border border-amber-100 p-2.5 rounded-lg mt-2">
-                            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                            <p className="text-[7.5px] font-bold text-amber-700 uppercase tracking-wide leading-relaxed">
-                              Attention: When bookings for the same time slot are full (max: {maxBookingsPerSlot}), that slot will automatically become disabled.
+
+                          <div className="space-y-4">
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Name</label>
+                              <input 
+                                type="text" 
+                                className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
+                                value={bizName} 
+                                onChange={(e) => setBizName(e.target.value)}
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Contact Phone</label>
+                              <input 
+                                type="text" 
+                                className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
+                                value={bizPhone} 
+                                onChange={(e) => setBizPhone(e.target.value)}
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Email</label>
+                              <input 
+                                type="email" 
+                                className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
+                                value={bizEmail} 
+                                onChange={(e) => setBizEmail(e.target.value)}
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Physical Address</label>
+                              <input 
+                                type="text" 
+                                className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
+                                value={bizAddress} 
+                                onChange={(e) => setBizAddress(e.target.value)}
+                              />
+                            </div>
+
+                            <button 
+                              onClick={() => {
+                                localStorage.setItem('bizName', bizName);
+                                localStorage.setItem('bizPhone', bizPhone);
+                                localStorage.setItem('bizEmail', bizEmail);
+                                localStorage.setItem('bizAddress', bizAddress);
+                                toast.success("Salon Identity Saved! ✨");
+                              }}
+                              className="bg-primary text-white w-full py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary/95 active:scale-[0.98] transition-all shadow-lg shadow-primary/10 mt-2"
+                            >
+                              Save Identity
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Operational Hours Card */}
+                        <div className="bg-white border border-zinc-100 rounded-3xl shadow-sm p-6 space-y-6">
+                          <div className="flex items-center gap-3 border-b border-zinc-50 pb-4">
+                            <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
+                              <Clock className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h2 className="text-xs font-black uppercase tracking-wider text-zinc-900">Operations & Limits</h2>
+                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Control workhours & booking limits</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Opening Time</label>
+                                <input 
+                                  type="time" 
+                                  className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-zinc-900" 
+                                  value={bizHoursStart} 
+                                  onChange={(e) => setBizHoursStart(e.target.value)}
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Closing Time</label>
+                                <input 
+                                  type="time" 
+                                  className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-zinc-900" 
+                                  value={bizHoursEnd} 
+                                  onChange={(e) => setBizHoursEnd(e.target.value)}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Booking Double-Booking Cap */}
+                            <div className="space-y-2 bg-[#FAFAFA] p-4 rounded-2xl border border-zinc-100/80 mt-2">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <label className="text-[9px] font-black text-zinc-950 uppercase tracking-widest">Double-Booking Cap</label>
+                                  <p className="text-[7.5px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Max bookings per time slot</p>
+                                </div>
+                                <input 
+                                  type="number" 
+                                  min="1"
+                                  max="10"
+                                  className="w-14 p-2 bg-white text-center rounded-lg text-xs font-black border border-zinc-200 focus:border-primary outline-none"
+                                  value={maxBookingsPerSlot} 
+                                  onChange={(e) => setMaxBookingsPerSlot(parseInt(e.target.value, 10) || 1)}
+                                />
+                              </div>
+                              
+                              <div className="flex items-start gap-2 bg-amber-50/50 border border-amber-100 p-2.5 rounded-xl mt-2">
+                                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                                <p className="text-[7.5px] font-bold text-amber-700 uppercase tracking-wide leading-relaxed">
+                                  Attention: When bookings for the same time slot are full (max: {maxBookingsPerSlot}), that slot will automatically become disabled.
+                                </p>
+                              </div>
+                            </div>
+
+                            <button 
+                              onClick={() => {
+                                localStorage.setItem('bizHoursStart', bizHoursStart);
+                                localStorage.setItem('bizHoursEnd', bizHoursEnd);
+                                localStorage.setItem('maxBookingsPerSlot', maxBookingsPerSlot.toString());
+                                toast.success("Operational Configuration Saved! 🚀");
+                              }}
+                              className="bg-primary text-white w-full py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary/95 active:scale-[0.98] transition-all shadow-lg shadow-primary/10 mt-4"
+                            >
+                              Save Configurations
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {settingsSubTab === 'security' && (
+                      <div className="grid md:grid-cols-2 gap-6 animate-in fade-in-30 duration-200">
+                        {/* Change Password Card */}
+                        <div className="bg-white border border-zinc-100 rounded-3xl shadow-sm p-6 space-y-6">
+                          <div className="flex items-center gap-3 border-b border-zinc-50 pb-4">
+                            <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
+                              <ShieldCheck className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h2 className="text-xs font-black uppercase tracking-wider text-zinc-900">Change Password</h2>
+                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Secure your admin credentials</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">New Password</label>
+                              <input 
+                                type="password" 
+                                placeholder="••••••••"
+                                className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all duration-200 text-zinc-900" 
+                                value={newPassword} 
+                                onChange={(e) => setNewPassword(e.target.value)}
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Confirm New Password</label>
+                              <input 
+                                type="password" 
+                                placeholder="••••••••"
+                                className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all duration-200 text-zinc-900" 
+                                value={confirmPassword} 
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                              />
+                            </div>
+
+                            <button 
+                              onClick={async () => {
+                                if (!newPassword) {
+                                  toast.error("Please enter your new password!");
+                                  return;
+                                }
+                                if (newPassword !== confirmPassword) {
+                                  toast.error("Error: Passwords do not match!");
+                                  return;
+                                }
+                                try {
+                                  const { error } = await supabase.auth.updateUser({ password: newPassword });
+                                  if (error) throw error;
+                                  toast.success("Password updated successfully! 🔐");
+                                  setNewPassword("");
+                                  setConfirmPassword("");
+                                } catch (err: any) {
+                                  toast.error("Failed to update password: " + err.message);
+                                }
+                              }}
+                              className="bg-rose-600 text-white w-full py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 active:scale-[0.98] transition-all shadow-lg shadow-rose-600/10 mt-4"
+                            >
+                              Update Password
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Security Overview / Session Card */}
+                        <div className="bg-[#121214] border border-zinc-800 text-white rounded-3xl shadow-xl p-6 flex flex-col justify-between">
+                          <div className="space-y-6">
+                            <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
+                              <div className="p-2.5 bg-white/10 text-white rounded-xl">
+                                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                              </div>
+                              <div>
+                                <h2 className="text-xs font-black uppercase tracking-wider text-white">Security Status</h2>
+                                <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Real-time session details</p>
+                              </div>
+                            </div>
+
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between bg-white/5 p-3.5 rounded-xl border border-white/5">
+                                <div>
+                                  <p className="text-[8px] font-black uppercase text-zinc-400">Current Login User</p>
+                                  <p className="text-xs font-bold mt-1 text-white">{activeEmail || "admin@example.com"}</p>
+                                </div>
+                                <span className="text-[7px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-md">ADMIN ACC</span>
+                              </div>
+
+                              <div className="flex items-center justify-between bg-white/5 p-3.5 rounded-xl border border-white/5">
+                                <div>
+                                  <p className="text-[8px] font-black uppercase text-zinc-400">Session Status</p>
+                                  <p className="text-xs font-bold mt-1 text-white">Connected from Mogadishu</p>
+                                </div>
+                                <span className="inline-flex items-center gap-1.5 text-[7px] font-black text-emerald-400 uppercase tracking-widest">
+                                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                                  Active Now
+                                </span>
+                              </div>
+
+                              <div className="flex items-center justify-between bg-white/5 p-3.5 rounded-xl border border-white/5">
+                                <div>
+                                  <p className="text-[8px] font-black uppercase text-zinc-400">Two-Factor Authentication</p>
+                                  <p className="text-xs font-bold mt-1 text-white">OTP Verification via Email</p>
+                                </div>
+                                <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded-md">ENABLED</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-6 border-t border-zinc-900 mt-6">
+                            <p className="text-[7px] font-bold text-zinc-500 uppercase tracking-widest text-center">
+                              Secured by Supabase Authentication Protocol
                             </p>
                           </div>
                         </div>
-
-                        <button 
-                          onClick={() => {
-                            localStorage.setItem('bizHoursStart', bizHoursStart);
-                            localStorage.setItem('bizHoursEnd', bizHoursEnd);
-                            localStorage.setItem('maxBookingsPerSlot', maxBookingsPerSlot.toString());
-                            toast.success("Operational Configuration Saved Successfully! 🚀");
-                          }}
-                          className="bg-zinc-900 text-white w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-850 active:scale-[0.98] transition-all shadow-lg shadow-zinc-900/10 mt-4"
-                        >
-                          Save Configurations
-                        </button>
                       </div>
-                    </div>
-                  </div>
-                )}
+                    )}
 
-                {settingsSubTab === 'security' && (
-                  <div className="grid md:grid-cols-2 gap-8 animate-in fade-in-50 slide-in-from-bottom-5 duration-300">
-                    {/* Change Password Card */}
-                    <div className={cardStyles + " p-8 space-y-6 bg-white shadow-xl hover:shadow-2xl transition-all duration-300 border-zinc-100/50"}>
-                      <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
-                        <div className="p-2.5 bg-rose-600 text-white rounded-xl shadow-md">
-                          <ShieldCheck className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h2 className="text-xs font-black uppercase tracking-widest text-zinc-950">Change Password</h2>
-                          <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Secure your admin credentials</p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">New Password</label>
-                          <input 
-                            type="password" 
-                            style={{ WebkitTextSecurity: 'disc' } as any}
-                            placeholder="••••••••"
-                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all duration-200 text-zinc-900" 
-                            value={newPassword} 
-                            onChange={(e) => setNewPassword(e.target.value)}
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Confirm New Password</label>
-                          <input 
-                            type="password" 
-                            style={{ WebkitTextSecurity: 'disc' } as any}
-                            placeholder="••••••••"
-                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all duration-200 text-zinc-900" 
-                            value={confirmPassword} 
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                          />
-                        </div>
-
-                        <button 
-                          onClick={async () => {
-                            if (!newPassword) {
-                              toast.error("Please enter your new password!");
-                              return;
-                            }
-                            if (newPassword !== confirmPassword) {
-                              toast.error("Error: Passwords do not match!");
-                              return;
-                            }
-                            try {
-                              const { error } = await supabase.auth.updateUser({ password: newPassword });
-                              if (error) throw error;
-                              toast.success("Password updated successfully! 🔐");
-                              setNewPassword("");
-                              setConfirmPassword("");
-                            } catch (err: any) {
-                              toast.error("Failed to update password: " + err.message);
-                            }
-                          }}
-                          className="bg-[#83215D] text-white w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#721b50] active:scale-[0.98] transition-all shadow-lg shadow-[#83215D]/10 mt-4"
-                        >
-                          Update Password
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Security Overview / Session Card */}
-                    <div className={cardStyles + " p-8 space-y-6 bg-zinc-950 border-zinc-800 text-white shadow-xl flex flex-col justify-between"}>
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
-                          <div className="p-2.5 bg-white/10 text-white rounded-xl">
-                            <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                    {settingsSubTab === 'database' && (
+                      <div className="max-w-xl mx-auto bg-white rounded-3xl shadow-sm p-6 space-y-6 animate-in fade-in-30 duration-200">
+                        <div className="flex items-center gap-3 border-b border-zinc-50 pb-4">
+                          <div className="p-2.5 bg-rose-50 text-rose-500 rounded-xl">
+                            <Trash2 className="w-5 h-5" />
                           </div>
                           <div>
-                            <h2 className="text-xs font-black uppercase tracking-widest text-white">Security Status</h2>
-                            <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Real-time session security</p>
+                            <h2 className="text-xs font-black uppercase tracking-wider text-zinc-900">System Data Maintenance</h2>
+                            <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Carefully reset system tables</p>
                           </div>
                         </div>
 
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
-                            <div>
-                              <p className="text-[9px] font-black uppercase text-zinc-400">Current Login User</p>
-                              <p className="text-xs font-bold mt-1 text-white">{activeEmail || "admin@example.com"}</p>
-                            </div>
-                            <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-1 rounded-full">ADMIN ACC</span>
+                        <div className="bg-rose-50/50 border border-rose-100 p-4 rounded-2xl space-y-2">
+                          <div className="flex items-center gap-2 text-rose-800">
+                            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                            <span className="text-[9px] font-black uppercase tracking-widest">Crucial Warning!</span>
                           </div>
+                          <p className="text-[8px] font-bold text-rose-700 uppercase tracking-wide leading-relaxed">
+                            Data deletion is permanent and cannot be undone. Please double check the selected data before clicking the button.
+                          </p>
+                        </div>
 
-                          <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
-                            <div>
-                              <p className="text-[9px] font-black uppercase text-zinc-400">Session Status</p>
-                              <p className="text-xs font-bold mt-1 text-white">Connected from Mogadishu</p>
-                            </div>
-                            <span className="inline-flex items-center gap-1.5 text-[8px] font-black text-emerald-400 uppercase tracking-widest">
-                              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-                              Active Now
-                            </span>
-                          </div>
+                        <div className="space-y-3">
+                          <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Select table categories to delete:</label>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <button
+                              type="button"
+                              onClick={() => setDbClearBookings(!dbClearBookings)}
+                              className={cn(
+                                "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                                dbClearBookings 
+                                  ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
+                                  : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                              )}
+                            >
+                              <div className="space-y-1">
+                                <p className="text-[9px] font-black uppercase tracking-wider">Bookings & POS</p>
+                                <p className="text-[7.5px] font-semibold text-zinc-400 uppercase">Bookings & POS Sales</p>
+                              </div>
+                              <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0", dbClearBookings ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
+                                {dbClearBookings && <Check className="w-2.5 h-2.5" />}
+                              </div>
+                            </button>
 
-                          <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
-                            <div>
-                              <p className="text-[9px] font-black uppercase text-zinc-400">Two-Factor Authentication</p>
-                              <p className="text-xs font-bold mt-1 text-white">OTP Verification via Email</p>
-                            </div>
-                            <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest bg-white/10 px-2.5 py-1 rounded-full">ENABLED</span>
+                            <button
+                              type="button"
+                              onClick={() => setDbClearExpenses(!dbClearExpenses)}
+                              className={cn(
+                                "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                                dbClearExpenses 
+                                  ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
+                                  : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                              )}
+                            >
+                              <div className="space-y-1">
+                                <p className="text-[9px] font-black uppercase tracking-wider">Expenses</p>
+                                <p className="text-[7.5px] font-semibold text-zinc-400 uppercase">System Expenses</p>
+                              </div>
+                              <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0", dbClearExpenses ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
+                                {dbClearExpenses && <Check className="w-2.5 h-2.5" />}
+                              </div>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setDbClearCustomers(!dbClearCustomers)}
+                              className={cn(
+                                "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                                dbClearCustomers 
+                                  ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
+                                  : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                              )}
+                            >
+                              <div className="space-y-1">
+                                <p className="text-[9px] font-black uppercase tracking-wider">Customers</p>
+                                <p className="text-[7.5px] font-semibold text-zinc-400 uppercase">Customer List</p>
+                              </div>
+                              <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0", dbClearCustomers ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
+                                {dbClearCustomers && <Check className="w-2.5 h-2.5" />}
+                              </div>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setDbClearServices(!dbClearServices)}
+                              className={cn(
+                                "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
+                                dbClearServices 
+                                  ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
+                                  : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
+                              )}
+                            >
+                              <div className="space-y-1">
+                                <p className="text-[9px] font-black uppercase tracking-wider">Services & Products</p>
+                                <p className="text-[7.5px] font-semibold text-zinc-400 uppercase">Catalog Services & Products</p>
+                              </div>
+                              <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0", dbClearServices ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
+                                {dbClearServices && <Check className="w-2.5 h-2.5" />}
+                              </div>
+                            </button>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="pt-6 border-t border-zinc-900 mt-6">
-                        <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest text-center">
-                          Secured by Supabase Authentication Protocol
-                        </p>
+                        <div className="space-y-2 pt-2">
+                          <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Confirm Deletion:</label>
+                          <p className="text-[7.5px] font-bold text-zinc-500 uppercase tracking-wider pl-1">
+                            Please type the word <span className="text-rose-600 font-extrabold font-mono text-[9px] bg-rose-50 px-1 py-0.5 rounded border border-rose-200/50">CLEAR</span> to authorize data deletion.
+                          </p>
+                          <input 
+                            type="text" 
+                            placeholder="Type CLEAR here..."
+                            className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200 focus:border-rose-600 focus:ring-1 focus:ring-rose-600 outline-none transition-all duration-200 text-zinc-900 placeholder:text-zinc-300" 
+                            value={dbConfirmationText} 
+                            onChange={(e) => setDbConfirmationText(e.target.value)}
+                          />
+                        </div>
+
+                        <button 
+                          onClick={handleClearDatabase}
+                          disabled={dbIsClearing || dbConfirmationText.toUpperCase() !== 'CLEAR' || (!dbClearBookings && !dbClearExpenses && !dbClearCustomers && !dbClearServices)}
+                          className="w-full py-3.5 bg-rose-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 active:scale-[0.98] transition-all shadow-xl shadow-rose-600/10 mt-2 flex items-center justify-center gap-2"
+                        >
+                          {dbIsClearing ? "Deleting in progress..." : (
+                            <>
+                              <Trash2 className="w-3.5 h-3.5" />
+                              Delete Selected Data
+                            </>
+                          )}
+                        </button>
                       </div>
-                    </div>
+                    )}
                   </div>
-                )}
-
-                {settingsSubTab === 'database' && (
-                  <div className="max-w-xl mx-auto bg-white rounded-3xl border border-zinc-100 shadow-2xl p-8 space-y-6 animate-in fade-in-50 slide-in-from-bottom-5 duration-300">
-                    <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
-                      <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl shadow-sm">
-                        <Trash2 className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h2 className="text-xs font-black uppercase tracking-widest text-zinc-950">System Data Maintenance</h2>
-                        <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Carefully reset system tables</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-rose-50/50 border border-rose-100/80 p-4 rounded-2xl space-y-2">
-                      <div className="flex items-center gap-2 text-rose-800">
-                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Crucial Warning!</span>
-                      </div>
-                      <p className="text-[9px] font-bold text-rose-700 uppercase tracking-wide leading-relaxed">
-                        Data deletion is permanent and cannot be undone. Please double check the selected data before clicking the button.
-                      </p>
-                    </div>
-
-                    <div className="space-y-3">
-                      <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Select the Data You Want to Delete:</label>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <button
-                          type="button"
-                          onClick={() => setDbClearBookings(!dbClearBookings)}
-                          className={cn(
-                            "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
-                            dbClearBookings 
-                              ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
-                              : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
-                          )}
-                        >
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase tracking-wider">Bookings & POS</p>
-                            <p className="text-[8px] font-semibold text-zinc-400 uppercase">Bookings & POS Sales</p>
-                          </div>
-                          <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearBookings ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
-                            {dbClearBookings && <Check className="w-2.5 h-2.5" />}
-                          </div>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setDbClearExpenses(!dbClearExpenses)}
-                          className={cn(
-                            "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
-                            dbClearExpenses 
-                              ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
-                              : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
-                          )}
-                        >
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase tracking-wider">Expenses</p>
-                            <p className="text-[8px] font-semibold text-zinc-400 uppercase">System Expenses</p>
-                          </div>
-                          <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearExpenses ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
-                            {dbClearExpenses && <Check className="w-2.5 h-2.5" />}
-                          </div>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setDbClearCustomers(!dbClearCustomers)}
-                          className={cn(
-                            "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
-                            dbClearCustomers 
-                              ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
-                              : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
-                          )}
-                        >
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase tracking-wider">Customers</p>
-                            <p className="text-[8px] font-semibold text-zinc-400 uppercase">Customer List</p>
-                          </div>
-                          <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearCustomers ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
-                            {dbClearCustomers && <Check className="w-2.5 h-2.5" />}
-                          </div>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setDbClearServices(!dbClearServices)}
-                          className={cn(
-                            "flex items-center justify-between p-4 rounded-xl border transition-all text-left",
-                            dbClearServices 
-                              ? "bg-rose-50/50 border-rose-200 text-rose-950 shadow-sm" 
-                              : "bg-zinc-50 border-zinc-200/80 text-zinc-600 hover:bg-zinc-100/50"
-                          )}
-                        >
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase tracking-wider">Services & Products</p>
-                            <p className="text-[8px] font-semibold text-zinc-400 uppercase">Services & Products</p>
-                          </div>
-                          <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center transition-all", dbClearServices ? "bg-rose-600 border-rose-600 text-white" : "border-zinc-300 bg-white")}>
-                            {dbClearServices && <Check className="w-2.5 h-2.5" />}
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 pt-2">
-                      <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Confirm Deletion:</label>
-                      <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider pl-1">
-                        Please type the word <span className="text-rose-600 font-extrabold font-mono text-[9px] bg-rose-50 px-1 py-0.5 rounded border border-rose-200/50">CLEAR</span> to authorize data deletion.
-                      </p>
-                      <input 
-                        type="text" 
-                        placeholder="Type CLEAR here..."
-                        className="w-full p-4 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200 focus:border-rose-600 focus:ring-1 focus:ring-rose-600 outline-none transition-all duration-200 text-zinc-900 placeholder:text-zinc-300" 
-                        value={dbConfirmationText} 
-                        onChange={(e) => setDbConfirmationText(e.target.value)}
-                      />
-                    </div>
-
-                    <button 
-                      onClick={handleClearDatabase}
-                      disabled={dbIsClearing || dbConfirmationText.toUpperCase() !== 'CLEAR' || (!dbClearBookings && !dbClearExpenses && !dbClearCustomers && !dbClearServices)}
-                      className="w-full py-4 bg-rose-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 active:scale-[0.98] transition-all shadow-xl shadow-rose-600/10 mt-2 flex items-center justify-center gap-2"
-                    >
-                      {dbIsClearing ? "Deleting in progress..." : (
-                        <>
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Delete Selected Data
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
+                </div>
               </div>
             )}
 
