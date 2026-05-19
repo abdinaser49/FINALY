@@ -7,7 +7,7 @@ import {
   ChevronDown, Bell, Search, Plus, MoreHorizontal, Edit, Trash2, Copy, MoreVertical, ChevronLeft, ChevronRight,
   Phone, CheckCircle2, Check, Clock, DollarSign, Briefcase, TrendingUp,
   ArrowUpRight, ArrowDownRight, CreditCard, Sparkles, Scissors, Box, UserPlus,
-  Upload, Loader2, ImagePlus, ShoppingBag, Store, AlertTriangle, Download, XCircle, ShieldCheck
+  Upload, Loader2, ImagePlus, ShoppingBag, Store, AlertTriangle, Download, XCircle, ShieldCheck, CalendarCheck
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
@@ -33,7 +33,7 @@ const statusColors: Record<string, string> = {
   "cancelled": "bg-rose-100 text-rose-800 border-rose-200",
 };
 
-type Tab = "overview" | "appointments" | "finance" | "jobs" | "clients" | "settings" | "rentals" | "reports" | "walkin" | "products" | "pos" | "staff" | "users";
+type Tab = "overview" | "appointments" | "finance" | "jobs" | "clients" | "settings" | "rentals" | "reports" | "walkin" | "products" | "pos" | "staff" | "users" | "calendar";
 
 const addHour = (timeStr: string) => {
   if (!timeStr) return "00:00";
@@ -803,7 +803,8 @@ const Dashboard = () => {
   // Dynamic Navigation Items based on Role
   const navItems: { id: Tab; label: string; icon: any }[] = isAdmin ? [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
-    { id: "appointments", label: "Appointments", icon: Calendar },
+    { id: "appointments", label: "Appointments", icon: CalendarCheck },
+    { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "clients", label: "Clients", icon: Users },
     { id: "jobs", label: "Services", icon: Scissors },
     { id: "rentals", label: "Rentals", icon: Box },
@@ -813,13 +814,15 @@ const Dashboard = () => {
     { id: "settings", label: "Settings", icon: Settings },
   ] : isCashier ? [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
-    { id: "appointments", label: "Appointments", icon: Calendar },
+    { id: "appointments", label: "Appointments", icon: CalendarCheck },
+    { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "clients", label: "Clients", icon: Users },
     { id: "jobs", label: "Services", icon: Scissors },
     { id: "rentals", label: "Rentals", icon: Box },
     { id: "reports", label: "Reports", icon: ShoppingBag },
   ] : [
-    { id: "appointments", label: "My Bookings", icon: Calendar },
+    { id: "appointments", label: "My Bookings", icon: CalendarCheck },
+    { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "rentals", label: "Rentals", icon: Box },
   ];
 
@@ -1709,13 +1712,218 @@ const Dashboard = () => {
                                 </div>
                               </div>
                             ))
-                        )}
-                      </div>
-                    </div>
-                  </div>
                 )}
               </div>
             )}
+
+            {/* Dedicated Calendar Section */}
+            {activeTab === "calendar" && (
+              <div className="space-y-6 pb-10 text-left animate-in fade-in-30 duration-200">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 px-2">
+                  <div className="space-y-0.5">
+                    <h1 className="font-display text-lg font-black tracking-tight text-[#5D1B54] leading-none uppercase">Kalandarka Ballamaha (Calendar)</h1>
+                    <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Maamul oo u kuurgal dhammaan ballamaha ku qoran kalandarka</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          date: calendarSelectedDate
+                        });
+                        setModalType("appointment");
+                      }}
+                      className="bg-primary text-white px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 hover:bg-primary/90 active:scale-95 transition-all shadow-md shadow-primary/20 shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5 stroke-[3px]" /> Ku dar Ballan (Add Booking)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Custom Interactive Monthly Calendar */}
+                <div className="grid lg:grid-cols-12 gap-6 items-start text-left">
+                  {/* Left Column: Interactive Month Grid */}
+                  <div className="lg:col-span-8 bg-white border border-zinc-100 rounded-3xl shadow-sm p-6 space-y-6">
+                    <div className="flex items-center justify-between border-b border-zinc-50 pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 text-primary rounded-xl shrink-0">
+                          <Calendar className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900 leading-none">
+                            {calendarCurrentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                          </h2>
+                          <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Guji maalin si aad u aragto ballamaha ku qoran</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button 
+                          onClick={handlePrevMonth}
+                          className="p-2 text-zinc-400 hover:text-primary hover:bg-zinc-50 rounded-lg transition-colors border border-zinc-200/50"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => setCalendarCurrentDate(new Date())}
+                          className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-zinc-500 hover:text-primary hover:bg-zinc-50 rounded-lg transition-colors border border-zinc-200/50"
+                        >
+                          Maanta (Today)
+                        </button>
+                        <button 
+                          onClick={handleNextMonth}
+                          className="p-2 text-zinc-400 hover:text-primary hover:bg-zinc-50 rounded-lg transition-colors border border-zinc-200/50"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Day of Week Headers */}
+                    <div className="grid grid-cols-7 gap-2 text-center">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
+                        <div key={i} className="text-[9px] font-black uppercase tracking-widest text-zinc-400 py-1">{d}</div>
+                      ))}
+                    </div>
+
+                    {/* Grid Cells */}
+                    <div className="grid grid-cols-7 gap-2">
+                      {getCalendarDays().map((cell, idx) => {
+                        const isSelected = cell.dateStr === calendarSelectedDate;
+                        const isToday = cell.dateStr === todayStr;
+                        const dayBookings = allBookings.filter(b => b.booking_date === cell.dateStr);
+                        const hasBookings = dayBookings.length > 0;
+                        
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setCalendarSelectedDate(cell.dateStr)}
+                            className={cn(
+                              "aspect-square rounded-2xl border flex flex-col items-center justify-between p-2 transition-all relative group",
+                              cell.isCurrentMonth ? "bg-white" : "bg-zinc-50/50 border-transparent text-zinc-300",
+                              isSelected 
+                                ? "border-primary bg-primary/5 shadow-sm shadow-primary/5 ring-1 ring-primary" 
+                                : "border-zinc-100 hover:border-zinc-300 hover:bg-zinc-50/30",
+                              isToday && !isSelected && "border-zinc-400 font-extrabold"
+                            )}
+                          >
+                            {/* Day number */}
+                            <span className={cn(
+                              "text-xs font-black self-start",
+                              isSelected ? "text-primary" : "text-zinc-800",
+                              !cell.isCurrentMonth && "text-zinc-300"
+                            )}>
+                              {cell.dayNum}
+                            </span>
+
+                            {/* Bookings badge / count indicator */}
+                            {hasBookings && (
+                              <div className="w-full flex items-center justify-center gap-0.5 mt-auto">
+                                <span className={cn(
+                                  "text-[7px] font-black px-1.5 py-0.5 rounded-full",
+                                  isSelected ? "bg-primary text-white" : "bg-primary/10 text-primary"
+                                )}>
+                                  {dayBookings.length}
+                                </span>
+                              </div>
+                            )}
+                            
+                            {/* Red dot if today */}
+                            {isToday && !isSelected && (
+                              <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Day Agenda */}
+                  <div className="lg:col-span-4 bg-white border border-zinc-100 rounded-3xl shadow-sm p-6 space-y-6">
+                    <div className="border-b border-zinc-50 pb-4">
+                      <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400">Ajendaha Maalinta (Day Agenda)</h3>
+                      <p className="text-[10px] font-black text-primary uppercase mt-1">
+                        {new Date(calendarSelectedDate + "T12:00:00").toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
+                    </div>
+
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+                      {allBookings.filter(b => b.booking_date === calendarSelectedDate).length === 0 ? (
+                        <div className="py-12 text-center space-y-3 bg-[#FAFAFA] rounded-2xl border border-dashed border-zinc-200">
+                          <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Ma jiraan ballamo qoran</p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                date: calendarSelectedDate
+                              });
+                              setModalType("appointment");
+                            }}
+                            className="mx-auto bg-primary text-white px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-primary/95 active:scale-95 transition-all"
+                          >
+                            Ku dar Ballan
+                          </button>
+                        </div>
+                      ) : (
+                        allBookings
+                          .filter(b => b.booking_date === calendarSelectedDate)
+                          .sort((a, b) => (a.start_time || "").localeCompare(b.start_time || ""))
+                          .map((apt) => (
+                            <div key={apt.id} className="p-3 bg-zinc-50/50 hover:bg-zinc-50 border border-zinc-100 rounded-2xl flex flex-col gap-2 transition-all relative">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">{apt.name}</h4>
+                                  <p className="text-[8px] font-semibold text-zinc-400 uppercase tracking-widest mt-0.5">{apt.phone}</p>
+                                </div>
+                                <span className={cn(
+                                  "text-[7px] font-black px-1.5 py-0.5 rounded uppercase tracking-[0.15em] border",
+                                  apt.status === "confirmed" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                                  apt.status === "cancelled" ? "bg-rose-50 text-rose-500 border-rose-100" :
+                                  "bg-amber-50 text-amber-600 border-amber-100"
+                                )}>
+                                  {apt.status}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center justify-between border-t border-zinc-100/50 pt-2 mt-1">
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="text-[8px] font-black text-primary uppercase tracking-widest italic">{apt.service}</span>
+                                  <div className="flex items-center gap-1 text-[8px] text-zinc-400 font-bold mt-0.5">
+                                    <Clock className="w-2.5 h-2.5 text-zinc-300" />
+                                    {apt.start_time} - {apt.end_time}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  {apt.status === "pending" && (
+                                    <button 
+                                      type="button"
+                                      onClick={() => updateStatus(apt.id, "confirmed")}
+                                      className="bg-emerald-50 text-emerald-600 p-1 rounded hover:bg-emerald-100 transition-colors"
+                                      title="Confirm"
+                                    >
+                                      <Check className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                  <button 
+                                    type="button"
+                                    onClick={() => { if (confirm('Delete record?')) deleteBooking(apt.id); }}
+                                    className="p-1 text-zinc-300 hover:text-rose-500 transition-colors"
+                                    title="Delete"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Finance Section */}
             {activeTab === "finance" && (
               <div className="space-y-4 pb-10 text-left">
