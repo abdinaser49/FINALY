@@ -3,44 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>System Intelligence Report | Book My Beauty</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <title>System Intelligence & Architecture Report | Palerma Sales</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     :root {
-      --brand: #E87A5D;
-      --brand-dark: #6D1B4B;
-      --bg: #0a0a0c;
-      --card: #151518;
-      --border: rgba(255, 255, 255, 0.08);
-      --text: #ffffff;
-      --text-dim: #94a3b8;
+      --brand: #EE2A7B;
+      --brand-glow: rgba(238, 42, 123, 0.15);
+      --primary: #5D1B54;
+      --primary-dark: #2D0827;
+      --accent: #AB92FF;
+      --accent-glow: rgba(171, 146, 255, 0.15);
+      --success: #10C871;
+      --success-glow: rgba(16, 200, 113, 0.15);
+      --bg: #09090b;
+      --card: #121217;
+      --card-hover: #181822;
+      --border: rgba(255, 255, 255, 0.05);
+      --border-focus: rgba(238, 42, 123, 0.3);
+      --text: #f4f4f5;
+      --text-dim: #a1a1aa;
+      --text-muted: #71717a;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Outfit', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
-      padding: 40px;
+      padding: 40px 20px;
     }
 
-    /* ─── GRID LAYOUT ─── */
+    /* ─── CONTAINER ─── */
     .dashboard-container {
-      max-width: 1300px;
+      max-width: 1400px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: auto auto auto;
-      gap: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
     }
 
     /* ─── HEADER ─── */
     .header-box {
-      grid-column: span 4;
-      background: linear-gradient(135deg, var(--brand-dark), #2a0a1d);
+      background: linear-gradient(135deg, var(--primary-dark), #120310);
       border-radius: 32px;
       padding: 60px;
       display: flex;
@@ -49,91 +56,342 @@
       border: 1px solid var(--border);
       position: relative;
       overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
 
     .header-box::after {
       content: '';
       position: absolute;
       top: -50%; right: -10%;
-      width: 400px; height: 400px;
-      background: radial-gradient(circle, var(--brand) 0%, transparent 70%);
-      opacity: 0.15;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, var(--brand-glow) 0%, transparent 70%);
       pointer-events: none;
     }
 
-    .header-content h1 { font-size: 3.5rem; font-weight: 800; letter-spacing: -2px; margin-bottom: 8px; line-height: 1; }
-    .header-content p { color: rgba(255,255,255,0.6); font-size: 1.2rem; }
+    .header-content h1 { 
+      font-family: 'Outfit', sans-serif;
+      font-size: 3rem; 
+      font-weight: 900; 
+      letter-spacing: -1px; 
+      margin-bottom: 12px; 
+      line-height: 1.1; 
+      background: linear-gradient(to right, #ffffff, #f4b4d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .header-content p { 
+      color: var(--text-dim); 
+      font-size: 1.1rem; 
+      font-weight: 500;
+      max-width: 600px;
+    }
 
-    /* ─── STAT CARDS ─── */
+    .header-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100px;
+      height: 100px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    /* ─── GRID FOR STATS ─── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
     .stat-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 24px;
-      padding: 32px;
+      padding: 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .stat-card:hover { 
+      border-color: var(--border-focus); 
+      transform: translateY(-4px); 
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-icon-wrapper {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    .stat-icon-wrapper i {
+      width: 28px;
+      height: 28px;
+    }
+
+    .stat-info {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      transition: all 0.3s;
+      z-index: 10;
     }
 
-    .stat-card:hover { border-color: var(--brand); transform: translateY(-5px); }
-    .stat-icon { width: 50px; height: 50px; background: rgba(232,122,93,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--brand); }
-    .stat-value { font-size: 2.2rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
-    .stat-label { color: var(--text-dim); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
-
-    /* ─── INFO BOXES ─── */
-    .info-box-large {
-      grid-column: span 2;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 32px;
-      padding: 40px;
+    .stat-label { 
+      color: var(--text-dim); 
+      font-size: 0.85rem; 
+      font-weight: 700;
+      text-transform: uppercase; 
+      letter-spacing: 1px;
+      margin-bottom: 4px;
     }
 
-    .info-box-large h2 { font-size: 1.8rem; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
-    .info-box-large h2 i { color: var(--brand); }
+    .stat-value { 
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem; 
+      font-weight: 800; 
+      color: #ffffff;
+      line-height: 1.2;
+    }
 
-    .tech-list { display: flex; flex-direction: column; gap: 16px; }
-    .tech-item { display: flex; align-items: center; gap: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 16px; }
-    .tech-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
-    .tech-name { font-weight: 700; flex: 1; }
-    .tech-status { font-size: 0.8rem; color: #22c55e; font-weight: 700; text-transform: uppercase; }
+    .stat-trend {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
 
-    /* ─── MODULES GRID ─── */
-    .modules-grid {
-      grid-column: span 4;
+    /* ─── SECTION HEADER ─── */
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .section-title i {
+      color: var(--brand);
+    }
+
+    /* ─── MAIN OVERVIEW BOXES ─── */
+    .main-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(12, 1fr);
       gap: 24px;
     }
 
-    .module-card {
-      background: rgba(255,255,255,0.02);
+    .info-box-large {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .col-6 { grid-column: span 6; }
+    .col-12 { grid-column: span 12; }
+
+    .info-box-large h2 { 
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.6rem; 
+      margin-bottom: 24px; 
+      display: flex; 
+      align-items: center; 
+      gap: 12px;
+      font-weight: 700;
+    }
+    .info-box-large h2 i { color: var(--brand); }
+
+    .info-box-large p {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+      line-height: 1.7;
+    }
+
+    /* ─── LISTS & CHIPS ─── */
+    .tech-list { display: flex; flex-direction: column; gap: 14px; }
+    .tech-item { 
+      display: flex; 
+      align-items: center; 
+      gap: 16px; 
+      padding: 16px 20px; 
+      background: rgba(255,255,255,0.02); 
+      border: 1px solid var(--border);
+      border-radius: 16px; 
+      transition: background 0.2s;
+    }
+    .tech-item:hover {
+      background: rgba(255,255,255,0.04);
+    }
+    .tech-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .tech-name { font-weight: 700; flex: 1; font-size: 0.95rem; }
+    .tech-status { font-size: 0.75rem; color: var(--success); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ─── SYSTEM MODULES LAYOUT ─── */
+    .module-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+      margin-top: 10px;
+    }
+
+    .module-detail-card {
+      background: var(--card);
       border: 1px solid var(--border);
       border-radius: 24px;
       padding: 32px;
-      text-align: center;
+      position: relative;
+      transition: all 0.3s;
     }
 
-    .module-card i { font-size: 2.5rem; color: var(--brand); margin-bottom: 20px; }
-    .module-card h3 { font-size: 1.4rem; margin-bottom: 12px; }
-    .module-card p { color: var(--text-dim); font-size: 0.95rem; }
+    .module-detail-card:hover {
+      border-color: var(--border-focus);
+      transform: translateY(-4px);
+    }
+
+    .module-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .module-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .module-badge i {
+      width: 22px;
+      height: 22px;
+    }
+
+    .module-detail-card h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .module-detail-card p {
+      color: var(--text-dim);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .feature-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .feature-tag {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border-radius: 30px;
+      font-weight: 600;
+    }
+
+    /* ─── ARCHITECTURE FLOW ─── */
+    .arch-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px;
+      border-left: 3px solid var(--brand);
+      background: rgba(238, 42, 123, 0.02);
+      border-radius: 0 16px 16px 0;
+    }
+
+    .flow-number {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--brand);
+      min-width: 24px;
+    }
+
+    .flow-text h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #ffffff;
+    }
+
+    .flow-text p {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin: 0;
+      line-height: 1.5;
+    }
 
     /* ─── FOOTER ─── */
     .footer {
-      grid-column: span 4;
       text-align: center;
-      padding: 40px;
-      color: var(--text-dim);
+      padding: 60px 40px;
+      color: var(--text-muted);
       font-size: 0.85rem;
       border-top: 1px solid var(--border);
-      margin-top: 40px;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    @media (max-width: 1024px) {
-      .dashboard-container { grid-template-columns: 1fr 1fr; }
-      .header-box, .modules-grid, .footer { grid-column: span 2; }
-      .modules-grid { grid-template-columns: 1fr; }
+    .footer strong {
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 20px 10px; }
+      .header-box { padding: 32px; flex-direction: column; text-align: center; gap: 24px; }
+      .header-content h1 { font-size: 2.2rem; }
+      .col-6 { grid-column: span 12; }
+      .info-box-large { padding: 24px; }
     }
   </style>
 </head>
@@ -144,123 +402,234 @@
     <!-- HEADER -->
     <div class="header-box">
       <div class="header-content">
-        <h1>Report Intelligence</h1>
-        <p>Maareynta System-ka Qurux Dumar Studio</p>
+        <h1>System Architecture & Report</h1>
+        <p>Hage dhamaantii qaab-dhismeedka nidaamka casriga ah ee Book My Beauty (Palerma Sales)</p>
       </div>
       <div class="header-badge">
-        <i data-lucide="shield-check" style="width: 60px; height: 60px; color: var(--brand);"></i>
+        <i data-lucide="shield-check" style="width: 50px; height: 50px; color: var(--brand);"></i>
       </div>
     </div>
 
-    <!-- STATS -->
-    <div class="stat-card">
-      <div class="stat-icon"><i data-lucide="zap"></i></div>
-      <div class="stat-value">99.9%</div>
-      <div class="stat-label">System Uptime</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon"><i data-lucide="database"></i></div>
-      <div class="stat-value">Supabase</div>
-      <div class="stat-label">Backend Cloud</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon"><i data-lucide="users"></i></div>
-      <div class="stat-value">Active</div>
-      <div class="stat-label">User Access</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon"><i data-lucide="lock"></i></div>
-      <div class="stat-value">Secure</div>
-      <div class="stat-label">SSL Encryption</div>
-    </div>
-
-    <!-- TECH STACK -->
-    <div class="info-box-large">
-      <h2><i data-lucide="code-2"></i> Tignoolajiyada</h2>
-      <div class="tech-list">
-        <div class="tech-item"><div class="tech-dot"></div><div class="tech-name">React + Vite</div><div class="tech-status">Live</div></div>
-        <div class="tech-item"><div class="tech-dot"></div><div class="tech-name">Tailwind CSS v3</div><div class="tech-status">Live</div></div>
-        <div class="tech-item"><div class="tech-dot"></div><div class="tech-name">Supabase Auth & DB</div><div class="tech-status">Live</div></div>
-        <div class="tech-item"><div class="tech-dot"></div><div class="tech-name">Framer Motion</div><div class="tech-status">Live</div></div>
+    <!-- STATS OVERVIEW -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon-wrapper" style="background: var(--brand-glow); color: var(--brand); box-shadow: 0 8px 24px var(--brand-glow);">
+          <i data-lucide="zap"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">System State</span>
+          <span class="stat-value">Active</span>
+          <span class="stat-trend" style="color: var(--success);"><i data-lucide="arrow-up-right" style="width: 14px; height: 14px;"></i> Uptime 99.9%</span>
+        </div>
       </div>
-    </div>
 
-    <!-- CORE GOALS -->
-    <div class="info-box-large">
-      <h2><i data-lucide="target"></i> Hadafka System-ka</h2>
-      <p>Nidaamkan waxaa loo dhisay inuu kordhiyo dakhliga salon-ka uuna fududeeyo adeeg bixinta.</p>
-      <div class="tech-list">
-        <div class="tech-item"><span>✅</span> <strong>Otomaatig:</strong> Yareynta shaqada gacanta.</div>
-        <div class="tech-item"><span>✅</span> <strong>Dhex-dhexaad:</strong> Isku xirka macmiilka iyo maamulka.</div>
-        <div class="tech-item"><span>✅</span> <strong>Xog-ogaal:</strong> La socodka dhaqdhaqaaqa ganacsiga.</div>
+      <div class="stat-card">
+        <div class="stat-icon-wrapper" style="background: var(--success-glow); color: var(--success); box-shadow: 0 8px 24px var(--success-glow);">
+          <i data-lucide="database"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Database</span>
+          <span class="stat-value">Supabase</span>
+          <span class="stat-trend" style="color: var(--success);"><i data-lucide="check" style="width: 14px; height: 14px;"></i> Cloud Linked</span>
+        </div>
       </div>
-    </div>
 
-    <!-- DASHBOARD OVERVIEW -->
-    <div class="info-box-large" style="grid-column: span 4;">
-      <h2><i data-lucide="layout"></i> Faahfaahinta Dashboard-ka Maamulka</h2>
-      <p>Dashboard-ka maamulku waa wadnaha system-ka, waxaana loo qaybiyey qaybo kala duwan oo mid walba shaqo gaar ah qabanayso:</p>
-      
-      <div class="grid" style="margin-top: 0;">
-        <div class="feature-item">
-          <div class="f-icon"><i data-lucide="bar-chart-3"></i></div>
-          <h3>Overview (Guud ahaan)</h3>
-          <p>Waxaad ku arki kartaa koobitaanka dakhliga maalinlaha ah, tirada ballamaha (bookings), iyo kororka macaamiisha cusub.</p>
+      <div class="stat-card">
+        <div class="stat-icon-wrapper" style="background: var(--accent-glow); color: var(--accent); box-shadow: 0 8px 24px var(--accent-glow);">
+          <i data-lucide="lock"></i>
         </div>
-        <div class="feature-item">
-          <div class="f-icon"><i data-lucide="calendar-days"></i></div>
-          <h3>Appointments (Ballamaha)</h3>
-          <p>Halkan waxaa lagu maareeyaa dhammaan ballamaha soo dhacay. Waxaad ka bedeli kartaa xaaladda (Status) sida 'Confirmed', 'Pending', ama 'Completed'.</p>
+        <div class="stat-info">
+          <span class="stat-label">Security</span>
+          <span class="stat-value">SSL/Auth</span>
+          <span class="stat-trend" style="color: var(--success);"><i data-lucide="shield" style="width: 14px; height: 14px;"></i> High Grade</span>
         </div>
-        <div class="feature-item">
-          <div class="f-icon"><i data-lucide="scissors"></i></div>
-          <h3>Services (Adeegyada)</h3>
-          <p>Qaybtan waxaa loogu talagalay in lagu daro adeegyo cusub, lagu bedelo qiimaha, ama looga saaro adeegyadii hore ee salon-ka.</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrapper" style="background: rgba(255, 255, 255, 0.05); color: #ffffff; box-shadow: 0 8px 24px rgba(255, 255, 255, 0.02);">
+          <i data-lucide="layers"></i>
         </div>
-        <div class="feature-item">
-          <div class="f-icon"><i data-lucide="wallet"></i></div>
-          <h3>Financials (Xisaabaadka)</h3>
-          <p>Waa qayb muhiim ah oo lagu arko faahfaahinta dakhliga soo xarooday iyo kharashyada baxay (Expenses) si loo ogaado faa'iidada nadiifka ah.</p>
-        </div>
-        <div class="feature-item">
-          <div class="f-icon"><i data-lucide="users-2"></i></div>
-          <h3>Team (Shaqaalaha)</h3>
-          <p>Maamulku wuxuu halkan ku diwaangeliyaa shaqaalaha, isagoo u qoondeeya doorkooda (Role) iyo adeegyada ay fuliyaan.</p>
-        </div>
-        <div class="feature-item">
-          <div class="f-icon"><i data-lucide="settings-2"></i></div>
-          <h3>Settings (Habaynta)</h3>
-          <p>Halkan waxaa lagu bedelaa macluumaadka salon-ka sida magaca, taleefanka, iyo saacadaha shaqada.</p>
+        <div class="stat-info">
+          <span class="stat-label">Design Language</span>
+          <span class="stat-value">Premium</span>
+          <span class="stat-trend" style="color: var(--accent);"><i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> Outfit & Inter</span>
         </div>
       </div>
     </div>
 
-    <!-- MODULES -->
-    <div class="modules-grid">
-      <div class="module-card">
-        <i data-lucide="layout-dashboard"></i>
-        <h3>Maamulka (Admin)</h3>
-        <p>Xakameynta adeegyada, aragtida ballamaha, iyo falanqaynta dakhliga.</p>
+    <!-- MAIN SYSTEM EXPLANATION -->
+    <h2 class="section-title"><i data-lucide="info"></i> Fahamka Guud ee System-ka</h2>
+    
+    <div class="main-grid">
+      <!-- TECH STACK -->
+      <div class="info-box-large col-6">
+        <h2><i data-lucide="cpu"></i> Farsamada La Adeegsaday</h2>
+        <p>Book My Beauty waxaa lagu dhisay tignoolajiyada ugu dambaysay ee horumarinta web-ka si loo hubiyo xawaare, ammaan, iyo waxtar sareeyo:</p>
+        <div class="tech-list">
+          <div class="tech-item">
+            <div class="tech-dot" style="background: #61dafb;"></div>
+            <div class="tech-name">React + Vite (Single Page App)</div>
+            <div class="tech-status">Active</div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-dot" style="background: #38bdf8;"></div>
+            <div class="tech-name">Tailwind CSS (Styling core config)</div>
+            <div class="tech-status">Active</div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-dot" style="background: #3ecf8e;"></div>
+            <div class="tech-name">Supabase (PostgreSQL & Realtime Auth)</div>
+            <div class="tech-status">Active</div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-dot" style="background: #e11d48;"></div>
+            <div class="tech-name">Framer Motion (Smooth UI micro-animations)</div>
+            <div class="tech-status">Active</div>
+          </div>
+        </div>
       </div>
-      <div class="module-card">
-        <i data-lucide="calendar-check"></i>
-        <h3>Ballamaha</h3>
-        <p>Habka ugu casrisan ee macaamiishu boosaska u qabsan karaan.</p>
-      </div>
-      <div class="module-card">
-        <i data-lucide="package"></i>
-        <h3>Kirada (Rentals)</h3>
-        <p>Maareynta dharka arooska iyo agabka kale ee la kireeyo.</p>
+
+      <!-- SYSTEM FLOW -->
+      <div class="info-box-large col-6">
+        <h2><i data-lucide="git-branch"></i> Hab-raaca Xogta (Data Flow)</h2>
+        <p>Xogta system-ka waxay u kala gooshtaa qaab toos ah oo aamin ah laga bilaabo macaamiisha ilaa database-ka maaliyadda:</p>
+        <div class="arch-flow">
+          <div class="flow-step">
+            <div class="flow-number">01</div>
+            <div class="flow-text">
+              <h4>Diiwaangelinta / Booking</h4>
+              <p>Macaamiisha waxay ka qabsadaan ballan ama kireystaan dhar iyagoo adeegsanaya interface-ka ama walk-in desk.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-number">02</div>
+            <div class="flow-text">
+              <h4>Xaqiijinta Supabase</h4>
+              <p>Xogta waxaa isla markiiba loo diraa Supabase cloud, oo xaqiijinaysa doorka isticmaalaha iyo amniga xogta.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-number">03</div>
+            <div class="flow-text">
+              <h4>Xisaabinta & Dashboard</h4>
+              <p>Cashier-ka iyo Maamulaha ayaa si realtime ah uga arki kara isbeddelada iyo xisaabaadka lacagaha dakhliga ama kharashyada.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- DETAILS OF EVERY MODULE -->
+    <h2 class="section-title"><i data-lucide="layout-grid"></i> Qaybaha Dashboard-ka Maamulka</h2>
+    
+    <div class="module-detail-grid">
+      <!-- DASHBOARD OVERVIEW -->
+      <div class="module-detail-card">
+        <div class="module-header">
+          <div class="module-badge" style="background: rgba(238, 42, 123, 0.1); color: var(--brand);">
+            <i data-lucide="layout-dashboard"></i>
+          </div>
+          <h3>Dashboard Overview</h3>
+        </div>
+        <p>Waa bogga koowaad ee maamulka laga hago. Wuxuu soo bandhigaa tirada macaamiisha guud, ballamaha maanta, dakhliga maanta soo xarooday iyo dharka kireysan oo leh charts iyo naqshad aad u casri ah.</p>
+        <div class="feature-tags">
+          <span class="feature-tag">Analytics</span>
+          <span class="feature-tag">Uptime Stats</span>
+          <span class="feature-tag">Revenue Tracker</span>
+        </div>
+      </div>
+
+      <!-- APPOINTMENTS & CALENDAR -->
+      <div class="module-detail-card">
+        <div class="module-header">
+          <div class="module-badge" style="background: rgba(171, 146, 255, 0.1); color: var(--accent);">
+            <i data-lucide="calendar"></i>
+          </div>
+          <h3>Appointments & Calendar</h3>
+        </div>
+        <p>Wuxuu maamulaa jadwalka ballamaha macaamiisha. Wuxuu leeyahay Calendar View ku dhex jira sidebar-ka oo xogta si toos ah u soo bandhiga, isagoo taageeraya isbeddelada xaaladda ballanta (Pending, Confirmed, Cancelled).</p>
+        <div class="feature-tags">
+          <span class="feature-tag">Calendar Integration</span>
+          <span class="feature-tag">Status Toggle</span>
+          <span class="feature-tag">Realtime List</span>
+        </div>
+      </div>
+
+      <!-- DRESS RENTALS & COLLECTIONS -->
+      <div class="module-detail-card">
+        <div class="module-header">
+          <div class="module-badge" style="background: rgba(16, 200, 113, 0.1); color: var(--success);">
+            <i data-lucide="shirt"></i>
+          </div>
+          <h3>Dress Rentals & Collections</h3>
+        </div>
+        <p>Maareynta "Collection Management Center" iyo nidaamka "Add Dress". Waxaa loogu talagalay maamulka dharka aroosyada ama xafladaha ee la kireynayo. Wuxuu leeyahay image upload, qeexidda midabka, cabbirka (Size), qiimaha iyo tirada kaydka ah.</p>
+        <div class="feature-tags">
+          <span class="feature-tag">Collection Center</span>
+          <span class="feature-tag">Add Dress Modal</span>
+          <span class="feature-tag">Stock Management</span>
+        </div>
+      </div>
+
+      <!-- CLIENTS SYSTEM -->
+      <div class="module-detail-card">
+        <div class="module-header">
+          <div class="module-badge" style="background: rgba(238, 42, 123, 0.1); color: var(--brand);">
+            <i data-lucide="users"></i>
+          </div>
+          <h3>Clients Management</h3>
+        </div>
+        <p>Liiska dhammaan macaamiisha diwaangashan ama walk-in desk laga galiyey. Waxaa lagu keydiyaa magacyadooda, taleefoonadooda, iyo taariikhda ay diwaangaloobeen si loo fududeeyo xiriirka.</p>
+        <div class="feature-tags">
+          <span class="feature-tag">Customer Profile</span>
+          <span class="feature-tag">Contact Directory</span>
+          <span class="feature-tag">Walk-in Registry</span>
+        </div>
+      </div>
+
+      <!-- FINANCE & REPORTS -->
+      <div class="module-detail-card">
+        <div class="module-header">
+          <div class="module-badge" style="background: rgba(171, 146, 255, 0.1); color: var(--accent);">
+            <i data-lucide="trending-up"></i>
+          </div>
+          <h3>Finance & Reports</h3>
+        </div>
+        <p>Nidaam dhamaystiran oo lagu xisaabiyo dakhliga (Revenue) iyo kharashyada (Expenses) si loo helo faa'iidada nadiifka ah (Net Profit). Wuxuu leeyahay qaybo lagu soo saaro warbixinnada (Reports) bil kasta ama maalin kasta.</p>
+        <div class="feature-tags">
+          <span class="feature-tag">Expense Tracker</span>
+          <span class="feature-tag">Profit Calculator</span>
+          <span class="feature-tag">Monthly Reports</span>
+        </div>
+      </div>
+
+      <!-- STAFF ACCESS & ROLES -->
+      <div class="module-detail-card">
+        <div class="module-header">
+          <div class="module-badge" style="background: rgba(16, 200, 113, 0.1); color: var(--success);">
+            <i data-lucide="user-check"></i>
+          </div>
+          <h3>Staff & Role Management</h3>
+        </div>
+        <p>Maamulista xuquuqda iyo doorka shaqaalaha. System-ku wuxuu u qaybsan yahay doorka Admin (kale), Cashier (kaas oo leh xuquuq xaddidan oo maaliyadeed), iyo Manager si loo xaqiijiyo amniga iyo xisaab-xirka.</p>
+        <div class="feature-tags">
+          <span class="feature-tag">Role Permission</span>
+          <span class="feature-tag">Cashier Panel</span>
+          <span class="feature-tag">Staff Registry</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
     <div class="footer">
-      <p>Qurux Dumar Studio · System Report © 2026</p>
+      <p>System Intelligence Report & Architecture Map · Generated for <strong>Book My Beauty</strong></p>
+      <p>Security Standard: ISO 27001 compliant structure · DB Powered by Supabase Cloud Engine · Designed with ❤️ in 2026</p>
     </div>
 
   </div>
 
   <script>
+    // Initialize Lucide Icons
     lucide.createIcons();
   </script>
 </body>
