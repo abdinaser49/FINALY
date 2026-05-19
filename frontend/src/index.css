@@ -97,6 +97,9 @@
 }
 
 @layer base {
+  html {
+    font-size: 14px;
+  }
   * {
     @apply border-border;
   }
@@ -105,7 +108,7 @@
     @apply text-balance font-semibold tracking-tight;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased leading-relaxed font-normal text-sm;
+    @apply bg-background text-foreground font-body antialiased leading-relaxed font-normal text-xs;
   }
   button {
     @apply active:scale-95 transition-transform;
