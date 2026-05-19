@@ -1398,27 +1398,6 @@ const Dashboard = () => {
                     <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">{t.salesHistory}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center bg-zinc-100 p-1 rounded-xl border border-zinc-200 shadow-sm mr-2">
-                      <button
-                        onClick={() => setAptViewMode('list')}
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
-                          aptViewMode === 'list' ? "bg-white text-primary shadow-sm border border-zinc-200/20" : "text-zinc-400 hover:text-zinc-600"
-                        )}
-                      >
-                        List View
-                      </button>
-                      <button
-                        onClick={() => setAptViewMode('calendar')}
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
-                          aptViewMode === 'calendar' ? "bg-white text-primary shadow-sm border border-zinc-200/20" : "text-zinc-400 hover:text-zinc-600"
-                        )}
-                      >
-                        Calendar View
-                      </button>
-                    </div>
-
                     <button className="flex items-center gap-1.5 bg-white border border-zinc-200 px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:bg-zinc-50 transition-all shadow-sm">
                       <Download className="w-3 h-3 text-zinc-400" /> Export
                     </button>
@@ -1426,7 +1405,7 @@ const Dashboard = () => {
                       onClick={() => {
                         setFormData({
                           ...formData,
-                          date: aptViewMode === 'calendar' ? calendarSelectedDate : getLocalDateString()
+                          date: getLocalDateString()
                         });
                         setModalType("appointment");
                       }}
@@ -1437,282 +1416,106 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                {aptViewMode === 'list' ? (
-                  <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden animate-in fade-in-30 duration-200">
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="bg-zinc-50 border-b border-zinc-100">
-                            <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Client</th>
-                            <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Service</th>
-                            <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Date / Time</th>
-                            <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Amount</th>
-                            <th className="text-right py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-50">
-                          {allBookings.length === 0 ? (
-                            <tr><td colSpan={5} className="py-20 text-center text-zinc-300 font-bold uppercase tracking-widest bg-white/50 rounded-2xl">No schedule found</td></tr>
-                          ) : (
-                            allBookings.map((apt) => (
-                              <tr key={apt.id} className="bg-white hover:bg-zinc-50 transition-all rounded-xl border-b border-zinc-50">
-                                <td className="p-2 pl-4 flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-full overflow-hidden border border-zinc-100 shadow-sm">
-                                    {apt.name?.[0] ? (
-                                      <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs uppercase">{apt.name[0]}</div>
-                                    ) : (
-                                      <div className="w-full h-full bg-zinc-100" />
-                                    )}
-                                  </div>
-                                  <div className="min-w-0">
-                                    <div className="font-display text-sm font-black text-[#5D1B54] tracking-tight truncate">{apt.name}</div>
-                                    <div className="text-[9px] font-bold text-zinc-400 tracking-widest uppercase">{apt.phone}</div>
-                                  </div>
-                                </td>
-
-                                <td className="p-4">
-                                  <div className="flex items-center gap-3">
-                                    {apt.image_url && (
-                                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-zinc-100 shadow-sm shrink-0">
-                                        <img src={apt.image_url} className="w-full h-full object-cover" alt={apt.service} />
-                                      </div>
-                                    )}
-                                    <div className="flex flex-col gap-1">
-                                      <div className="text-[10px] font-bold text-primary/80 uppercase tracking-widest italic">{apt.service}</div>
-                                      {apt.category === 'Online' && (
-                                        <span className="w-fit text-[7px] font-black bg-sky-100 text-sky-600 px-1.5 py-0.5 rounded uppercase tracking-[0.2em] border border-sky-200">Online</span>
-                                      )}
-                                    </div>
-                                  </div>
-                                </td>
-
-                                <td className="p-4">
-                                  <div className="space-y-0.5">
-                                    <div className="font-display text-xs font-black text-zinc-700">{apt.booking_date}</div>
-                                    <div className="flex items-center gap-1 text-primary/70 font-black">
-                                      <Clock className="w-3 h-3" />
-                                      <span className="text-[9px] uppercase tracking-[0.1em]">{apt.start_time}</span>
-                                    </div>
-                                  </div>
-                                </td>
-
-                                <td className="p-4">
-                                  <span className="font-black text-[#5D1B54] text-lg tracking-tighter">${apt.amount || 0}</span>
-                                </td>
-
-                                <td className="p-2 pr-4">
-                                  <div className="flex items-center gap-2 w-full justify-end">
-                                    {apt.status === "pending" ? (
-                                      <div className="flex gap-1">
-                                        <button
-                                          className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-all"
-                                          onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "confirmed"); }}
-                                        >
-                                          Confirm
-                                        </button>
-                                        <button
-                                          className="bg-rose-50 text-rose-400 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all"
-                                          onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "cancelled"); }}
-                                        >
-                                          Cancel
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <div className={cn(
-                                        "py-1.5 px-4 rounded-lg text-center text-[9px] font-black uppercase tracking-[0.1em] flex items-center justify-center gap-2 border",
-                                        apt.status === "cancelled" ? "bg-white text-rose-500 border-rose-100" : "bg-white text-emerald-600 border-emerald-100"
-                                      )}>
-                                        {apt.status === 'confirmed' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                                        {apt.status}
-                                      </div>
-                                    )}
-                                    <button onClick={(e) => { e.stopPropagation(); if (confirm('Delete record?')) deleteBooking(apt.id); }} className="p-2 text-zinc-300 hover:text-rose-500 transition-colors">
-                                      <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ) : (
-                  // Custom Interactive Monthly Calendar
-                  <div className="grid lg:grid-cols-12 gap-6 items-start animate-in fade-in-30 duration-200 text-left">
-                    {/* Left Column: Interactive Month Grid */}
-                    <div className="lg:col-span-8 bg-white border border-zinc-100 rounded-3xl shadow-sm p-6 space-y-6">
-                      <div className="flex items-center justify-between border-b border-zinc-50 pb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-primary/10 text-primary rounded-xl">
-                            <Calendar className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">
-                              {calendarCurrentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                            </h2>
-                            <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Select a day to view bookings</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button 
-                            onClick={handlePrevMonth}
-                            className="p-2 text-zinc-400 hover:text-[#5D1B54] hover:bg-zinc-50 rounded-lg transition-colors border border-zinc-200/50"
-                          >
-                            <ChevronLeft className="w-4 h-4" />
-                          </button>
-                          <button 
-                            onClick={() => setCalendarCurrentDate(new Date())}
-                            className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-zinc-500 hover:text-[#5D1B54] hover:bg-zinc-50 rounded-lg transition-colors border border-zinc-200/50"
-                          >
-                            Today
-                          </button>
-                          <button 
-                            onClick={handleNextMonth}
-                            className="p-2 text-zinc-400 hover:text-[#5D1B54] hover:bg-zinc-50 rounded-lg transition-colors border border-zinc-200/50"
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Day of Week Headers */}
-                      <div className="grid grid-cols-7 gap-2 text-center">
-                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
-                          <div key={i} className="text-[9px] font-black uppercase tracking-widest text-zinc-400 py-1">{d}</div>
-                        ))}
-                      </div>
-
-                      {/* Grid Cells */}
-                      <div className="grid grid-cols-7 gap-2">
-                        {getCalendarDays().map((cell, idx) => {
-                          const isSelected = cell.dateStr === calendarSelectedDate;
-                          const isToday = cell.dateStr === todayStr;
-                          const dayBookings = allBookings.filter(b => b.booking_date === cell.dateStr);
-                          const hasBookings = dayBookings.length > 0;
-                          
-                          return (
-                            <button
-                              key={idx}
-                              onClick={() => setCalendarSelectedDate(cell.dateStr)}
-                              className={cn(
-                                "aspect-square rounded-2xl border flex flex-col items-center justify-between p-2 transition-all relative group",
-                                cell.isCurrentMonth ? "bg-white" : "bg-zinc-50/50 border-transparent text-zinc-300",
-                                isSelected 
-                                  ? "border-primary bg-primary/5 shadow-sm shadow-primary/5 ring-1 ring-primary" 
-                                  : "border-zinc-100 hover:border-zinc-300 hover:bg-zinc-50/30",
-                                isToday && !isSelected && "border-zinc-400 font-extrabold"
-                              )}
-                            >
-                              {/* Day number */}
-                              <span className={cn(
-                                "text-xs font-black self-start",
-                                isSelected ? "text-primary" : "text-zinc-800",
-                                !cell.isCurrentMonth && "text-zinc-300"
-                              )}>
-                                {cell.dayNum}
-                              </span>
-
-                              {/* Bookings badge / count indicator */}
-                              {hasBookings && (
-                                <div className="w-full flex items-center justify-center gap-0.5 mt-auto">
-                                  <span className={cn(
-                                    "text-[7px] font-black px-1.5 py-0.5 rounded-full",
-                                    isSelected ? "bg-primary text-white" : "bg-primary/10 text-primary"
-                                  )}>
-                                    {dayBookings.length}
-                                  </span>
-                                </div>
-                              )}
-                              
-                              {/* Red dot if today */}
-                              {isToday && !isSelected && (
-                                <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Right Column: Day Agenda */}
-                    <div className="lg:col-span-4 bg-white border border-zinc-100 rounded-3xl shadow-sm p-6 space-y-6">
-                      <div className="border-b border-zinc-50 pb-4">
-                        <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400">Day Agenda</h3>
-                        <p className="text-[10px] font-black text-primary uppercase mt-1">
-                          {new Date(calendarSelectedDate + "T12:00:00").toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
-                        </p>
-                      </div>
-
-                      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
-                        {allBookings.filter(b => b.booking_date === calendarSelectedDate).length === 0 ? (
-                          <div className="py-12 text-center space-y-3 bg-[#FAFAFA] rounded-2xl border border-dashed border-zinc-200">
-                            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">No Bookings Scheduled</p>
-                            <button
-                              onClick={() => {
-                                setFormData({
-                                  ...formData,
-                                  date: calendarSelectedDate
-                                });
-                                setModalType("appointment");
-                              }}
-                              className="mx-auto bg-[#5D1B54] text-white px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-[#5D1B54]/95 active:scale-95 transition-all"
-                            >
-                              Book Now
-                            </button>
-                          </div>
+                <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden animate-in fade-in-30 duration-200">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-zinc-50 border-b border-zinc-100">
+                          <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Client</th>
+                          <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Service</th>
+                          <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Date / Time</th>
+                          <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Amount</th>
+                          <th className="text-right py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-50">
+                        {allBookings.length === 0 ? (
+                          <tr><td colSpan={5} className="py-20 text-center text-zinc-300 font-bold uppercase tracking-widest bg-white/50 rounded-2xl">No schedule found</td></tr>
                         ) : (
-                          allBookings
-                            .filter(b => b.booking_date === calendarSelectedDate)
-                            .sort((a, b) => (a.start_time || "").localeCompare(b.start_time || ""))
-                            .map((apt) => (
-                              <div key={apt.id} className="p-3 bg-zinc-50/50 hover:bg-zinc-50 border border-zinc-100 rounded-2xl flex flex-col gap-2 transition-all relative">
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">{apt.name}</h4>
-                                    <p className="text-[8px] font-semibold text-zinc-400 uppercase tracking-widest mt-0.5">{apt.phone}</p>
-                                  </div>
-                                  <span className={cn(
-                                    "text-[7px] font-black px-1.5 py-0.5 rounded uppercase tracking-[0.15em] border",
-                                    apt.status === "confirmed" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                                    apt.status === "cancelled" ? "bg-rose-50 text-rose-500 border-rose-100" :
-                                    "bg-amber-50 text-amber-600 border-amber-100"
-                                  )}>
-                                    {apt.status}
-                                  </span>
+                          allBookings.map((apt) => (
+                            <tr key={apt.id} className="bg-white hover:bg-zinc-50 transition-all rounded-xl border-b border-zinc-50">
+                              <td className="p-2 pl-4 flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full overflow-hidden border border-zinc-100 shadow-sm">
+                                  {apt.name?.[0] ? (
+                                    <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs uppercase">{apt.name[0]}</div>
+                                  ) : (
+                                    <div className="w-full h-full bg-zinc-100" />
+                                  )}
                                 </div>
+                                <div className="min-w-0">
+                                  <div className="font-display text-sm font-black text-[#5D1B54] tracking-tight truncate">{apt.name}</div>
+                                  <div className="text-[9px] font-bold text-zinc-400 tracking-widest uppercase">{apt.phone}</div>
+                                </div>
+                              </td>
 
-                                <div className="flex items-center justify-between border-t border-zinc-100/50 pt-2 mt-1">
-                                  <div className="flex flex-col gap-0.5">
-                                    <span className="text-[8px] font-black text-primary uppercase tracking-widest italic">{apt.service}</span>
-                                    <div className="flex items-center gap-1 text-[8px] text-zinc-400 font-bold mt-0.5">
-                                      <Clock className="w-2.5 h-2.5 text-zinc-300" />
-                                      {apt.start_time} - {apt.end_time}
+                              <td className="p-4">
+                                <div className="flex items-center gap-3">
+                                  {apt.image_url && (
+                                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-zinc-100 shadow-sm shrink-0">
+                                      <img src={apt.image_url} className="w-full h-full object-cover" alt={apt.service} />
                                     </div>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    {apt.status === "pending" && (
-                                      <button 
-                                        onClick={() => updateStatus(apt.id, "confirmed")}
-                                        className="bg-emerald-50 text-emerald-600 p-1 rounded hover:bg-emerald-100 transition-colors"
-                                        title="Confirm"
-                                      >
-                                        <Check className="w-3 h-3" />
-                                      </button>
+                                  )}
+                                  <div className="flex flex-col gap-1">
+                                    <div className="text-[10px] font-bold text-primary/80 uppercase tracking-widest italic">{apt.service}</div>
+                                    {apt.category === 'Online' && (
+                                      <span className="w-fit text-[7px] font-black bg-sky-100 text-sky-600 px-1.5 py-0.5 rounded uppercase tracking-[0.2em] border border-sky-200">Online</span>
                                     )}
-                                    <button 
-                                      onClick={() => { if (confirm('Delete record?')) deleteBooking(apt.id); }}
-                                      className="p-1 text-zinc-300 hover:text-rose-500 transition-colors"
-                                      title="Delete"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
                                   </div>
                                 </div>
-                              </div>
-                            ))
-                )}
+                              </td>
+
+                              <td className="p-4">
+                                <div className="space-y-0.5">
+                                  <div className="font-display text-xs font-black text-zinc-700">{apt.booking_date}</div>
+                                  <div className="flex items-center gap-1 text-primary/70 font-black">
+                                    <Clock className="w-3 h-3" />
+                                    <span className="text-[9px] uppercase tracking-[0.1em]">{apt.start_time}</span>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="p-4">
+                                <span className="font-black text-[#5D1B54] text-lg tracking-tighter">${apt.amount || 0}</span>
+                              </td>
+
+                              <td className="p-2 pr-4">
+                                <div className="flex items-center gap-2 w-full justify-end">
+                                  {apt.status === "pending" ? (
+                                    <div className="flex gap-1">
+                                      <button
+                                        className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-all"
+                                        onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "confirmed"); }}
+                                      >
+                                        Confirm
+                                      </button>
+                                      <button
+                                        className="bg-rose-50 text-rose-400 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all"
+                                        onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "cancelled"); }}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className={cn(
+                                      "py-1.5 px-4 rounded-lg text-center text-[9px] font-black uppercase tracking-[0.1em] flex items-center justify-center gap-2 border",
+                                      apt.status === "cancelled" ? "bg-white text-rose-500 border-rose-100" : "bg-white text-emerald-600 border-emerald-100"
+                                    )}>
+                                      {apt.status === 'confirmed' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                                      {apt.status}
+                                    </div>
+                                  )}
+                                  <button onClick={(e) => { e.stopPropagation(); if (confirm('Delete record?')) deleteBooking(apt.id); }} className="p-2 text-zinc-300 hover:text-rose-500 transition-colors">
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             )}
 
