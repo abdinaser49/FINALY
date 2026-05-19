@@ -803,30 +803,24 @@ const Dashboard = () => {
   // Dynamic Navigation Items based on Role
   const navItems: { id: Tab; label: string; icon: any }[] = isAdmin ? [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
-    { id: "walkin", label: "Walk-in", icon: UserPlus },
-    { id: "pos", label: "POS", icon: Store },
     { id: "appointments", label: "Appointments", icon: Calendar },
     { id: "clients", label: "Clients", icon: Users },
     { id: "jobs", label: "Services", icon: Scissors },
     { id: "rentals", label: "Rentals", icon: Box },
     { id: "staff", label: "Staff", icon: Users },
     { id: "finance", label: "Finance", icon: CreditCard },
-    { id: "products", label: "Products", icon: ShoppingBag },
-    { id: "users", label: "User Access", icon: ShieldCheck },
-    { id: "reports", label: "Sales History", icon: TrendingUp },
+    { id: "reports", label: "Reports", icon: ShoppingBag },
     { id: "settings", label: "Settings", icon: Settings },
   ] : isCashier ? [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
-    { id: "walkin", label: "Walk-in", icon: UserPlus },
-    { id: "pos", label: "POS", icon: Store },
     { id: "appointments", label: "Appointments", icon: Calendar },
     { id: "clients", label: "Clients", icon: Users },
-    { id: "products", label: "Products", icon: ShoppingBag },
+    { id: "jobs", label: "Services", icon: Scissors },
     { id: "rentals", label: "Rentals", icon: Box },
+    { id: "reports", label: "Reports", icon: ShoppingBag },
   ] : [
     { id: "appointments", label: "My Bookings", icon: Calendar },
     { id: "rentals", label: "Rentals", icon: Box },
-    { id: "products", label: "Products", icon: ShoppingBag },
   ];
 
   const sidebarStyles = "fixed lg:static inset-y-0 left-0 z-50 w-56 bg-gradient-to-b from-[#6D1B4B] to-[#4A0E32] text-white transform transition-transform duration-500 ease-in-out lg:translate-x-0 shadow-xl overflow-hidden";
@@ -1121,7 +1115,7 @@ const Dashboard = () => {
               className="w-full flex items-center gap-4 px-4 py-2.5 text-white/40 hover:text-white hover:bg-white/5 transition-all group rounded-xl"
             >
               <LogOut className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
-              <span className="text-[9px] font-black uppercase tracking-[0.2em]">Sign Out</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em]">Logout</span>
             </button>
           </div>
         </div>
@@ -1301,6 +1295,68 @@ const Dashboard = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* Quick Action Hub */}
+                <div className="px-2 mt-4 text-left">
+                  <h3 className="text-xs font-black text-zinc-400 uppercase tracking-wider mb-3">Quick Actions</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button
+                      onClick={() => setActiveTab('walkin')}
+                      className="bg-white hover:bg-zinc-50 border border-zinc-100 p-4 rounded-3xl flex items-center gap-3 transition-all group hover:scale-[1.02] shadow-sm text-left"
+                    >
+                      <div className="p-3 bg-rose-50 text-rose-500 rounded-2xl group-hover:bg-rose-100 transition-colors">
+                        <UserPlus className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">Walk-in Desk</h4>
+                        <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Register walk-in client</p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab('pos')}
+                      className="bg-white hover:bg-zinc-50 border border-zinc-100 p-4 rounded-3xl flex items-center gap-3 transition-all group hover:scale-[1.02] shadow-sm text-left"
+                    >
+                      <div className="p-3 bg-emerald-50 text-emerald-500 rounded-2xl group-hover:bg-emerald-100 transition-colors">
+                        <Store className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">POS Billing</h4>
+                        <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Sell products / checkout</p>
+                      </div>
+                    </button>
+
+                    {isAdmin && (
+                      <>
+                        <button
+                          onClick={() => setActiveTab('products')}
+                          className="bg-white hover:bg-zinc-50 border border-zinc-100 p-4 rounded-3xl flex items-center gap-3 transition-all group hover:scale-[1.02] shadow-sm text-left"
+                        >
+                          <div className="p-3 bg-amber-50 text-amber-500 rounded-2xl group-hover:bg-amber-100 transition-colors">
+                            <ShoppingBag className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">Products</h4>
+                            <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Manage inventory</p>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => setActiveTab('users')}
+                          className="bg-white hover:bg-zinc-50 border border-zinc-100 p-4 rounded-3xl flex items-center gap-3 transition-all group hover:scale-[1.02] shadow-sm text-left"
+                        >
+                          <div className="p-3 bg-indigo-50 text-indigo-500 rounded-2xl group-hover:bg-indigo-100 transition-colors">
+                            <ShieldCheck className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">User Access</h4>
+                            <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Permissions & roles</p>
+                          </div>
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
