@@ -110,6 +110,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [paid, setPaid] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("EVC Plus");
   const [dbServices, setDbServices] = useState<any[]>(services);
   const [dbStaff, setDbStaff] = useState<any[]>([]);
@@ -736,31 +737,78 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                        </button>
                      </div>
                    ) : (
-                     <div className="space-y-6 relative z-10">
-                       <div className="flex justify-between items-center opacity-60">
-                          <div className="flex flex-col">
-                            <span className="text-[8px] font-bold uppercase tracking-widest">Merchant</span>
-                            <span className="text-xs font-bold">{bizName.toUpperCase()}</span>
+                      <div className="space-y-6 relative z-10">
+                        <div className="flex justify-between items-center opacity-60">
+                           <div className="flex flex-col">
+                             <span className="text-[8px] font-bold uppercase tracking-widest">Merchant</span>
+                             <span className="text-xs font-bold">{bizName.toUpperCase()}</span>
+                           </div>
+                           <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/10 text-white">{paymentMethod}</span>
+                        </div>
+                        
+                        {paid ? (
+                          <div className="flex flex-col items-center justify-center space-y-4 py-6">
+                            <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.3)]">
+                              <Check className="w-8 h-8 text-white stroke-[3px]" />
+                            </div>
+                            <div className="text-center">
+                              <h4 className="text-emerald-400 font-bold text-sm tracking-widest uppercase">Payment Successful</h4>
+                              <p className="text-[10px] text-zinc-400 mt-1">Lacag bixintaada waa la xaqiijiyay!</p>
+                            </div>
                           </div>
-                          <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/10 text-white">{paymentMethod}</span>
-                       </div>
-                       
-                       <div className="text-center space-y-2">
-                          <span className="text-[9px] font-black uppercase tracking-[0.3em] opacity-40">Payment Code</span>
-                          <div className="text-4xl font-mono font-black tracking-[0.2em] text-primary">{merchantCode}</div>
-                          <p className="text-[9px] text-zinc-400 font-bold uppercase mt-1">Fadlan u dir lacagta merchant-ka kor ku xusan</p>
-                       </div>
+                        ) : isProcessingPayment ? (
+                          <div className="flex flex-col items-center justify-center space-y-6 py-6">
+                             <div className="relative w-20 h-20 flex items-center justify-center">
+                               <div className="absolute inset-0 border-4 border-zinc-800 rounded-full animate-[spin_3s_linear_infinite]" />
+                               <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                               <Phone className="w-6 h-6 text-primary animate-pulse" />
+                             </div>
+                             <div className="text-center space-y-2">
+                               <h4 className="font-display font-black text-lg text-white">Fadlan ka eeg taleefankaaga...</h4>
+                               <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Geli PIN-kaaga si aad u xaqiijiso lacagta</p>
+                             </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-5">
+                             <div className="space-y-2">
+                               <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Phone Number for Payment</label>
+                               <div className="relative">
+                                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold border-r border-zinc-800 pr-3 mr-3">+252</div>
+                                  <input 
+                                   type="tel" 
+                                   value={phone} 
+                                   onChange={e => setPhone(e.target.value)}
+                                   placeholder="61XXXXXXX"
+                                   className="w-full p-4 pl-20 bg-zinc-900 border border-zinc-800 rounded-2xl text-sm font-bold text-white focus:ring-2 focus:ring-primary outline-none" 
+                                 />
+                               </div>
+                             </div>
 
-                       <button 
-                         onClick={() => setPaid(true)} 
-                         className={cn(
-                           "w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[9px] transition-all", 
-                           paid ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "bg-white text-black hover:bg-primary hover:text-white"
-                         )}
-                       >
-                          {paid ? "✔ Payment Verified" : "Waan diray lacagta"}
-                       </button>
-                     </div>
+                             <div className="bg-zinc-900/50 p-4 rounded-2xl flex items-center justify-between border border-zinc-800/50">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total Amount</span>
+                                <span className="font-black text-xl text-primary">${selectedService.price}</span>
+                             </div>
+
+                             <button 
+                               onClick={() => {
+                                 if (!phone || phone.length < 6) {
+                                   toast.error("Fadlan geli lambarka aad lacagta uga bixinayso!");
+                                   return;
+                                 }
+                                 setIsProcessingPayment(true);
+                                 setTimeout(() => {
+                                   setIsProcessingPayment(false);
+                                   setPaid(true);
+                                   toast.success("Lacag bixinta si toos ah ayaa loo xaqiijiyay!");
+                                 }, 4500);
+                               }} 
+                               className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] bg-white text-black hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95"
+                             >
+                                Bixi Lacagta Hadda
+                             </button>
+                          </div>
+                        )}
+                      </div>
                    )}
                 </div>
               </motion.div>

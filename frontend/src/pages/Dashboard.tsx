@@ -7,7 +7,8 @@ import {
   ChevronDown, Bell, Search, Plus, MoreHorizontal, Edit, Trash2, Copy, MoreVertical, ChevronLeft, ChevronRight,
   Phone, CheckCircle2, Check, Clock, DollarSign, Briefcase, TrendingUp,
   ArrowUpRight, ArrowDownRight, CreditCard, Sparkles, Scissors, Box, Shirt, UserPlus,
-  Upload, Loader2, ImagePlus, ShoppingBag, Store, AlertTriangle, Download, XCircle, ShieldCheck, CalendarCheck
+  Upload, Loader2, ImagePlus, ShoppingBag, Store, AlertTriangle, Download, XCircle, ShieldCheck, CalendarCheck,
+  Globe, Palette, CloudUpload, FileText, ArrowRight, Info
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
@@ -57,6 +58,7 @@ const Dashboard = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [reportsSortLatest, setReportsSortLatest] = useState(true);
   const [reportsPage, setReportsPage] = useState(1);
+  const [reportsDateFilter, setReportsDateFilter] = useState<'all' | 'today' | 'month'>('all');
   const [dbServices, setDbServices] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
@@ -92,7 +94,7 @@ const Dashboard = () => {
   const [posCart, setPosCart] = useState<any[]>([]);
   const [posPaymentMethod, setPosPaymentMethod] = useState("Cash");
   const [posDiscount, setPosDiscount] = useState(0);
-  const [settingsSubTab, setSettingsSubTab] = useState<'staff' | 'business' | 'security' | 'database'>('business');
+  const [settingsSubTab, setSettingsSubTab] = useState<string>('grid');
 
   const [dbClearBookings, setDbClearBookings] = useState(false);
   const [dbClearExpenses, setDbClearExpenses] = useState(false);
@@ -102,6 +104,7 @@ const Dashboard = () => {
   const [dbIsClearing, setDbIsClearing] = useState(false);
   const [financeTab, setFinanceTab] = useState<'sales' | 'expenses'>(isAdmin ? 'sales' : 'expenses');
   const [financeSubTab, setFinanceSubTab] = useState<'sales' | 'expenses'>(isAdmin ? 'sales' : 'expenses');
+  const [financeDateFilter, setFinanceDateFilter] = useState<'all' | 'today' | 'month'>('all');
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -119,7 +122,8 @@ const Dashboard = () => {
     height_cm: "",
     serviceId: "",
     email: "",
-    password: ""
+    password: "",
+    category: ""
   });
   const [bizName, setBizName] = useState(localStorage.getItem('bizName') || "Qurux Dumar Salon");
   const [bizPhone, setBizPhone] = useState(localStorage.getItem('bizPhone') || "+252 61 7643394");
@@ -133,6 +137,20 @@ const Dashboard = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
+
+  const [bookingSettings, setBookingSettings] = useState({ autoApprove: true, requireDeposit: false });
+  const [paymentMethods, setPaymentMethods] = useState<Record<string, boolean>>({
+    'Cash': true, 'Credit Card': true, 'Zaad Service': true, 'EVC Plus': true, 'eDahab': false, 'Premier Wallet': false
+  });
+  const [notifSettings, setNotifSettings] = useState({
+    'Email Appointment Reminders': true,
+    'SMS Notifications to Clients': true,
+    'Daily Report Summaries': false,
+    'Low Inventory Alerts': false
+  });
+  const [themeMode, setThemeMode] = useState<'light'|'dark'>('light');
+  const [sysCurrency, setSysCurrency] = useState('USD ($)');
+  const [sysTimezone, setSysTimezone] = useState('Africa/Mogadishu (GMT+3)');
 
   useEffect(() => {
     fetchBookings();
@@ -503,19 +521,26 @@ const Dashboard = () => {
 
   const openEditService = (item: any, isRental: boolean = false) => {
     setEditingId(item.id);
-    setFormData({ ...formData, name: isRental ? item.name : "", service: isRental ? "" : item.name, description: item.description || "", amount: item.price.toString(), duration: item.duration || "", image: item.image_url || "", color: item.color || "", size: item.size || "", weight_kg: item.weight_kg || "", height_cm: item.height_cm || "" });
+    setFormData({ ...formData, name: isRental ? item.name : "", service: isRental ? "" : item.name, description: item.description || "", amount: item.price.toString(), duration: item.duration || "", image: item.image_url || "", color: item.color || "", size: item.size || "", weight_kg: item.weight_kg || "", height_cm: item.height_cm || "", category: item.category || "" });
     setModalType(isRental ? 'rental' : 'service');
   };
 
   const openEditBooking = (item: any) => {
     setEditingId(item.id);
+    const serviceNames = (item.service || "").split(",").map((s: string) => s.trim());
+    const matchedServices = dbServices.filter((srv: any) => serviceNames.includes(srv.name));
+    
+    const selected = matchedServices.length > 0
+      ? matchedServices.map((srv: any) => ({ id: srv.id, name: srv.name, price: srv.price, image_url: srv.image_url }))
+      : [{ id: item.service_id, name: item.service, price: item.amount, image_url: item.image_url }];
+
     setFormData({ 
       ...formData, 
       name: item.name, 
       phone: item.phone, 
       service: item.service, 
       serviceId: item.service_id, 
-      selectedServices: [{ id: item.service_id, name: item.service, price: item.amount, image_url: item.image_url }],
+      selectedServices: selected,
       date: item.booking_date, 
       time: item.start_time, 
       amount: item.amount.toString() 
@@ -575,26 +600,30 @@ const Dashboard = () => {
           return;
         }
 
-        const payloads = formData.selectedServices.map(srv => ({
+        const totalAmount = formData.selectedServices.reduce((sum, srv) => sum + (parseFloat(srv.price) || 0), 0);
+        const combinedServiceNames = formData.selectedServices.map(srv => srv.name).join(", ");
+        const firstServiceId = formData.selectedServices[0]?.id || null;
+        const firstImageUrl = formData.selectedServices[0]?.image_url || null;
+
+        const payload = {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
-          service: srv.name,
-          service_id: srv.id,
+          service: combinedServiceNames,
+          service_id: firstServiceId,
           customer_id: user?.id,
           booking_date: slotDate,
           start_time: slotTime,
           end_time: addHour(slotTime),
-          amount: parseFloat(srv.price) || 0,
-          image_url: srv.image_url || null,
+          amount: totalAmount,
+          image_url: firstImageUrl,
           status: 'pending'
-        }));
+        };
 
         if (editingId) {
-          const payload = payloads[0]; // when editing, we only update the single row
           const { error } = await supabase.from('bookings').update(payload).eq('id', editingId);
           if (error) throw error;
         } else {
-          const { error } = await supabase.from('bookings').insert(payloads);
+          const { error } = await supabase.from('bookings').insert([payload]);
           if (error) throw error;
         }
 
@@ -604,12 +633,7 @@ const Dashboard = () => {
           name: formData.service || formData.name,
           price: parseFloat(formData.amount) || 0,
           image_url: formData.image || null,
-          category: formData.description?.toLowerCase().includes('nail') ? 'nails' :
-            formData.description?.toLowerCase().includes('beauty') ? 'beauty' :
-              formData.description?.toLowerCase().includes('hair') ? 'hair' :
-                formData.description?.toLowerCase().includes('makeup') ? 'makeup' :
-                  formData.description?.toLowerCase().includes('henna') ? 'henna' :
-                    formData.description?.toLowerCase().includes('product') || activeTab === 'products' ? 'Product' : 'General'
+          category: formData.category || 'General'
         };
         if (formData.description) payload.description = formData.description;
         const { error } = editingId
@@ -780,7 +804,36 @@ const Dashboard = () => {
   };
 
   // Only show real data — no fake/fallback data
-  const allBookings = bookings;
+  // Filter arrays based on the global search query
+  const query = searchQuery.trim().toLowerCase();
+
+  const filteredBookings = query === "" 
+    ? bookings 
+    : bookings.filter(b => 
+        (b.name || "").toLowerCase().includes(query) ||
+        (b.phone || "").toLowerCase().includes(query) ||
+        (b.service || "").toLowerCase().includes(query) ||
+        (b.status || "").toLowerCase().includes(query)
+      );
+
+  const filteredServices = query === ""
+    ? dbServices
+    : dbServices.filter(s =>
+        (s.name || "").toLowerCase().includes(query) ||
+        (s.category || "").toLowerCase().includes(query) ||
+        (s.description || "").toLowerCase().includes(query)
+      );
+
+  const filteredStaff = query === ""
+    ? profiles
+    : profiles.filter(p =>
+        (p.full_name || p.name || "").toLowerCase().includes(query) ||
+        (p.email || "").toLowerCase().includes(query) ||
+        (p.role || "").toLowerCase().includes(query) ||
+        (p.phone || "").toLowerCase().includes(query)
+      );
+
+  const allBookings = filteredBookings;
   // Rentals overdue 24h
   const overdueRentals = bookings.filter(b => b.category === 'Dress' && (b.created_at ? new Date(b.created_at).getTime() : new Date(b.booking_date).getTime()) <= Date.now() - 24 * 60 * 60 * 1000);
 
@@ -839,6 +892,7 @@ const Dashboard = () => {
   const todayStr = getLocalDateString();
 
   const [aptViewMode, setAptViewMode] = useState<'list' | 'calendar'>('list');
+  const [appointmentsLayout, setAppointmentsLayout] = useState<'table' | 'cards'>('table');
   const [calendarCurrentDate, setCalendarCurrentDate] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState(todayStr);
 
@@ -979,8 +1033,8 @@ const Dashboard = () => {
     };
   });
 
-  const allClients = customers.length > 0 ? customers : Array.from(new Set(allBookings.filter(b => b.name).map(b => b.name))).map((name, i) => {
-    const userBookings = allBookings.filter(b => b.name === name);
+  const allClientsRaw = customers.length > 0 ? customers : Array.from(new Set(bookings.filter(b => b.name).map(b => b.name))).map((name, i) => {
+    const userBookings = bookings.filter(b => b.name === name);
     const lastBooking = userBookings[0];
     return {
       id: i + 1,
@@ -991,6 +1045,16 @@ const Dashboard = () => {
       spent: userBookings.filter(b => b.status === 'confirmed').reduce((acc, b) => acc + (Number(b.amount) || 0), 0)
     };
   });
+
+  const filteredClients = query === ""
+    ? allClientsRaw
+    : allClientsRaw.filter(c =>
+        (c.name || "").toLowerCase().includes(query) ||
+        (c.phone || "").toLowerCase().includes(query) ||
+        (c.email || "").toLowerCase().includes(query)
+      );
+  
+  const allClients = filteredClients;
 
   return (
     <>
@@ -1257,125 +1321,132 @@ const Dashboard = () => {
           <div key={activeTab}>
             {/* Overview */}
             {activeTab === "overview" && (
-              <div className="space-y-6 pb-10">
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 px-2">
-                  <div className="space-y-0.5">
-                    <h1 className="font-display text-lg font-black tracking-tight text-zinc-900 leading-none">{bizName}</h1>
-                    <p className="font-body text-zinc-400 font-medium text-[9px]">Welcome back! Overview.</p>
-                  </div>
-                  <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-full px-4 py-1.5 shadow-lg">
-                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                    <span className="text-[8px] font-black uppercase tracking-widest text-emerald-400">Admin Hosted</span>
+              <div className="space-y-5 pb-10">
+
+                {/* ── HERO BANNER ─────────────────────────────────────────── */}
+                <div className="relative mx-2 rounded-[28px] overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#4B0E3D] via-[#6D1B4B] to-[#2D0827]" />
+                  <div className="absolute -top-10 -right-10 w-56 h-56 bg-[#EE2A7B]/20 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-[#AB92FF]/15 rounded-full blur-2xl pointer-events-none" />
+                  <div className="relative z-10 p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+                    <div className="space-y-1.5">
+                      <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">
+                        {new Date().toLocaleDateString('en-US', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}
+                      </p>
+                      <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
+                        Welcome back, <span className="text-[#F4B4D4]">{userProfile?.full_name?.split(' ')[0] || (isAdmin ? 'Admin' : 'Staff')}! 👋</span>
+                      </h1>
+                      <p className="text-[11px] font-medium text-white/50">{bizName} · All systems running smoothly</p>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 shrink-0">
+                      <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-emerald-300">Live · Online</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Low Stock Alert Banner */}
+                {/* Low Stock Alert */}
                 {dbServices.filter(s => s.category === 'Product' && parseInt(s.duration) < 5).length > 0 && (
-                  <div className="mx-2 p-3 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-between animate-pulse">
+                  <div className="mx-2 p-3 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 bg-rose-500 text-white rounded-lg"><AlertTriangle className="w-3 h-3" /></div>
                       <div>
                         <p className="text-[8px] font-black text-rose-600 uppercase tracking-widest">Inventory Alert</p>
-                        <p className="text-[10px] font-bold text-rose-900 mt-0.5">Some products are running low on stock.</p>
+                        <p className="text-[10px] font-bold text-rose-900 mt-0.5">Some products are running low on stock!</p>
                       </div>
                     </div>
                     <button onClick={() => setActiveTab('products')} className="text-[8px] font-black uppercase tracking-widest text-rose-500 hover:underline">View</button>
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2 mt-4">
+                {/* ── STAT CARDS ─────────────────────────────────────────── */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-2">
                   {(isCashier ? [
-                    { label: 'My Sales', value: '$' + cashierTodayRevenue.toLocaleString(), icon: DollarSign, color: 'bg-[#10C871]', shadow: 'shadow-[#10C871]/30', subtext: '+12% from yesterday' },
-                    { label: 'Orders', value: cashierTodayOrders, icon: CheckCircle2, color: 'bg-[#EE2A7B]', shadow: 'shadow-[#EE2A7B]/30', subtext: '+4 from yesterday' },
+                    { label: "My Sales Today", value: '$' + cashierTodayRevenue.toLocaleString(), grad: 'from-emerald-500 to-teal-400', bg: 'bg-emerald-50', clr: 'text-emerald-600', icon: DollarSign },
+                    { label: 'My Orders', value: cashierTodayOrders, grad: 'from-[#EE2A7B] to-[#C0185E]', bg: 'bg-rose-50', clr: 'text-rose-500', icon: CheckCircle2 },
                   ] : [
-                    { label: 'Total Clients', value: allClients.length, icon: Users, color: 'bg-[#EE2A7B]', shadow: 'shadow-[#EE2A7B]/30', subtext: '+12 this month' },
-                    { label: "Today's Appointments", value: bookings.filter(b => b.booking_date === todayStr).length, icon: Calendar, color: 'bg-[#FFC4D9]', shadow: 'shadow-[#FFC4D9]/40', subtext: '+4 from yesterday', iconColor: 'text-[#EE2A7B]' },
-                    { label: "Today's Revenue", value: '$' + todayRevenue.toLocaleString(), icon: DollarSign, color: 'bg-[#10C871]', shadow: 'shadow-[#10C871]/30', subtext: '+18% from yesterday' },
-                    { label: 'Active Rentals', value: dbServices.filter(s => s.category === 'Dress').length, icon: Shirt, color: 'bg-[#AB92FF]', shadow: 'shadow-[#AB92FF]/30', subtext: '+6 this month', iconColor: 'text-[#5D1B54]' }
+                    { label: 'Total Clients', value: allClients.length, grad: 'from-[#EE2A7B] to-[#A0178A]', bg: 'bg-rose-50', clr: 'text-rose-500', icon: Users },
+                    { label: 'Total Appointments', value: allBookings.filter(b => b.status === 'confirmed').length, grad: 'from-violet-500 to-purple-400', bg: 'bg-violet-50', clr: 'text-violet-500', icon: Calendar },
+                    { label: 'Total Revenue', value: '$' + allBookings.filter(b => b.status === 'confirmed').reduce((acc, b) => acc + (b.amount || 0), 0).toLocaleString(), grad: 'from-emerald-500 to-teal-400', bg: 'bg-emerald-50', clr: 'text-emerald-600', icon: DollarSign },
+                    { label: 'Active Rentals', value: dbServices.filter(s => s.category === 'Dress').length, grad: 'from-[#AB92FF] to-indigo-400', bg: 'bg-indigo-50', clr: 'text-indigo-500', icon: Shirt },
                   ]).map((stat, i) => (
-                    <div
-                      key={i}
-                      className="bg-white p-6 rounded-[24px] border border-zinc-100/50 shadow-[0_4px_24px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:-translate-y-1 relative overflow-hidden group"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className={cn("w-[60px] h-[60px] rounded-full flex items-center justify-center shrink-0 shadow-lg relative z-10 transition-transform group-hover:scale-105", stat.color, stat.shadow)}>
-                          <stat.icon className={cn("w-7 h-7 stroke-[2px]", stat.iconColor || 'text-white')} />
-                        </div>
-                        <div className="flex-1 min-w-0 pt-1 relative z-10">
-                          <p className="text-[13px] font-bold text-zinc-500 mb-1 leading-none">{stat.label}</p>
-                          <h3 className="font-display text-[28px] font-black text-zinc-900 tracking-tight leading-none">{stat.value}</h3>
-                        </div>
+                    <div key={i} className="group relative bg-white rounded-[22px] border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 overflow-hidden p-5">
+                      <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${stat.grad}`} />
+                      <div className={`absolute -top-4 -right-4 w-20 h-20 rounded-full bg-gradient-to-br ${stat.grad} opacity-[0.07] blur-xl pointer-events-none`} />
+                      <div className={`w-11 h-11 ${stat.bg} rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-300`}>
+                        <stat.icon className={`w-5 h-5 ${stat.clr} stroke-[2px]`} />
                       </div>
-                      <div className="mt-6 flex items-center gap-1.5 relative z-10">
-                         <span className="text-[11px] font-bold text-zinc-500">{stat.subtext}</span>
-                         <ArrowUpRight className="w-4 h-4 text-[#10C871]" />
-                      </div>
+                      <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest leading-none mb-1.5">{stat.label}</p>
+                      <h3 className="font-display text-[30px] font-black text-zinc-900 tracking-tight leading-none">{stat.value}</h3>
                     </div>
                   ))}
                 </div>
 
-
-                {/* Quick Action Hub */}
-                <div className="px-2 mt-4 text-left">
-                  <h3 className="text-xs font-black text-zinc-400 uppercase tracking-wider mb-3">Quick Actions</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <button
-                      onClick={() => setActiveTab('walkin')}
-                      className="bg-white hover:bg-zinc-50 border border-zinc-100 p-4 rounded-3xl flex items-center gap-3 transition-all group hover:scale-[1.02] shadow-sm text-left"
-                    >
-                      <div className="p-3 bg-rose-50 text-rose-500 rounded-2xl group-hover:bg-rose-100 transition-colors">
-                        <UserPlus className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">Walk-in Desk</h4>
-                        <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Register walk-in client</p>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => setActiveTab('pos')}
-                      className="bg-white hover:bg-zinc-50 border border-zinc-100 p-4 rounded-3xl flex items-center gap-3 transition-all group hover:scale-[1.02] shadow-sm text-left"
-                    >
-                      <div className="p-3 bg-emerald-50 text-emerald-500 rounded-2xl group-hover:bg-emerald-100 transition-colors">
-                        <Store className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">POS Billing</h4>
-                        <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Sell products / checkout</p>
-                      </div>
-                    </button>
-
-                    {isAdmin && (
-                      <>
-                        <button
-                          onClick={() => setActiveTab('products')}
-                          className="bg-white hover:bg-zinc-50 border border-zinc-100 p-4 rounded-3xl flex items-center gap-3 transition-all group hover:scale-[1.02] shadow-sm text-left"
-                        >
-                          <div className="p-3 bg-amber-50 text-amber-500 rounded-2xl group-hover:bg-amber-100 transition-colors">
-                            <ShoppingBag className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">Products</h4>
-                            <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Manage inventory</p>
-                          </div>
-                        </button>
-
-                        <button
-                          onClick={() => setActiveTab('users')}
-                          className="bg-white hover:bg-zinc-50 border border-zinc-100 p-4 rounded-3xl flex items-center gap-3 transition-all group hover:scale-[1.02] shadow-sm text-left"
-                        >
-                          <div className="p-3 bg-indigo-50 text-indigo-500 rounded-2xl group-hover:bg-indigo-100 transition-colors">
-                            <ShieldCheck className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">User Access</h4>
-                            <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Permissions & roles</p>
-                          </div>
-                        </button>
-                      </>
-                    )}
+                {/* ── QUICK ACTIONS ──────────────────────────────────────── */}
+                <div className="px-2">
+                  <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.25em] mb-3">Quick Actions</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      { label: 'Walk-in Desk', sub: 'Register walk-in client', icon: UserPlus, tab: 'walkin', from: 'from-[#FFF0F6]', border: 'border-rose-100 hover:border-rose-200', bg: 'bg-[#EE2A7B]/10', clr: 'text-[#EE2A7B]', hbg: 'group-hover:bg-[#EE2A7B]/20', glow: 'hover:shadow-[0_8px_30px_rgba(238,42,123,0.12)]', blob: 'bg-[#EE2A7B]/5' },
+                      { label: 'POS Billing', sub: 'Sell products & checkout', icon: Store, tab: 'pos', from: 'from-[#F0FFF8]', border: 'border-emerald-100 hover:border-emerald-200', bg: 'bg-emerald-500/10', clr: 'text-emerald-600', hbg: 'group-hover:bg-emerald-500/20', glow: 'hover:shadow-[0_8px_30px_rgba(16,200,113,0.12)]', blob: 'bg-emerald-500/5' },
+                      ...(isAdmin ? [
+                        { label: 'Products', sub: 'Manage inventory', icon: ShoppingBag, tab: 'products', from: 'from-[#FFFBF0]', border: 'border-amber-100 hover:border-amber-200', bg: 'bg-amber-500/10', clr: 'text-amber-600', hbg: 'group-hover:bg-amber-500/20', glow: 'hover:shadow-[0_8px_30px_rgba(245,158,11,0.12)]', blob: 'bg-amber-500/5' },
+                        { label: 'Finance', sub: 'Revenue & Expenses', icon: TrendingUp, tab: 'finance', from: 'from-[#F3F0FF]', border: 'border-indigo-100 hover:border-indigo-200', bg: 'bg-indigo-500/10', clr: 'text-indigo-600', hbg: 'group-hover:bg-indigo-500/20', glow: 'hover:shadow-[0_8px_30px_rgba(99,102,241,0.12)]', blob: 'bg-indigo-500/5' },
+                      ] : []),
+                    ].map((a, i) => (
+                      <button key={i} onClick={() => setActiveTab(a.tab as Tab)}
+                        className={`group relative bg-gradient-to-br ${a.from} to-white border ${a.border} p-5 rounded-[20px] flex flex-col gap-3 text-left transition-all ${a.glow} hover:-translate-y-0.5 overflow-hidden`}>
+                        <div className={`absolute top-0 right-0 w-20 h-20 ${a.blob} rounded-full -mr-6 -mt-6 pointer-events-none`} />
+                        <div className={`w-10 h-10 ${a.bg} ${a.clr} rounded-xl flex items-center justify-center ${a.hbg} transition-colors`}>
+                          <a.icon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-[11px] font-black text-[#5D1B54] uppercase tracking-tight">{a.label}</h4>
+                          <p className="text-[9px] font-bold text-zinc-400 mt-0.5">{a.sub}</p>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
+
+                {/* ── RECENT BOOKINGS FEED ───────────────────────────────── */}
+                <div className="mx-2 bg-white rounded-[24px] border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-50">
+                    <div>
+                      <h3 className="text-[11px] font-black uppercase tracking-widest text-zinc-900">Recent Bookings</h3>
+                      <p className="text-[9px] font-bold text-zinc-400 mt-0.5 uppercase tracking-widest">Latest system activity</p>
+                    </div>
+                    <button onClick={() => setActiveTab('appointments')} className="text-[9px] font-black text-primary uppercase tracking-widest hover:underline">View All →</button>
+                  </div>
+                  {allBookings.length === 0 ? (
+                    <div className="py-12 text-center">
+                      <p className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">No bookings found</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-zinc-50">
+                      {allBookings.slice(0, 5).map((b, i) => (
+                        <div key={i} className="flex items-center gap-4 px-6 py-3.5 hover:bg-zinc-50/50 transition-colors">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white font-black text-[11px] uppercase shrink-0">
+                            {b.name?.[0] || '?'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-black text-zinc-900 truncate uppercase">{b.name}</p>
+                            <p className="text-[9px] font-bold text-zinc-400 truncate">{b.service} · {b.booking_date}</p>
+                          </div>
+                          <div className="text-right shrink-0 space-y-1">
+                            <p className="text-[12px] font-black text-zinc-900">${b.amount || 0}</p>
+                            <span className={cn(
+                              "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full",
+                              b.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600' :
+                              b.status === 'cancelled' ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-600'
+                            )}>{b.status}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
               </div>
             )}
 
@@ -1413,7 +1484,36 @@ const Dashboard = () => {
                     <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">{t.salesHistory}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="flex items-center gap-1.5 bg-white border border-zinc-200 px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:bg-zinc-50 transition-all shadow-sm">
+                    {/* Beautiful Layout Switcher Toggle */}
+                    <div className="bg-zinc-100/80 p-0.5 rounded-xl border border-zinc-200/50 flex items-center shadow-inner mr-1.5 animate-in fade-in zoom-in-95 duration-200">
+                      <button
+                        onClick={() => setAppointmentsLayout('table')}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200",
+                          appointmentsLayout === 'table'
+                            ? "bg-white text-[#83215D] shadow-sm font-black"
+                            : "text-zinc-400 hover:text-zinc-600"
+                        )}
+                      >
+                        Table
+                      </button>
+                      <button
+                        onClick={() => setAppointmentsLayout('cards')}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200",
+                          appointmentsLayout === 'cards'
+                            ? "bg-white text-[#83215D] shadow-sm font-black"
+                            : "text-zinc-400 hover:text-zinc-600"
+                        )}
+                      >
+                        Cards
+                      </button>
+                    </div>
+
+                    <button 
+                      onClick={downloadTransactionsCSV}
+                      className="flex items-center gap-1.5 bg-white border border-zinc-200 px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-zinc-600 hover:bg-zinc-50 transition-all shadow-sm duration-200"
+                    >
                       <Download className="w-3 h-3 text-zinc-400" /> Export
                     </button>
                     <button
@@ -1424,113 +1524,258 @@ const Dashboard = () => {
                         });
                         setModalType("appointment");
                       }}
-                      className="bg-primary text-white px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 hover:bg-primary/90 active:scale-95 transition-all shadow-md shadow-primary/20"
+                      className="bg-gradient-to-r from-[#83215D] to-[#5D1B54] text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 hover:shadow-[0_8px_20px_rgba(131,33,93,0.25)] hover:scale-[1.02] active:scale-95 transition-all duration-200"
                     >
-                      <Plus className="w-3 h-3" /> Add Booking
+                      <Plus className="w-3.5 h-3.5 stroke-[3px]" /> Add Booking
                     </button>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden animate-in fade-in-30 duration-200">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-zinc-50 border-b border-zinc-100">
-                          <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Client</th>
-                          <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Service</th>
-                          <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Date / Time</th>
-                          <th className="text-left py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Amount</th>
-                          <th className="text-right py-3 px-4 text-[9px] font-bold uppercase tracking-widest text-zinc-500">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-zinc-50">
-                        {allBookings.length === 0 ? (
-                          <tr><td colSpan={5} className="py-20 text-center text-zinc-300 font-bold uppercase tracking-widest bg-white/50 rounded-2xl">No schedule found</td></tr>
-                        ) : (
-                          allBookings.map((apt) => (
-                            <tr key={apt.id} className="bg-white hover:bg-zinc-50 transition-all rounded-xl border-b border-zinc-50">
-                              <td className="p-2 pl-4 flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full overflow-hidden border border-zinc-100 shadow-sm">
+                {appointmentsLayout === 'table' ? (
+                  <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-zinc-150/50 shadow-[0_12px_40px_rgba(93,27,84,0.03)] overflow-hidden transition-all duration-300 animate-in fade-in-30 duration-200">
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="bg-gradient-to-r from-zinc-50/60 to-zinc-50/20 border-b border-zinc-100">
+                            <th className="text-left py-4 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Client</th>
+                            <th className="text-left py-4 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Service</th>
+                            <th className="text-left py-4 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Date / Time</th>
+                            <th className="text-left py-4 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Amount</th>
+                            <th className="text-right py-4 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-100/50">
+                          {allBookings.length === 0 ? (
+                            <tr><td colSpan={5} className="py-24 text-center text-zinc-300 font-bold uppercase tracking-widest bg-white/50 rounded-2xl">No schedule found</td></tr>
+                          ) : (
+                            allBookings.map((apt) => {
+                              const services = (apt.service || "").split(",").map(s => s.trim()).filter(Boolean);
+                              return (
+                                <tr key={apt.id} className="group bg-white hover:bg-[#5D1B54]/[0.01] transition-all rounded-xl border-b border-zinc-100/40">
+                                  <td className="p-4 pl-6 flex items-center gap-3">
+                                    <div className="w-11 h-11 rounded-2xl overflow-hidden border border-zinc-100 shadow-[0_4px_12px_rgba(0,0,0,0.03)] group-hover:scale-[1.04] transition-transform duration-200">
+                                      {apt.name?.[0] ? (
+                                        <div className="w-full h-full bg-gradient-to-br from-[#83215D] to-[#5D1B54] flex items-center justify-center text-white font-black text-sm uppercase">{apt.name[0]}</div>
+                                      ) : (
+                                        <div className="w-full h-full bg-zinc-100" />
+                                      )}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="font-display text-sm font-black text-[#5D1B54] tracking-tight truncate group-hover:text-[#83215D] transition-colors">{apt.name}</div>
+                                      <div className="text-[9px] font-bold text-zinc-400 mt-0.5 tracking-wider uppercase">{apt.phone}</div>
+                                    </div>
+                                  </td>
+
+                                  <td className="p-4">
+                                    <div className="flex items-center gap-3">
+                                      {apt.image_url && (
+                                        <div className="w-11 h-11 rounded-2xl overflow-hidden border border-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] shrink-0">
+                                          <img src={apt.image_url} className="w-full h-full object-cover" alt={apt.service} />
+                                        </div>
+                                      )}
+                                      <div className="flex flex-col gap-1.5">
+                                        <div className="flex flex-wrap gap-1">
+                                          {services.map((srvName, idx) => (
+                                            <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#83215D]/[0.06] text-[#83215D] border border-[#83215D]/10 shadow-[0_1px_4px_rgba(131,33,93,0.03)] animate-in fade-in zoom-in-95 duration-200">
+                                              {srvName}
+                                            </span>
+                                          ))}
+                                        </div>
+                                        {apt.category === 'Online' && (
+                                          <span className="w-fit text-[7px] font-black bg-sky-100 text-sky-600 px-1.5 py-0.5 rounded uppercase tracking-[0.2em] border border-sky-200">Online</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  <td className="p-4">
+                                    <div className="space-y-1">
+                                      <div className="font-display text-xs font-black text-zinc-700">{apt.booking_date}</div>
+                                      <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-100 text-zinc-500 rounded-md text-[9px] font-black uppercase tracking-wider">
+                                        <Clock className="w-2.5 h-2.5 text-zinc-400" />
+                                        <span>{apt.start_time}</span>
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  <td className="p-4">
+                                    <span className="font-display font-black text-[#83215D] text-lg tracking-tight">${apt.amount || 0}</span>
+                                  </td>
+
+                                  <td className="p-4 pr-6">
+                                    <div className="flex items-center gap-2 w-full justify-end">
+                                      {apt.status === "pending" ? (
+                                        <div className="flex gap-1.5">
+                                          <button
+                                            className="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-md shadow-emerald-500/10 transition-all duration-200"
+                                            onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "confirmed"); }}
+                                          >
+                                            Confirm
+                                          </button>
+                                          <button
+                                            className="bg-rose-50 hover:bg-rose-100 text-rose-500 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-200"
+                                            onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "cancelled"); }}
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <div className={cn(
+                                          "py-1.5 px-4 rounded-xl text-center text-[9px] font-black uppercase tracking-[0.1em] flex items-center justify-center gap-2 border",
+                                          apt.status === "cancelled" 
+                                            ? "bg-[#FCE8E6] text-[#C5221F] border-[#FAD2CF]/80 shadow-[0_2px_8px_rgba(197,34,31,0.04)]" 
+                                            : "bg-[#E6F4EA] text-[#137333] border-[#CEEAD6]/80 shadow-[0_2px_8px_rgba(19,115,51,0.04)]"
+                                        )}>
+                                          {apt.status === 'confirmed' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                                          {apt.status}
+                                        </div>
+                                      )}
+                                      <button 
+                                        onClick={(e) => { e.stopPropagation(); if (confirm('Delete record?')) deleteBooking(apt.id); }} 
+                                        className="p-2 text-zinc-350 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all duration-200"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 animate-in fade-in-30 duration-200">
+                    {allBookings.length === 0 ? (
+                      <div className="col-span-full py-24 text-center text-zinc-300 font-bold uppercase tracking-widest bg-white rounded-3xl border border-zinc-150/50">No schedule found</div>
+                    ) : (
+                      allBookings.map((apt) => {
+                        const services = (apt.service || "").split(",").map(s => s.trim()).filter(Boolean);
+                        return (
+                          <div key={apt.id} className="group bg-white/90 backdrop-blur-md border border-zinc-150/60 rounded-3xl p-5 shadow-[0_8px_30px_rgba(93,27,84,0.02)] hover:shadow-[0_15px_40px_rgba(93,27,84,0.06)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+                            {/* Card Decorative Left Brand Line */}
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#83215D] to-[#5D1B54] opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                            {/* Top row: Avatar & Client Details + Status Badge */}
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-11 h-11 rounded-2xl overflow-hidden border border-zinc-100 shadow-[0_4px_12px_rgba(0,0,0,0.03)] shrink-0">
                                   {apt.name?.[0] ? (
-                                    <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs uppercase">{apt.name[0]}</div>
+                                    <div className="w-full h-full bg-gradient-to-br from-[#83215D] to-[#5D1B54] flex items-center justify-center text-white font-black text-sm uppercase">{apt.name[0]}</div>
                                   ) : (
                                     <div className="w-full h-full bg-zinc-100" />
                                   )}
                                 </div>
                                 <div className="min-w-0">
-                                  <div className="font-display text-sm font-black text-[#5D1B54] tracking-tight truncate">{apt.name}</div>
-                                  <div className="text-[9px] font-bold text-zinc-400 tracking-widest uppercase">{apt.phone}</div>
+                                  <h4 className="font-display text-sm font-black text-[#5D1B54] tracking-tight truncate group-hover:text-[#83215D] transition-colors uppercase">{apt.name}</h4>
+                                  <p className="text-[9px] font-bold text-zinc-400 tracking-wider uppercase mt-0.5">{apt.phone}</p>
                                 </div>
-                              </td>
+                              </div>
 
-                              <td className="p-4">
-                                <div className="flex items-center gap-3">
-                                  {apt.image_url && (
-                                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-zinc-100 shadow-sm shrink-0">
-                                      <img src={apt.image_url} className="w-full h-full object-cover" alt={apt.service} />
-                                    </div>
-                                  )}
-                                  <div className="flex flex-col gap-1">
-                                    <div className="text-[10px] font-bold text-primary/80 uppercase tracking-widest italic">{apt.service}</div>
-                                    {apt.category === 'Online' && (
-                                      <span className="w-fit text-[7px] font-black bg-sky-100 text-sky-600 px-1.5 py-0.5 rounded uppercase tracking-[0.2em] border border-sky-200">Online</span>
-                                    )}
-                                  </div>
+                              {/* Status Badge */}
+                              {apt.status !== "pending" ? (
+                                <span className={cn(
+                                  "py-1 px-3 rounded-full text-[8px] font-black uppercase tracking-wider border",
+                                  apt.status === "cancelled" 
+                                    ? "bg-[#FCE8E6] text-[#C5221F] border-[#FAD2CF]/80 shadow-[0_2px_8px_rgba(197,34,31,0.04)]" 
+                                    : "bg-[#E6F4EA] text-[#137333] border-[#CEEAD6]/80 shadow-[0_2px_8px_rgba(19,115,51,0.04)]"
+                                )}>
+                                  {apt.status}
+                                </span>
+                              ) : (
+                                <span className="py-1 px-3 rounded-full text-[8px] font-black uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-200/60 shadow-[0_2px_8px_rgba(245,158,11,0.04)]">
+                                  Pending
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Middle row: Service Image & List */}
+                            <div className="my-4 flex items-center gap-3">
+                              {apt.image_url ? (
+                                <div className="w-12 h-12 rounded-2xl overflow-hidden border border-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] shrink-0 group-hover:scale-105 transition-transform duration-300">
+                                  <img src={apt.image_url} className="w-full h-full object-cover" alt={apt.service} />
                                 </div>
-                              </td>
-
-                              <td className="p-4">
-                                <div className="space-y-0.5">
-                                  <div className="font-display text-xs font-black text-zinc-700">{apt.booking_date}</div>
-                                  <div className="flex items-center gap-1 text-primary/70 font-black">
-                                    <Clock className="w-3 h-3" />
-                                    <span className="text-[9px] uppercase tracking-[0.1em]">{apt.start_time}</span>
-                                  </div>
+                              ) : (
+                                <div className="w-12 h-12 rounded-2xl bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400 shrink-0">
+                                  <Sparkles className="w-5 h-5 opacity-40" />
                                 </div>
-                              </td>
+                              )}
+                              <div className="flex flex-col gap-1">
+                                <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                  {services.map((srvName, idx) => (
+                                    <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-[#83215D]/[0.06] text-[#83215D] border border-[#83215D]/10">
+                                      {srvName}
+                                    </span>
+                                  ))}
+                                </div>
+                                {apt.category === 'Online' && (
+                                  <span className="w-fit text-[6px] font-black bg-sky-100 text-sky-600 px-1.5 py-0.5 rounded uppercase tracking-wider border border-sky-200">Online</span>
+                                )}
+                                {(() => {
+                                  let payMethod = "";
+                                  if (apt.notes && apt.notes.includes("Payment Method:")) {
+                                    const match = apt.notes.match(/Payment Method:\s*([^\n]+)/);
+                                    if (match) payMethod = match[1].trim();
+                                  }
+                                  if (payMethod) {
+                                    return <span className="w-fit text-[6px] font-black bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded uppercase tracking-wider border border-emerald-200">{payMethod}</span>;
+                                  }
+                                  return null;
+                                })()}
+                              </div>
+                            </div>
 
-                              <td className="p-4">
-                                <span className="font-black text-[#5D1B54] text-lg tracking-tighter">${apt.amount || 0}</span>
-                              </td>
+                            {/* Bottom row: Time badge & Price + Actions Overlay */}
+                            <div className="flex items-center justify-between border-t border-zinc-100/60 pt-3.5 mt-auto">
+                              <div className="space-y-0.5">
+                                <div className="font-display text-[10px] font-black text-zinc-400 uppercase tracking-wider">{apt.booking_date}</div>
+                                <div className="flex items-center gap-1 text-[#83215D] font-black text-[9px] uppercase tracking-wider">
+                                  <Clock className="w-3 h-3 text-[#83215D]/70" />
+                                  <span>{apt.start_time}</span>
+                                </div>
+                              </div>
 
-                              <td className="p-2 pr-4">
-                                <div className="flex items-center gap-2 w-full justify-end">
-                                  {apt.status === "pending" ? (
-                                    <div className="flex gap-1">
+                              <div className="flex items-center gap-3">
+                                <span className="font-display font-black text-[#83215D] text-xl tracking-tight">${apt.amount || 0}</span>
+                                
+                                {/* Hoverable/Always-on elegant actions */}
+                                <div className="flex items-center gap-1">
+                                  {apt.status === "pending" && (
+                                    <>
                                       <button
-                                        className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-all"
+                                        className="bg-emerald-500 hover:bg-emerald-600 text-white p-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-md transition-all active:scale-95 duration-200"
                                         onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "confirmed"); }}
+                                        title="Confirm"
                                       >
-                                        Confirm
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
                                       </button>
                                       <button
-                                        className="bg-rose-50 text-rose-400 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all"
+                                        className="bg-rose-50 hover:bg-rose-100 text-rose-500 p-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-200"
                                         onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "cancelled"); }}
+                                        title="Cancel"
                                       >
-                                        Cancel
+                                        <XCircle className="w-3.5 h-3.5" />
                                       </button>
-                                    </div>
-                                  ) : (
-                                    <div className={cn(
-                                      "py-1.5 px-4 rounded-lg text-center text-[9px] font-black uppercase tracking-[0.1em] flex items-center justify-center gap-2 border",
-                                      apt.status === "cancelled" ? "bg-white text-rose-500 border-rose-100" : "bg-white text-emerald-600 border-emerald-100"
-                                    )}>
-                                      {apt.status === 'confirmed' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                                      {apt.status}
-                                    </div>
+                                    </>
                                   )}
-                                  <button onClick={(e) => { e.stopPropagation(); if (confirm('Delete record?')) deleteBooking(apt.id); }} className="p-2 text-zinc-300 hover:text-rose-500 transition-colors">
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); if (confirm('Delete record?')) deleteBooking(apt.id); }} 
+                                    className="p-1.5 text-zinc-350 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all duration-200"
+                                    title="Delete"
+                                  >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -1694,14 +1939,27 @@ const Dashboard = () => {
                                   <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">{apt.name}</h4>
                                   <p className="text-[8px] font-semibold text-zinc-400 uppercase tracking-widest mt-0.5">{apt.phone}</p>
                                 </div>
-                                <span className={cn(
-                                  "text-[7px] font-black px-1.5 py-0.5 rounded uppercase tracking-[0.15em] border",
-                                  apt.status === "confirmed" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                                  apt.status === "cancelled" ? "bg-rose-50 text-rose-500 border-rose-100" :
-                                  "bg-amber-50 text-amber-600 border-amber-100"
-                                )}>
-                                  {apt.status}
-                                </span>
+                                <div className="flex flex-col items-end gap-1">
+                                  <span className={cn(
+                                    "text-[7px] font-black px-1.5 py-0.5 rounded uppercase tracking-[0.15em] border",
+                                    apt.status === "confirmed" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                                    apt.status === "cancelled" ? "bg-rose-50 text-rose-500 border-rose-100" :
+                                    "bg-amber-50 text-amber-600 border-amber-100"
+                                  )}>
+                                    {apt.status}
+                                  </span>
+                                  {(() => {
+                                    let payMethod = "";
+                                    if (apt.notes && apt.notes.includes("Payment Method:")) {
+                                      const match = apt.notes.match(/Payment Method:\s*([^\n]+)/);
+                                      if (match) payMethod = match[1].trim();
+                                    }
+                                    if (payMethod) {
+                                      return <span className="text-[6.5px] font-black px-1.5 py-0.5 rounded uppercase tracking-[0.15em] border border-zinc-200 bg-white text-zinc-500">{payMethod}</span>;
+                                    }
+                                    return null;
+                                  })()}
+                                </div>
                               </div>
 
                               <div className="flex items-center justify-between border-t border-zinc-100/50 pt-2 mt-1">
@@ -1802,10 +2060,29 @@ const Dashboard = () => {
                 </div>
 
                 <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden mx-2">
-                  <div className="p-4 border-b border-zinc-50 bg-zinc-50/30 flex justify-between items-center text-left">
-                    <h3 className="font-display font-bold text-[9px] uppercase tracking-widest text-zinc-400">
-                        {financeTab === 'sales' ? 'Recent Transactions' : 'Recent Expenses'}
-                    </h3>
+                  <div className="p-4 border-b border-zinc-50 bg-zinc-50/30 flex flex-wrap items-center justify-between gap-3 text-left">
+                    <div>
+                      <h3 className="font-display font-bold text-[9px] uppercase tracking-widest text-zinc-400">
+                        {financeTab === 'sales' ? 'Sales Data' : 'Expenses Data'}
+                      </h3>
+                      {/* Finance date filter */}
+                      <div className="flex items-center gap-2 mt-2">
+                        {(['all','today','month'] as const).map((f) => (
+                          <button
+                            key={f}
+                            onClick={() => setFinanceDateFilter(f)}
+                            className={cn(
+                              "px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all",
+                              financeDateFilter === f
+                                ? "bg-primary text-white border-primary"
+                                : "bg-white text-zinc-400 border-zinc-200 hover:border-zinc-300"
+                            )}
+                          >
+                            {f === 'all' ? 'All' : f === 'today' ? 'Today' : 'This Month'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <CreditCard className="w-3 h-3 text-zinc-200" />
                   </div>
                   <div className="overflow-x-auto">
@@ -1817,11 +2094,23 @@ const Dashboard = () => {
                             <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400">Service</th>
                             <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Date</th>
                             <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-right">Amount</th>
+                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Payment</th>
                             <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {allBookings.filter(b => b.status === 'confirmed').slice(0, 10).map((b, i) => (
+                            {(() => {
+                              const fm = new Date();
+                              const fmStr = `${fm.getFullYear()}-${String(fm.getMonth()+1).padStart(2,'0')}`;
+                              return allBookings
+                                .filter(b => b.status === 'confirmed')
+                                .filter(b => {
+                                  if (financeDateFilter === 'today') return b.booking_date === todayStr;
+                                  if (financeDateFilter === 'month') return (b.booking_date||'').startsWith(fmStr);
+                                  return true;
+                                })
+                                .slice(0, 20)
+                                .map((b, i) => (
                             <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
                                 <td className="p-3">
                                 <p className="text-[10px] font-bold text-zinc-900">{b.name}</p>
@@ -1845,10 +2134,21 @@ const Dashboard = () => {
                                 <td className="p-3 text-[9px] text-zinc-400 text-center font-medium">{b.booking_date}</td>
                                 <td className="p-3 text-right font-black text-[10px] text-zinc-900">${b.amount || 0}</td>
                                 <td className="p-3 text-center">
+                                  {(() => {
+                                    let payMethod = "Cash";
+                                    if (b.notes && b.notes.includes("Payment Method:")) {
+                                      const match = b.notes.match(/Payment Method:\s*([^\n]+)/);
+                                      if (match) payMethod = match[1].trim();
+                                    }
+                                    return <span className="text-[7px] font-black uppercase tracking-widest px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded-md border border-zinc-200">{payMethod}</span>;
+                                  })()}
+                                </td>
+                                <td className="p-3 text-center">
                                 <span className="text-[7px] font-black uppercase tracking-widest px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">Paid</span>
                                 </td>
                             </tr>
-                            ))}
+                            ));
+                            })()}
                         </tbody>
                         </table>
                     ) : (
@@ -1863,11 +2163,29 @@ const Dashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {expenses.length === 0 ? (
+                            {(() => {
+                              const fe = new Date();
+                              const feStr = `${fe.getFullYear()}-${String(fe.getMonth()+1).padStart(2,'0')}`;
+                              const filteredExp = expenses.filter(e => {
+                                // Match date filter
+                                let dateMatch = true;
+                                if (financeDateFilter === 'today') dateMatch = e.date === todayStr;
+                                if (financeDateFilter === 'month') dateMatch = (e.date||'').startsWith(feStr);
+                                
+                                // Match search query
+                                let searchMatch = true;
+                                if (query) {
+                                  searchMatch = (e.title || "").toLowerCase().includes(query) ||
+                                                (e.amount?.toString() || "").includes(query);
+                                }
+                                
+                                return dateMatch && searchMatch;
+                              });
+                              return filteredExp.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="p-10 text-center text-zinc-400 text-[10px] font-bold uppercase tracking-widest">No expenses recorded</td>
+                                    <td colSpan={5} className="p-10 text-center text-zinc-400 text-[10px] font-bold uppercase tracking-widest">No expenses recorded ({financeDateFilter === 'today' ? 'Today' : financeDateFilter === 'month' ? 'This Month' : 'All Time'})</td>
                                 </tr>
-                            ) : expenses.map((e, i) => (
+                              ) : filteredExp.map((e, i) => (
                             <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
                                 <td className="p-3 text-[10px] font-bold text-zinc-900">{e.title}</td>
                                 <td className="p-3 text-[9px] font-black text-zinc-400 uppercase">{e.category}</td>
@@ -1877,7 +2195,8 @@ const Dashboard = () => {
                                     <button onClick={() => { if(confirm('Delete?')) (supabase as any).from('expenses').delete().eq('id', e.id).then(() => fetchExpenses()) }} className="text-zinc-300 hover:text-rose-500"><Trash2 className="w-3 h-3" /></button>
                                 </td>
                             </tr>
-                            ))}
+                            ));
+                            })()}
                         </tbody>
                         </table>
                     )}
@@ -1912,7 +2231,7 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {dbServices.filter(s => s.category !== 'Dress' && s.category !== 'Product').length === 0 ? (
+                        {filteredServices.filter(s => s.category !== 'Dress' && s.category !== 'Product').length === 0 ? (
                           <tr>
                             <td colSpan={4} className="p-10 text-center">
                               <div className="flex flex-col items-center justify-center gap-2">
@@ -1921,7 +2240,7 @@ const Dashboard = () => {
                               </div>
                             </td>
                           </tr>
-                        ) : dbServices.filter(s => s.category !== 'Dress' && s.category !== 'Product').map((serv, i) => (
+                        ) : filteredServices.filter(s => s.category !== 'Dress' && s.category !== 'Product').map((serv, i) => (
                           <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors group">
                             <td className="p-4">
                               <div className="flex items-center gap-3">
@@ -1981,7 +2300,7 @@ const Dashboard = () => {
                   </button>
                 </div>
 
-                {dbServices.filter(s => s.category === 'Dress').length === 0 ? (
+                {filteredServices.filter(s => s.category === 'Dress').length === 0 ? (
                     <div className="bg-white border border-zinc-100 rounded-3xl p-16 text-center space-y-4 shadow-sm">
 <div className="w-16 h-16 bg-[#5D1B54]/5 rounded-full flex items-center justify-center mx-auto text-[#5D1B54]">
                       <Shirt className="w-6 h-6 stroke-[1.5px]" />
@@ -1993,7 +2312,7 @@ const Dashboard = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {dbServices.filter(s => s.category === 'Dress').map((dress, i) => (
+                    {filteredServices.filter(s => s.category === 'Dress').map((dress, i) => (
                       <div 
                         key={i} 
                         className="group bg-white rounded-3xl border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] overflow-hidden transition-all duration-500 hover:-translate-y-1.5 flex flex-col relative"
@@ -2177,9 +2496,9 @@ const Dashboard = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {profiles.length === 0 ? (
+                          {filteredStaff.length === 0 ? (
                             <tr><td colSpan={5} className="p-10 text-center text-[10px] text-zinc-400">No staff found.</td></tr>
-                          ) : profiles.map((s, i) => (
+                          ) : filteredStaff.map((s, i) => (
                             <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors group">
                               <td className="p-4">
                                 <div className="flex items-center gap-3">
@@ -2226,63 +2545,132 @@ const Dashboard = () => {
 
             {/* System Settings Tab */}
             {activeTab === "settings" && (
-              <div className="space-y-6 pb-12 px-2 max-w-6xl mx-auto text-left">
+              <div className="space-y-6 pb-12 px-2 max-w-[1200px] mx-auto text-left">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-zinc-100 pb-5">
                   <div>
-                    <h1 className="font-display text-2xl font-black text-zinc-950 tracking-tight">System Settings</h1>
-                    <p className="font-body text-zinc-400 font-medium text-[10px] mt-0.5 uppercase tracking-wider">Configure your salon's core configuration and preferences</p>
+                    <h1 className="font-display text-2xl font-black text-zinc-950 tracking-tight">Settings</h1>
+                    <p className="font-body text-zinc-400 font-medium text-[11px] mt-1 tracking-wide">Manage your salon preferences and system configuration</p>
                   </div>
+                  
+                  {settingsSubTab === 'grid' ? (
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-zinc-100 bg-white shadow-sm">
+                        <ShieldCheck className="w-4 h-4 text-rose-500 stroke-[2.5px]" />
+                        <span className="text-[10px] font-bold text-zinc-700 uppercase tracking-widest">System Secure</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-1" />
+                      </div>
+                      <button className="bg-rose-400 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-md shadow-rose-400/20 active:scale-95">
+                        <CheckCircle2 className="w-4 h-4" />
+                        Save Changes
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => setSettingsSubTab('grid')}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-800 hover:bg-zinc-50 transition-colors shadow-sm"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      Back to Settings Grid
+                    </button>
+                  )}
                 </div>
 
-                <div className="grid lg:grid-cols-12 gap-8 items-start">
-                  {/* Left Column: Vertical Premium Navigation Options */}
-                  <div className="lg:col-span-4 bg-white border border-zinc-100 rounded-3xl shadow-sm p-4 space-y-2">
-                    {[
-                      { id: 'business', label: 'Salon Profile', desc: 'Identity details, opening hours & capacity limits', icon: Store, color: 'bg-primary/10 text-primary' },
-                      { id: 'security', label: 'Security & Access', desc: 'Manage password, credentials & active session info', icon: ShieldCheck, color: 'text-indigo-500 bg-indigo-50' },
-                      { id: 'database', label: 'Data Reset', desc: 'Clean system tables, reset expenses, client records', icon: Trash2, color: 'bg-rose-50 text-rose-500' },
-                    ].map(tab => {
-                      const isSubSelected = settingsSubTab === tab.id;
-                      return (
+                {settingsSubTab === 'grid' ? (
+                  <div className="animate-in fade-in-30 slide-in-from-bottom-4 duration-500 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {[
+                        { id: 'business', title: 'Salon Profile', desc: 'Update salon identity, contact info, opening hours & capacity.', icon: Store, bg: 'bg-rose-50', color: 'text-rose-500' },
+                        { id: 'security', title: 'Security & Access', desc: 'Manage passwords, login security and active sessions.', icon: ShieldCheck, bg: 'bg-violet-50', color: 'text-violet-500' },
+                        { id: 'staff_perm', title: 'Staff Permissions', desc: 'Control what your staff can access and manage.', icon: Users, bg: 'bg-rose-50', color: 'text-rose-500' },
+                        { id: 'booking_settings', title: 'Booking Settings', desc: 'Configure appointment rules, buffer time and other preferences.', icon: Calendar, bg: 'bg-rose-50', color: 'text-rose-500' },
+                        { id: 'payment_methods', title: 'Payment Methods', desc: 'Manage payment options, taxes and receipt preferences.', icon: CreditCard, bg: 'bg-rose-50', color: 'text-rose-500' },
+                        { id: 'rentals_mgt', title: 'Rentals Management', desc: 'Manage chair/room rentals, pricing and availability.', icon: Briefcase, bg: 'bg-violet-50', color: 'text-violet-500' },
+                        { id: 'notifications', title: 'Notifications', desc: 'Customize email, SMS and in-app notifications for staff & clients.', icon: Bell, bg: 'bg-violet-50', color: 'text-violet-500' },
+                        { id: 'localization', title: 'Localization', desc: 'Set language, date format, time zone and regional settings.', icon: Globe, bg: 'bg-rose-50', color: 'text-rose-500' },
+                        { id: 'appearance', title: 'Appearance', desc: 'Customize theme, colors, logo and system appearance.', icon: Palette, bg: 'bg-violet-50', color: 'text-violet-500' },
+                        { id: 'database', title: 'Data Reset', desc: 'Reset system data like expenses, clients, services and more.', icon: Trash2, bg: 'bg-rose-50', color: 'text-rose-500' },
+                        { id: 'backup', title: 'Backup & Restore', desc: 'Backup your data and restore when needed.', icon: CloudUpload, bg: 'bg-violet-50', color: 'text-violet-500' },
+                        { id: 'logs', title: 'System Logs', desc: 'View system activity and important logs.', icon: FileText, bg: 'bg-rose-50', color: 'text-rose-500' },
+                      ].map((item, idx) => (
                         <button
-                          key={tab.id}
-                          onClick={() => setSettingsSubTab(tab.id as any)}
-                          className={cn(
-                            "w-full flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 text-left border relative group",
-                            isSubSelected 
-                              ? "bg-primary/5 border-primary shadow-sm ring-1 ring-primary" 
-                              : "bg-white border-transparent hover:border-zinc-200/50 hover:bg-zinc-50/50"
-                          )}
+                          key={idx}
+                          onClick={() => setSettingsSubTab(item.id)}
+                          className="flex items-center gap-4 bg-white p-5 rounded-3xl shadow-[0_2px_15px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-zinc-100/80 transition-all duration-300 text-left group hover:-translate-y-0.5"
                         >
-                          <div className={cn("p-2.5 rounded-xl shrink-0 transition-colors", tab.color)}>
-                            <tab.icon className="w-5 h-5" />
+                          <div className={cn("w-[46px] h-[46px] rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", item.bg)}>
+                            <item.icon className={cn("w-5 h-5", item.color)} />
                           </div>
-                          <div>
-                            <h3 className={cn("text-xs font-black uppercase tracking-wider", isSubSelected ? "text-primary" : "text-zinc-800")}>
-                              {tab.label}
-                            </h3>
-                            <p className="text-[9px] font-medium text-zinc-400 mt-1 uppercase leading-normal">
-                              {tab.desc}
-                            </p>
+                          <div className="flex-1 min-w-0 pr-2">
+                            <h3 className="text-[13px] font-black text-zinc-900 tracking-tight">{item.title}</h3>
+                            <p className="text-[10px] font-medium text-zinc-500 mt-0.5 leading-relaxed pr-2">{item.desc}</p>
+                          </div>
+                          <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                            <ArrowRight className="w-4 h-4 text-zinc-300 group-hover:text-zinc-600 transition-colors group-hover:translate-x-1" />
                           </div>
                         </button>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
 
-                  {/* Right Column: Selected settings tab block */}
-                  <div className="lg:col-span-8 space-y-6">
+                    {/* System Information Banner */}
+                    <div className="bg-rose-50/40 rounded-3xl p-5 border border-rose-100 flex flex-col md:flex-row items-center justify-between gap-6 mt-8">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                          <Info className="w-5 h-5 text-rose-600" />
+                        </div>
+                        <div>
+                          <h4 className="text-[12px] font-black text-zinc-900">System Information</h4>
+                          <p className="text-[10px] font-medium text-zinc-500 mt-0.5">Your system is up to date and running smoothly.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap items-center gap-8 md:gap-12 text-left">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
+                            <Box className="w-3.5 h-3.5 text-rose-500" />
+                          </div>
+                          <div>
+                            <p className="text-[9px] font-black uppercase tracking-wider text-zinc-900">Version</p>
+                            <p className="text-[10px] font-medium text-zinc-500 mt-0.5">v1.0.0</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-violet-50 flex items-center justify-center shrink-0 shadow-sm border border-violet-100">
+                            <Calendar className="w-3.5 h-3.5 text-violet-500" />
+                          </div>
+                          <div>
+                            <p className="text-[9px] font-black uppercase tracking-wider text-zinc-900">Last Backup</p>
+                            <p className="text-[10px] font-medium text-zinc-500 mt-0.5">May 12, 2024</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 shadow-sm border border-emerald-100">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                          </div>
+                          <div>
+                            <p className="text-[9px] font-black uppercase tracking-wider text-zinc-900">System Status</p>
+                            <p className="text-[10px] font-medium text-zinc-500 mt-0.5">All Systems Operational</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid lg:grid-cols-12 gap-8 items-start pt-2">
+                    <div className="lg:col-span-8 space-y-6 lg:col-start-3">
                     {settingsSubTab === 'business' && (
                       <div className="grid md:grid-cols-2 gap-6 animate-in fade-in-30 duration-200">
                         {/* Salon Identity Card */}
-                        <div className="bg-white border border-zinc-100 rounded-3xl shadow-sm p-6 space-y-6">
-                          <div className="flex items-center gap-3 border-b border-zinc-50 pb-4">
-                            <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
-                              <Store className="w-5 h-5" />
+                        <div className="group relative bg-white rounded-[22px] border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden p-6 space-y-6 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-300">
+                          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#EE2A7B] to-[#C0185E]" />
+                          <div className="flex items-center gap-4 border-b border-zinc-50 pb-5">
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-rose-50">
+                              <Store className="w-6 h-6 text-rose-500" />
                             </div>
                             <div>
-                              <h2 className="text-xs font-black uppercase tracking-wider text-zinc-900">Salon Identity</h2>
-                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Manage Salon contact information</p>
+                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Salon Identity</h2>
+                              <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Manage Salon contact information</p>
                             </div>
                           </div>
 
@@ -2343,14 +2731,15 @@ const Dashboard = () => {
                         </div>
 
                         {/* Operational Hours Card */}
-                        <div className="bg-white border border-zinc-100 rounded-3xl shadow-sm p-6 space-y-6">
-                          <div className="flex items-center gap-3 border-b border-zinc-50 pb-4">
-                            <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
-                              <Clock className="w-5 h-5" />
+                        <div className="group relative bg-white rounded-[22px] border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden p-6 space-y-6 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-300">
+                          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-500 to-teal-400" />
+                          <div className="flex items-center gap-4 border-b border-zinc-50 pb-5">
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-emerald-50">
+                              <Clock className="w-6 h-6 text-emerald-600" />
                             </div>
                             <div>
-                              <h2 className="text-xs font-black uppercase tracking-wider text-zinc-900">Operations & Limits</h2>
-                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Control workhours & booking limits</p>
+                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Operations & Limits</h2>
+                              <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Control workhours & booking limits</p>
                             </div>
                           </div>
 
@@ -2421,14 +2810,15 @@ const Dashboard = () => {
                     {settingsSubTab === 'security' && (
                       <div className="grid md:grid-cols-2 gap-6 animate-in fade-in-30 duration-200">
                         {/* Change Password Card */}
-                        <div className="bg-white border border-zinc-100 rounded-3xl shadow-sm p-6 space-y-6">
-                          <div className="flex items-center gap-3 border-b border-zinc-50 pb-4">
-                            <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
-                              <ShieldCheck className="w-5 h-5" />
+                        <div className="group relative bg-white rounded-[22px] border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden p-6 space-y-6 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-300">
+                          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-violet-500 to-purple-400" />
+                          <div className="flex items-center gap-4 border-b border-zinc-50 pb-5">
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-violet-50">
+                              <ShieldCheck className="w-6 h-6 text-violet-500" />
                             </div>
                             <div>
-                              <h2 className="text-xs font-black uppercase tracking-wider text-zinc-900">Change Password</h2>
-                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Secure your admin credentials</p>
+                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Change Password</h2>
+                              <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Secure your admin credentials</p>
                             </div>
                           </div>
 
@@ -2483,15 +2873,16 @@ const Dashboard = () => {
                         </div>
 
                         {/* Security Overview / Session Card */}
-                        <div className="bg-[#121214] border border-zinc-800 text-white rounded-3xl shadow-xl p-6 flex flex-col justify-between">
+                        <div className="group relative bg-zinc-900 rounded-[22px] border border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.4)] overflow-hidden p-6 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] transition-all duration-300 flex flex-col justify-between">
+                          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-zinc-700 to-zinc-500" />
                           <div className="space-y-6">
-                            <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
-                              <div className="p-2.5 bg-white/10 text-white rounded-xl">
-                                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                            <div className="flex items-center gap-4 border-b border-zinc-800 pb-5">
+                              <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-zinc-800">
+                                <ShieldCheck className="w-6 h-6 text-emerald-400" />
                               </div>
                               <div>
-                                <h2 className="text-xs font-black uppercase tracking-wider text-white">Security Status</h2>
-                                <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Real-time session details</p>
+                                <h2 className="text-sm font-black uppercase tracking-wider text-white">Security Status</h2>
+                                <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Real-time session details</p>
                               </div>
                             </div>
 
@@ -2543,8 +2934,8 @@ const Dashboard = () => {
                             <Trash2 className="w-5 h-5 text-rose-600 relative z-10 transition-transform group-hover:scale-110" />
                           </div>
                           <div>
-                            <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900 leading-tight">Nadiifinta & Dib-u-dejinta Xogta</h2>
-                            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Si taxaddar leh u tirtir qaybaha kala duwan ee xogta nidaamka</p>
+                            <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900 leading-tight">Data Reset & Cleanup</h2>
+                            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Permanently delete selected data categories from the system</p>
                           </div>
                         </div>
 
@@ -2555,16 +2946,16 @@ const Dashboard = () => {
                             <div className="w-6 h-6 rounded-lg bg-rose-500/15 flex items-center justify-center">
                               <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-rose-800">DIGNIIN XASAASI AH!</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-rose-800">CRITICAL WARNING!</span>
                           </div>
                           <p className="text-[9.5px] font-bold text-rose-950/80 uppercase tracking-wide leading-relaxed pl-8">
-                            Tirtirista xogta waa mid joogto ah oo aan marnaba dib loo soo celin karin. Fadlan laba jeer hubi qaybaha aad dooratay ka hor inta aanad fulin hawlgalkan.
+                            This action is permanent and cannot be undone. Please double-check all selected categories before proceeding.
                           </p>
                         </div>
 
                         {/* Select Category Grid */}
                         <div className="space-y-4">
-                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Dooro nooca xogta aad rabto in la tirtiro:</label>
+                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Select the data categories to delete:</label>
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Bookings & POS */}
@@ -2587,8 +2978,8 @@ const Dashboard = () => {
                                 <Calendar className="w-4 h-4 stroke-[2.5px]" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Ballamaha & POS-ka</p>
-                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">Diiwaanka Ballamaha & Iibka</p>
+                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Bookings & POS</p>
+                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">Booking records & sales transactions</p>
                               </div>
                               <div className={cn(
                                 "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
@@ -2620,8 +3011,8 @@ const Dashboard = () => {
                                 <CreditCard className="w-4 h-4 stroke-[2.5px]" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Kharashaadka</p>
-                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">Diiwaanka kharashyada nidaamka</p>
+                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Expenses</p>
+                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">All recorded expense entries</p>
                               </div>
                               <div className={cn(
                                 "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
@@ -2653,8 +3044,8 @@ const Dashboard = () => {
                                 <Users className="w-4 h-4 stroke-[2.5px]" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Macaamiisha</p>
-                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">Liiska Macaamiisha la diiwaan geliyey</p>
+                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Clients</p>
+                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">All registered client records</p>
                               </div>
                               <div className={cn(
                                 "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
@@ -2686,8 +3077,8 @@ const Dashboard = () => {
                                 <Scissors className="w-4 h-4 stroke-[2.5px]" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Adeegyada & Alaabta</p>
-                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">Adeegyada & Alaabta diiwaangashan</p>
+                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Services & Products</p>
+                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">All registered services & products</p>
                               </div>
                               <div className={cn(
                                 "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
@@ -2704,26 +3095,26 @@ const Dashboard = () => {
                         {/* Confirmation text */}
                         <div className="space-y-4 pt-4 border-t border-zinc-100">
                           <div className="flex justify-between items-center pl-1">
-                            <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Xaqiiji Tirtirista:</label>
+                            <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Confirm Deletion:</label>
                             {dbConfirmationText.toUpperCase() === 'CLEAR' ? (
                               <span className="text-[8.5px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 uppercase tracking-widest flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3" /> Furan (Unlocked)
+                                <CheckCircle2 className="w-3 h-3" /> Unlocked
                               </span>
                             ) : (
                               <span className="text-[8.5px] font-black text-rose-400 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100/50 uppercase tracking-widest flex items-center gap-1">
-                                <XCircle className="w-3 h-3" /> Qufulan (Locked)
+                                <XCircle className="w-3 h-3" /> Locked
                               </span>
                             )}
                           </div>
                           
                           <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider pl-1">
-                            Fadlan ku qor kelmada <span className="text-rose-600 font-extrabold font-mono text-[9.5px] bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200/50">CLEAR</span> sanduuqa hoose si aad u xaqiijiso tirtirista xogta.
+                            Type the word <span className="text-rose-600 font-extrabold font-mono text-[9.5px] bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200/50">CLEAR</span> in the box below to confirm deletion.
                           </p>
                           
                           <div className="relative group">
                             <input 
                               type="text" 
-                              placeholder="Qor CLEAR halkan..."
+                              placeholder="Type CLEAR here..."
                               className={cn(
                                 "w-full p-4 pl-5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-2xl text-xs font-black border focus:ring-1 outline-none transition-all duration-300 text-zinc-900 placeholder:text-zinc-300",
                                 dbConfirmationText.toUpperCase() === 'CLEAR'
@@ -2750,21 +3141,272 @@ const Dashboard = () => {
                           {dbIsClearing ? (
                             <>
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              Xogta waa la nadiifinayaa...
+                              Clearing data...
                             </>
                           ) : (
                             <>
                               <Trash2 className="w-3.5 h-3.5" />
-                              Nadiifi Xogta La Doortay
+                              Clear Selected Data
                             </>
                           )}
                         </button>
                       </div>
                     )}
+
+                    {settingsSubTab === 'staff_perm' && (
+                      <div className="bg-white border border-zinc-100 rounded-[32px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden">
+                         <div className="p-6 border-b border-zinc-50 flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0">
+                             <Users className="w-6 h-6 text-rose-500" />
+                           </div>
+                           <div>
+                             <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Staff Permissions</h2>
+                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Control access roles and modules</p>
+                           </div>
+                         </div>
+                         <div className="p-10 text-center flex flex-col items-center">
+                           <ShieldCheck className="w-8 h-8 text-zinc-300 mb-3" />
+                           <p className="text-xs font-black text-zinc-900 uppercase">Permissions Module</p>
+                           <p className="text-[10px] text-zinc-500 mt-1 max-w-xs leading-relaxed">Staff permission levels (Admin, Cashier, Stylist) are currently managed directly within the Login Management table.</p>
+                           <button onClick={() => { setActiveTab('users'); setSettingsSubTab('grid'); }} className="mt-4 px-4 py-2 bg-zinc-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all">Go to User Login Management</button>
+                         </div>
+                      </div>
+                    )}
+
+                    {settingsSubTab === 'booking_settings' && (
+                      <div className="bg-white border border-zinc-100 rounded-[32px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden">
+                         <div className="p-6 border-b border-zinc-50 flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0">
+                             <Calendar className="w-6 h-6 text-rose-500" />
+                           </div>
+                           <div>
+                             <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Booking Settings</h2>
+                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Configure appointment rules</p>
+                           </div>
+                         </div>
+                         <div className="p-6 space-y-4">
+                           <div className="flex items-center justify-between bg-zinc-50/50 p-4 rounded-xl border border-zinc-100">
+                             <div>
+                               <p className="text-[10px] font-black uppercase text-zinc-900">Auto-Approve Bookings</p>
+                               <p className="text-[8px] font-medium text-zinc-500 uppercase mt-0.5">Automatically accept incoming online bookings</p>
+                             </div>
+                             <div 
+                               onClick={() => setBookingSettings(p => ({ ...p, autoApprove: !p.autoApprove }))}
+                               className={cn("w-10 h-6 rounded-full relative shadow-inner cursor-pointer transition-colors", bookingSettings.autoApprove ? "bg-emerald-500" : "bg-zinc-200")}
+                             >
+                               <div className={cn("w-4 h-4 bg-white rounded-full absolute top-1 shadow-sm transition-all", bookingSettings.autoApprove ? "right-1" : "left-1")} />
+                             </div>
+                           </div>
+                           <div className="flex items-center justify-between bg-zinc-50/50 p-4 rounded-xl border border-zinc-100">
+                             <div>
+                               <p className="text-[10px] font-black uppercase text-zinc-900">Require Deposit</p>
+                               <p className="text-[8px] font-medium text-zinc-500 uppercase mt-0.5">Require 30% upfront for large bookings</p>
+                             </div>
+                             <div 
+                               onClick={() => setBookingSettings(p => ({ ...p, requireDeposit: !p.requireDeposit }))}
+                               className={cn("w-10 h-6 rounded-full relative shadow-inner cursor-pointer transition-colors", bookingSettings.requireDeposit ? "bg-emerald-500" : "bg-zinc-200")}
+                             >
+                               <div className={cn("w-4 h-4 bg-white rounded-full absolute top-1 shadow-sm transition-all", bookingSettings.requireDeposit ? "right-1" : "left-1")} />
+                             </div>
+                           </div>
+                         </div>
+                      </div>
+                    )}
+
+                    {settingsSubTab === 'payment_methods' && (
+                      <div className="bg-white border border-zinc-100 rounded-[32px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden">
+                         <div className="p-6 border-b border-zinc-50 flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0">
+                             <CreditCard className="w-6 h-6 text-rose-500" />
+                           </div>
+                           <div>
+                             <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Payment Methods</h2>
+                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Manage accepted payments</p>
+                           </div>
+                         </div>
+                         <div className="p-6 grid grid-cols-2 gap-4">
+                            {Object.entries(paymentMethods).map(([pm, isEnabled]) => (
+                              <div key={pm} onClick={() => setPaymentMethods(p => ({ ...p, [pm]: !p[pm] }))} className="flex items-center gap-3 p-3 border border-zinc-100 rounded-xl bg-white hover:bg-zinc-50 transition-colors cursor-pointer select-none">
+                                <div className={cn("w-4 h-4 rounded border flex items-center justify-center transition-colors", isEnabled ? "bg-zinc-900 border-zinc-900" : "border-zinc-300 bg-white")}>
+                                  {isEnabled && <Check className="w-3 h-3 text-white" />}
+                                </div>
+                                <span className="text-[10px] font-black uppercase text-zinc-800">{pm}</span>
+                              </div>
+                            ))}
+                         </div>
+                      </div>
+                    )}
+
+                    {settingsSubTab === 'rentals_mgt' && (
+                      <div className="bg-white border border-zinc-100 rounded-[32px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden">
+                         <div className="p-6 border-b border-zinc-50 flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center shrink-0">
+                             <Briefcase className="w-6 h-6 text-violet-500" />
+                           </div>
+                           <div>
+                             <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Rentals Management</h2>
+                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Configure dress rental rules</p>
+                           </div>
+                         </div>
+                         <div className="p-10 text-center flex flex-col items-center">
+                           <Shirt className="w-8 h-8 text-zinc-300 mb-3" />
+                           <p className="text-[10px] text-zinc-500 mt-1 max-w-xs leading-relaxed uppercase tracking-wider font-bold">Rental inventory and individual pricing are managed within the main Rentals tab.</p>
+                           <button onClick={() => { setActiveTab('rentals'); setSettingsSubTab('grid'); }} className="mt-4 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all">Go to Rentals Hub</button>
+                         </div>
+                      </div>
+                    )}
+
+                    {settingsSubTab === 'notifications' && (
+                      <div className="bg-white border border-zinc-100 rounded-[32px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden">
+                         <div className="p-6 border-b border-zinc-50 flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center shrink-0">
+                             <Bell className="w-6 h-6 text-violet-500" />
+                           </div>
+                           <div>
+                             <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Notifications</h2>
+                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Customize alerts & messages</p>
+                           </div>
+                         </div>
+                         <div className="p-6 space-y-4">
+                           {Object.entries(notifSettings).map(([notif, isEnabled]) => (
+                             <div key={notif} className="flex items-center justify-between bg-zinc-50/50 p-4 rounded-xl border border-zinc-100">
+                               <p className="text-[10px] font-black uppercase text-zinc-900">{notif}</p>
+                               <div 
+                                 onClick={() => setNotifSettings(p => ({ ...p, [notif]: !p[notif as keyof typeof p] }))}
+                                 className={cn("w-10 h-6 rounded-full relative shadow-inner cursor-pointer transition-colors", isEnabled ? "bg-emerald-500" : "bg-zinc-200")}
+                               >
+                                 <div className={cn("w-4 h-4 bg-white rounded-full absolute top-1 shadow-sm transition-all", isEnabled ? "right-1" : "left-1")} />
+                               </div>
+                             </div>
+                           ))}
+                         </div>
+                      </div>
+                    )}
+
+                    {settingsSubTab === 'localization' && (
+                      <div className="bg-white border border-zinc-100 rounded-[32px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden">
+                         <div className="p-6 border-b border-zinc-50 flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0">
+                             <Globe className="w-6 h-6 text-rose-500" />
+                           </div>
+                           <div>
+                             <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Localization</h2>
+                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Region, currency & language</p>
+                           </div>
+                         </div>
+                         <div className="p-6 space-y-4">
+                            <div className="space-y-1.5">
+                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Primary Currency</label>
+                              <select value={sysCurrency} onChange={(e) => setSysCurrency(e.target.value)} className="w-full p-3.5 bg-zinc-50 rounded-xl text-xs font-bold border border-zinc-200 outline-none text-zinc-900">
+                                <option value="USD ($)">USD ($)</option>
+                                <option value="SOS (Sh)">SOS (Sh)</option>
+                              </select>
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">System Language</label>
+                              <select className="w-full p-3.5 bg-zinc-50 rounded-xl text-xs font-bold border border-zinc-200 outline-none text-zinc-900" value={lang} onChange={(e) => setLang(e.target.value as 'en'|'so')}>
+                                <option value="en">English (US)</option>
+                                <option value="so">Somali</option>
+                              </select>
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Timezone</label>
+                              <select value={sysTimezone} onChange={(e) => setSysTimezone(e.target.value)} className="w-full p-3.5 bg-zinc-50 rounded-xl text-xs font-bold border border-zinc-200 outline-none text-zinc-900">
+                                <option value="Africa/Mogadishu (GMT+3)">Africa/Mogadishu (GMT+3)</option>
+                                <option value="Africa/Nairobi (GMT+3)">Africa/Nairobi (GMT+3)</option>
+                              </select>
+                            </div>
+                         </div>
+                      </div>
+                    )}
+
+                    {settingsSubTab === 'appearance' && (
+                      <div className="bg-white border border-zinc-100 rounded-[32px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden">
+                         <div className="p-8 border-b border-zinc-50 flex items-center gap-5">
+                           <div className="w-14 h-14 rounded-3xl bg-violet-50 flex items-center justify-center shrink-0">
+                             <Palette className="w-6 h-6 text-violet-500" />
+                           </div>
+                           <div>
+                             <h2 className="text-lg font-black uppercase tracking-widest text-zinc-950">Appearance</h2>
+                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Themes and branding</p>
+                           </div>
+                         </div>
+                         <div className="p-8 space-y-6">
+                            <div className="space-y-4">
+                              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest pl-1">Interface Theme</label>
+                              <div className="grid grid-cols-2 gap-4">
+                                <button type="button" onClick={() => setThemeMode('light')} className={cn("p-4.5 flex items-center gap-4 cursor-pointer transition-all rounded-xl w-full text-left", themeMode === 'light' ? "border-2 border-zinc-100 bg-white shadow-sm" : "border border-zinc-100 bg-white hover:border-zinc-200")}>
+                                  <div className={cn("w-4 h-4 rounded-full flex items-center justify-center transition-all shrink-0", themeMode === 'light' ? "border-[4px] border-zinc-200" : "border border-zinc-200")} />
+                                  <span className="text-[11px] font-black uppercase text-zinc-950 tracking-wider">Light Mode</span>
+                                </button>
+                                <button type="button" onClick={() => setThemeMode('dark')} className={cn("p-4.5 flex items-center gap-4 cursor-pointer transition-all rounded-xl w-full text-left", themeMode === 'dark' ? "border-[3px] border-[#c026d3] bg-[#0f0f11]" : "border border-zinc-200 bg-[#18181b] opacity-90 hover:opacity-100")}>
+                                  <div className={cn("w-4 h-4 rounded-full flex items-center justify-center transition-all shrink-0", themeMode === 'dark' ? "bg-white border-[4px] border-[#d946ef]" : "border border-zinc-500")} />
+                                  <span className="text-[11px] font-black uppercase text-white tracking-wider">Dark Mode</span>
+                                </button>
+                              </div>
+                            </div>
+                         </div>
+                      </div>
+                    )}
+
+                    {settingsSubTab === 'backup' && (
+                      <div className="bg-white border border-zinc-100 rounded-[32px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden">
+                         <div className="p-6 border-b border-zinc-50 flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center shrink-0">
+                             <CloudUpload className="w-6 h-6 text-violet-500" />
+                           </div>
+                           <div>
+                             <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Backup & Restore</h2>
+                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Secure your salon data</p>
+                           </div>
+                         </div>
+                         <div className="p-6 flex flex-col items-center justify-center text-center py-10">
+                            <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-4 border border-emerald-100">
+                              <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                            </div>
+                            <h3 className="text-xs font-black uppercase text-zinc-900">Cloud Sync Active</h3>
+                            <p className="text-[10px] font-medium text-zinc-500 mt-2 max-w-[250px]">Your data is automatically synced and backed up to Supabase servers in real-time.</p>
+                            <button className="mt-6 px-6 py-3 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-zinc-800 transition-colors shadow-lg active:scale-95">
+                              <Download className="w-4 h-4" /> Download Manual JSON Backup
+                            </button>
+                         </div>
+                      </div>
+                    )}
+
+                    {settingsSubTab === 'logs' && (
+                      <div className="bg-white border border-zinc-100 rounded-[32px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden">
+                         <div className="p-6 border-b border-zinc-50 flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0">
+                             <FileText className="w-6 h-6 text-rose-500" />
+                           </div>
+                           <div>
+                             <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">System Logs</h2>
+                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Audit trail and activity</p>
+                           </div>
+                         </div>
+                         <div className="p-6 space-y-3">
+                           {[
+                             { action: "Admin changed operational hours", time: "2 hours ago" },
+                             { action: "Staff member Sarah logged in", time: "5 hours ago" },
+                             { action: "Database backup completed", time: "1 day ago" },
+                             { action: "System launched with v1.0.0", time: "3 days ago" },
+                           ].map((log, i) => (
+                             <div key={i} className="flex justify-between items-center p-3.5 bg-zinc-50 rounded-xl border border-zinc-100">
+                               <div className="flex items-center gap-3">
+                                 <div className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                                 <span className="text-[10px] font-bold text-zinc-800">{log.action}</span>
+                               </div>
+                               <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">{log.time}</span>
+                             </div>
+                           ))}
+                         </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          )}
 
             {/* Dedicated Users Management Tab */}
             {activeTab === "users" && (
@@ -2795,9 +3437,9 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-50">
-                        {profiles.length === 0 ? (
+                        {filteredStaff.length === 0 ? (
                           <tr><td colSpan={4} className="p-10 text-center text-[10px] text-zinc-400">No users found.</td></tr>
-                        ) : profiles.map((u, i) => (
+                        ) : filteredStaff.map((u, i) => (
                           <tr key={i} className="hover:bg-zinc-50/20 transition-colors group">
                             <td className="p-4">
                               <div className="flex items-center gap-3">
@@ -2911,14 +3553,33 @@ const Dashboard = () => {
                 {/* Sales Table Wrappers */}
                 <div className="bg-white rounded-[24px] border border-zinc-100 shadow-sm overflow-hidden mb-6">
                   {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-white border-b border-zinc-100">
-                    <h2 className="text-xl font-display font-medium text-[#1E1E1E]">Transaction History</h2>
-                    <div className="flex items-center gap-3 mt-4 sm:mt-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-white border-b border-zinc-100 gap-4">
+                    <div>
+                      <h2 className="text-xl font-display font-medium text-[#1E1E1E]">Transaction History</h2>
+                      {/* Date filter buttons */}
+                      <div className="flex items-center gap-2 mt-3">
+                        {(['all','today','month'] as const).map((f) => (
+                          <button
+                            key={f}
+                            onClick={() => { setReportsDateFilter(f); setReportsPage(1); }}
+                            className={cn(
+                              "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all",
+                              reportsDateFilter === f
+                                ? "bg-primary text-white border-primary shadow-sm"
+                                : "bg-white text-zinc-400 border-zinc-200 hover:border-zinc-300"
+                            )}
+                          >
+                            {f === 'all' ? 'All' : f === 'today' ? 'Today' : 'This Month'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
                       <button onClick={downloadTransactionsCSV} className="flex items-center gap-2 bg-[#2D5BFF] hover:bg-[#2D5BFF]/90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                        Download as <ChevronDown className="w-4 h-4 ml-1" />
+                        Download <ChevronDown className="w-4 h-4 ml-1" />
                       </button>
                       <button onClick={() => setReportsSortLatest(!reportsSortLatest)} className="flex items-center gap-2 bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#4B5563] px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                        {reportsSortLatest ? "Sort by Latest" : "Sort by Oldest"} <ChevronDown className="w-4 h-4 ml-1" />
+                        {reportsSortLatest ? "Latest First" : "Oldest First"} <ChevronDown className="w-4 h-4 ml-1" />
                       </button>
                     </div>
                   </div>
@@ -2938,10 +3599,19 @@ const Dashboard = () => {
                       </thead>
                       <tbody className="divide-y divide-zinc-100 bg-white">
                         {(() => {
-                          const filtered = allBookings.filter(b => b.status === 'confirmed').sort((a,b) => {
-                            const val = new Date(b.created_at || b.booking_date).getTime() - new Date(a.created_at || a.booking_date).getTime() || ((b.id||0) - (a.id||0));
-                            return reportsSortLatest ? val : -val;
-                          });
+                          const nowLocal = new Date();
+                          const curMonthStr = `${nowLocal.getFullYear()}-${String(nowLocal.getMonth()+1).padStart(2,'0')}`;
+                          const filtered = allBookings
+                            .filter(b => b.status === 'confirmed')
+                            .filter(b => {
+                              if (reportsDateFilter === 'today') return b.booking_date === todayStr;
+                              if (reportsDateFilter === 'month') return (b.booking_date || '').startsWith(curMonthStr);
+                              return true; // 'all'
+                            })
+                            .sort((a,b) => {
+                              const val = new Date(b.created_at || b.booking_date).getTime() - new Date(a.created_at || a.booking_date).getTime() || ((b.id||0) - (a.id||0));
+                              return reportsSortLatest ? val : -val;
+                            });
                           const perPage = 10;
                           const visibleRows = filtered.slice((reportsPage - 1) * perPage, reportsPage * perPage);
                           return visibleRows.map((sale, i) => (
@@ -2988,7 +3658,15 @@ const Dashboard = () => {
                   {/* Footer / Pagination */}
                   <div className="flex items-center justify-between p-6 border-t border-zinc-100">
                     {(() => {
-                      const filtered = allBookings.filter(b => b.status === 'confirmed');
+                      const nowLocal2 = new Date();
+                      const curMonthStr2 = `${nowLocal2.getFullYear()}-${String(nowLocal2.getMonth()+1).padStart(2,'0')}`;
+                      const filtered = allBookings
+                        .filter(b => b.status === 'confirmed')
+                        .filter(b => {
+                          if (reportsDateFilter === 'today') return b.booking_date === todayStr;
+                          if (reportsDateFilter === 'month') return (b.booking_date || '').startsWith(curMonthStr2);
+                          return true;
+                        });
                       const perPage = 10;
                       const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
                       
@@ -3048,7 +3726,7 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {dbServices.filter(s => s.category === 'Product').map((prod, i) => (
+                        {filteredServices.filter(s => s.category === 'Product').map((prod, i) => (
                           <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
                             <td className="p-4 w-16">
                               <div className="w-10 h-10 bg-zinc-100 rounded-lg border border-zinc-200 overflow-hidden flex items-center justify-center shrink-0">
@@ -3147,7 +3825,7 @@ const Dashboard = () => {
 
                       {/* Premium Somalia Payment Selector stack */}
                       <div className="border-t pt-3 space-y-2 text-left">
-                        <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Lacag Bixinta (Payment Method)</label>
+                        <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Payment Method</label>
                         <div className="flex flex-col gap-2.5">
                           {[
                             {
@@ -3334,7 +4012,7 @@ const Dashboard = () => {
                                   currentSelected = currentSelected.filter(s => s.id !== srv.id);
                                } else {
                                   if (currentSelected.length >= 10) {
-                                    toast.error("Waa ugu badnaan 10 adeeg mar qura!");
+                                    toast.error("Maximum 10 services allowed at once!");
                                     return;
                                   }
                                   currentSelected.push({ id: srv.id, name: srv.name, price: srv.price, image_url: srv.image_url });
@@ -3398,28 +4076,75 @@ const Dashboard = () => {
               )}
 
               {modalType === 'service' && (
-                <div className="space-y-4">
-                  <input className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Item Name" required value={formData.service} onChange={(e) => setFormData({ ...formData, service: e.target.value })} />
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-zinc-400">$</span>
-                      <input type="number" className="w-full p-3 pl-7 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Price" required value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
+                <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                  <div className="bg-zinc-50/50 p-5 rounded-2xl border border-zinc-100/60 space-y-4 shadow-sm">
+                    
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1">Item Name</label>
+                      <input className="w-full p-3.5 bg-white border border-zinc-200 shadow-sm rounded-xl text-sm font-bold text-zinc-900 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all placeholder:text-zinc-300" placeholder="e.g. Classic Manicure" required value={formData.service} onChange={(e) => setFormData({ ...formData, service: e.target.value })} />
                     </div>
-                    <input className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Duration/Stock" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} />
-                  </div>
-                  <textarea className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none min-h-[80px]" placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Image</label>
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-xl bg-zinc-50 border-2 border-dashed border-zinc-100 flex items-center justify-center overflow-hidden shrink-0">
-                        {formData.image ? <img src={formData.image} className="w-full h-full object-cover" /> : <ImagePlus className="w-5 h-5 text-zinc-200" />}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1">Category</label>
+                        <div className="relative">
+                          <select 
+                            className="w-full p-3.5 bg-white border border-zinc-200 shadow-sm rounded-xl text-sm font-bold text-zinc-900 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all appearance-none cursor-pointer" 
+                            required 
+                            value={formData.category} 
+                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                          >
+                            <option value="" disabled>Select Category</option>
+                            <option value="Hair">Hair Styling</option>
+                            <option value="Nails">Nails & Pedicure</option>
+                            <option value="Makeup">Makeup & Beauty</option>
+                            <option value="Henna">Henna Art</option>
+                            <option value="Massage">Massage & Spa</option>
+                            <option value="Product">Retail Product</option>
+                            <option value="General">General Service</option>
+                          </select>
+                          <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-4 py-2 bg-zinc-100 border border-zinc-200 rounded-lg text-[9px] font-black uppercase tracking-widest text-zinc-600 hover:bg-zinc-200 transition-all">
-                          {uploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
-                          {formData.image ? 'Change Image' : 'Upload Image'}
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1">Price ($)</label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-black text-[#83215D]">$</span>
+                          <input type="number" className="w-full p-3.5 pl-8 bg-white border border-zinc-200 shadow-sm rounded-xl text-sm font-bold text-zinc-900 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all placeholder:text-zinc-300" placeholder="0.00" required value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1">Duration / Stock</label>
+                      <input className="w-full p-3.5 bg-white border border-zinc-200 shadow-sm rounded-xl text-sm font-bold text-zinc-900 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all placeholder:text-zinc-300" placeholder="e.g. 45 mins or 10 items" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1">Description</label>
+                      <textarea className="w-full p-3.5 bg-white border border-zinc-200 shadow-sm rounded-xl text-sm font-bold text-zinc-900 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all placeholder:text-zinc-300 min-h-[100px] resize-none" placeholder="Provide service details..." value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+                    </div>
+                  </div>
+
+                  <div className="bg-zinc-50/50 p-5 rounded-2xl border border-zinc-100/60 space-y-3 shadow-sm">
+                    <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1 flex items-center gap-1.5">
+                      <ImagePlus className="w-3.5 h-3.5" /> Item Photo
+                    </label>
+                    <div className="flex items-center gap-5">
+                      <div className="w-20 h-20 rounded-2xl bg-white border-2 border-dashed border-zinc-200 shadow-sm flex items-center justify-center overflow-hidden shrink-0 group hover:border-[#83215D]/50 transition-colors">
+                        {formData.image ? (
+                           <img src={formData.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        ) : (
+                           <ImagePlus className="w-6 h-6 text-zinc-300 group-hover:text-[#83215D]/50 transition-colors" />
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-zinc-200 shadow-sm rounded-xl text-[10px] font-black uppercase tracking-widest text-[#5D1B54] hover:bg-zinc-50 hover:border-zinc-300 active:scale-95 transition-all">
+                          {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                          {formData.image ? 'Change Photo' : 'Upload Photo'}
                         </button>
+                        <p className="text-[9px] font-bold text-zinc-400 tracking-wider">Recommended: Square format (1:1), max 2MB.</p>
                         <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
                       </div>
                     </div>
