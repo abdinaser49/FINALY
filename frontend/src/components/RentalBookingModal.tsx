@@ -126,7 +126,7 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
               </div>
               <div>
                 <h2 className="font-display text-xl font-black text-zinc-900 uppercase tracking-widest">Rent this Dress</h2>
-                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Rental Request Form</p>
+                <p className="text-sm text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Rental Request Form</p>
               </div>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-zinc-100 rounded-full transition-colors text-zinc-400">
@@ -150,13 +150,13 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
                   </div>
                   <div>
                     <h3 className="font-display font-bold text-lg text-zinc-900 uppercase tracking-tight">{dressName}</h3>
-                    <p className="text-xl font-black text-emerald-600 tracking-tighter">${dressPrice}<span className="text-[10px] text-zinc-400 font-normal lowercase tracking-normal">/day</span></p>
+                    <p className="text-xl font-black text-emerald-600 tracking-tighter">${dressPrice}<span className="text-sm text-zinc-400 font-normal lowercase tracking-normal">/day</span></p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Date</label>
+                    <label className="text-sm font-black uppercase tracking-widest text-zinc-400 ml-2">Date</label>
                     <div className="relative group">
                       <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-primary transition-colors" />
                       <input 
@@ -168,7 +168,7 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Duration (Days)</label>
+                    <label className="text-sm font-black uppercase tracking-widest text-zinc-400 ml-2">Duration (Days)</label>
                     <div className="relative group">
                       <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-primary transition-colors" />
                       <select 
@@ -200,7 +200,7 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
               <form onSubmit={handleSubmit} className="space-y-6 text-center">
                 <div className="space-y-4 text-left">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Your Name</label>
+                    <label className="text-sm font-black uppercase tracking-widest text-zinc-400 ml-2">Your Name</label>
                     <div className="relative group">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-primary transition-colors" />
                       <input 
@@ -214,7 +214,7 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Phone Number</label>
+                    <label className="text-sm font-black uppercase tracking-widest text-zinc-400 ml-2">Phone Number</label>
                     <div className="relative group">
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-primary transition-colors" />
                       <input 
@@ -228,7 +228,7 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Additional Notes</label>
+                    <label className="text-sm font-black uppercase tracking-widest text-zinc-400 ml-2">Additional Notes</label>
                     <div className="relative group">
                       <Info className="absolute left-4 top-6 w-4 h-4 text-zinc-400 group-focus-within:text-primary transition-colors" />
                       <textarea 

@@ -64,7 +64,7 @@ const BridalRentalsSection = () => {
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full mb-6">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-primary text-[10px] font-bold uppercase tracking-widest">Master Artistry</span>
+              <span className="text-primary text-sm font-bold uppercase tracking-widest">Master Artistry</span>
             </div>
             <h2 className="text-5xl md:text-6xl font-display font-medium text-charcoal mb-8 leading-[1.1]">
               Exquisite Henna <br />
@@ -82,7 +82,7 @@ const BridalRentalsSection = () => {
             className="flex flex-col sm:flex-row gap-4 shrink-0 shadow-2xl shadow-gray-100 rounded-[2.5rem] bg-[#fdfbf7] p-8 border border-gray-100"
           >
              <div className="space-y-4">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Want to see Dresses?</p>
+                <p className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Want to see Dresses?</p>
                 <h4 className="text-xl font-display font-bold text-charcoal pr-8">Premium Rental <br/>Collection</h4>
                 <button 
                   onClick={() => navigate("/rentals")}

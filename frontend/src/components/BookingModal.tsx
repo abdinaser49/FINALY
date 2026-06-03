@@ -355,12 +355,12 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
               )}
             >
               <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold z-10 transition-colors",
+                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold z-10 transition-colors",
                 step >= s.id ? "bg-primary text-white" : "bg-slate-100 text-slate-400"
               )}>
                 {step > s.id ? <Check className="w-4 h-4" /> : s.id}
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">{s.label}</span>
+              <span className="text-sm font-bold uppercase tracking-widest hidden sm:inline">{s.label}</span>
               {step === s.id && (
                 <motion.div layoutId="step-indicator" className="absolute bottom-0 left-0 right-0 h-1 bg-primary" />
               )}
@@ -399,7 +399,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                     <div className="flex items-center justify-between">
                        <button 
                          onClick={() => setSelectedCategoryId(null)}
-                         className="flex items-center gap-2 text-primary text-[10px] font-bold uppercase tracking-widest hover:underline"
+                         className="flex items-center gap-2 text-primary text-sm font-bold uppercase tracking-widest hover:underline"
                        >
                          <ArrowLeft className="w-3 h-3" /> Back to Categories
                        </button>
@@ -445,7 +445,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                    <div className="space-y-4">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Select Date</label>
+                      <label className="text-sm font-bold text-gray-400 uppercase tracking-widest ml-1">Select Date</label>
                       <div className="bg-[#fdfbf7] p-2 rounded-[2.5rem] border border-gray-100 shadow-inner">
                         <Calendar 
                           mode="single" 
@@ -458,7 +458,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
 
                    <div className="space-y-8">
                       <div className="space-y-4">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Available Slots</label>
+                        <label className="text-sm font-bold text-gray-400 uppercase tracking-widest ml-1">Available Slots</label>
                         {loadingSlots ? (
                           <div className="flex items-center justify-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">
                             <svg className="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
@@ -487,15 +487,15 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                              >
                                <span className={isFull ? "line-through" : ""}>{slot}</span>
                                {isFull ? (
-                                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Full</span>
+                                 <span className="text-sm font-black text-slate-400 uppercase tracking-wider">Full</span>
                                ) : count > 0 ? (
                                  <span className={cn(
-                                   "text-[8px] font-black uppercase tracking-wider",
+                                   "text-sm font-black uppercase tracking-wider",
                                    startTime === slot ? "text-white/70" : "text-amber-500"
                                  )}>{remaining} left</span>
                                ) : null}
                                {isFull && (
-                                 <span className="absolute -top-1.5 -right-1.5 text-[7px] bg-rose-500 text-white rounded-full px-1 font-black uppercase">Full</span>
+                                 <span className="absolute -top-1.5 -right-1.5 text-xs bg-rose-500 text-white rounded-full px-1 font-black uppercase">Full</span>
                                )}
                              </button>
                              );
@@ -505,7 +505,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                       </div>
 
                       <div className="space-y-4">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Prefered Employee</label>
+                        <label className="text-sm font-bold text-gray-400 uppercase tracking-widest ml-1">Prefered Employee</label>
                         <select 
                           value={selectedEmployee}
                           onChange={(e) => setSelectedEmployee(e.target.value)}
@@ -531,7 +531,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
 
                 <div className="space-y-6">
                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Your Name</label>
+                      <label className="text-sm font-bold text-gray-400 uppercase tracking-widest ml-1">Your Name</label>
                       <input 
                         type="text" 
                         value={name} 
@@ -541,7 +541,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                       />
                    </div>
                     <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
+                       <label className="text-sm font-bold text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
                        <div className="relative">
                           <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold border-r pr-3 mr-3">+252</div>
                           <input 
@@ -554,7 +554,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                        </div>
                     </div>
                     <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Additional Notes (Optional)</label>
+                       <label className="text-sm font-bold text-gray-400 uppercase tracking-widest ml-1">Additional Notes (Optional)</label>
                        <textarea 
                          value={notes} 
                          onChange={e => setNotes(e.target.value)}
@@ -597,8 +597,8 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                       titleColor: "text-[#28A745]",
                       logoText: (
                         <div className="flex flex-col items-center justify-center text-white leading-none">
-                          <span className="text-[10px] font-black tracking-tighter">EVC+</span>
-                          <span className="text-[5px] font-bold tracking-[0.15em] opacity-90 mt-0.5">PLUS</span>
+                          <span className="text-sm font-black tracking-tighter">EVC+</span>
+                          <span className="text-[10px] font-bold tracking-[0.15em] opacity-90 mt-0.5">PLUS</span>
                         </div>
                       ),
                       rightIcon: (color: string) => (
@@ -619,7 +619,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                       titleColor: "text-[#D49D26]",
                       logoText: (
                         <div className="flex flex-col items-center justify-center text-white leading-none">
-                          <span className="text-[9px] font-black italic tracking-tighter">eDahab</span>
+                          <span className="text-xs font-black italic tracking-tighter">eDahab</span>
                         </div>
                       ),
                       rightIcon: (color: string) => (
@@ -638,7 +638,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                       titleColor: "text-[#1E2260]",
                       logoText: (
                         <div className="flex flex-col items-center justify-center text-white leading-none">
-                          <span className="text-[10px] font-black italic tracking-tighter">JEEB</span>
+                          <span className="text-sm font-black italic tracking-tighter">JEEB</span>
                         </div>
                       ),
                       rightIcon: (color: string) => (
@@ -707,7 +707,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                         {/* Middle Details Area */}
                         <div className="flex-1 px-4 py-1 flex flex-col justify-center min-w-0">
                           <h4 className={cn("text-xs font-black uppercase tracking-wider leading-none", pay.titleColor)}>{pay.title}</h4>
-                          <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mt-1.5">{pay.subtitle}</span>
+                          <span className="text-sm font-black text-zinc-400 uppercase tracking-widest mt-1.5">{pay.subtitle}</span>
                         </div>
                         {/* Right Indicator Area */}
                         <div className="pr-5 shrink-0 flex items-center justify-center">
@@ -724,22 +724,22 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                    
                    {paymentMethod === "Cash" ? (
                      <div className="text-center space-y-6 relative z-10 py-4">
-                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Cash Payment</span>
+                       <span className="text-sm font-black uppercase tracking-[0.2em] text-emerald-400">Cash Payment</span>
                        <p className="text-xs font-bold leading-relaxed text-zinc-300">Waxaad lacagta caddaanka ah ku bixin kartaa salon-ka marka aad timaado ballantaada.</p>
                        <button 
                          onClick={() => setPaid(true)} 
-                         className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[9px] bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                         className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                        >
                          {paid ? "✔ OK, waan ku bixinayaa cash" : "OK, waan ku bixinayaa cash"}
                        </button>
                      </div>
                    ) : paymentMethod === "Bank Card" ? (
                      <div className="text-center space-y-6 relative z-10 py-4">
-                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Bank Card</span>
+                       <span className="text-sm font-black uppercase tracking-[0.2em] text-indigo-400">Bank Card</span>
                        <p className="text-xs font-bold leading-relaxed text-zinc-300">Fadlan ku bixi kaarkaaga bangiga xarunta salon-ka markaad timaado adigoo isticmaalaya POS mashiinka.</p>
                        <button 
                          onClick={() => setPaid(true)} 
-                         className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[9px] bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                         className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
                        >
                          {paid ? "✔ OK, waan ku bixinayaa kaar" : "OK, waan ku bixinayaa kaar"}
                        </button>
@@ -748,10 +748,10 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                       <div className="space-y-6 relative z-10">
                         <div className="flex justify-between items-center opacity-60">
                            <div className="flex flex-col">
-                             <span className="text-[8px] font-bold uppercase tracking-widest">Merchant</span>
+                             <span className="text-sm font-bold uppercase tracking-widest">Merchant</span>
                              <span className="text-xs font-bold">{bizName.toUpperCase()}</span>
                            </div>
-                           <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/10 text-white">{paymentMethod}</span>
+                           <span className="text-xs font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/10 text-white">{paymentMethod}</span>
                         </div>
                         
                         {paid ? (
@@ -761,7 +761,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                             </div>
                             <div className="text-center">
                               <h4 className="text-emerald-400 font-bold text-sm tracking-widest uppercase">Payment Successful</h4>
-                              <p className="text-[10px] text-zinc-400 mt-1">Lacag bixintaada waa la xaqiijiyay!</p>
+                              <p className="text-sm text-zinc-400 mt-1">Lacag bixintaada waa la xaqiijiyay!</p>
                             </div>
                           </div>
                         ) : isProcessingPayment ? (
@@ -773,13 +773,13 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                              </div>
                              <div className="text-center space-y-2">
                                <h4 className="font-display font-black text-lg text-white">Fadlan ka eeg taleefankaaga...</h4>
-                               <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Geli PIN-kaaga si aad u xaqiijiso lacagta</p>
+                               <p className="text-sm text-zinc-400 font-bold uppercase tracking-widest">Geli PIN-kaaga si aad u xaqiijiso lacagta</p>
                              </div>
                           </div>
                         ) : (
                           <div className="space-y-5">
                              <div className="space-y-2">
-                               <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Phone Number for Payment</label>
+                               <label className="text-sm font-bold text-zinc-400 uppercase tracking-widest ml-1">Phone Number for Payment</label>
                                <div className="relative">
                                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold border-r border-zinc-800 pr-3 mr-3">+252</div>
                                   <input 
@@ -793,7 +793,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                              </div>
 
                              <div className="bg-zinc-900/50 p-4 rounded-2xl flex items-center justify-between border border-zinc-800/50">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total Amount</span>
+                                <span className="text-sm font-bold uppercase tracking-widest text-zinc-400">Total Amount</span>
                                 <span className="font-black text-xl text-primary">${selectedService.price}</span>
                              </div>
 
@@ -810,7 +810,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                                    toast.success("Lacag bixinta si toos ah ayaa loo xaqiijiyay!");
                                  }, 4500);
                                }} 
-                               className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] bg-white text-black hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95"
+                               className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm bg-white text-black hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95"
                              >
                                 Bixi Lacagta Hadda
                              </button>
@@ -880,14 +880,14 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
               className="group flex items-center gap-2 text-slate-400 hover:text-charcoal px-4 py-2 disabled:opacity-30 transition-colors"
             >
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Previous</span>
+              <span className="text-sm font-bold uppercase tracking-[0.2em]">Previous</span>
             </button>
                    <div className="flex items-center gap-2">
                        {step < 4 ? (
                          <button 
                           onClick={handleNext}
                           disabled={step === 1 && !selectedCategoryId}
-                          className="bg-primary text-white px-10 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                          className="bg-primary text-white px-10 py-4 rounded-2xl text-sm font-bold uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                         >
                           Next Step
                         </button>
@@ -895,13 +895,13 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                          <button 
                            onClick={handleConfirm}
                            className={cn(
-                             "px-12 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center gap-2",
+                             "px-12 py-4 rounded-2xl text-sm font-bold uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center gap-2",
                              paid 
                                ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-500/20" 
                                : "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
                            )}
                          >
-                           {!paid && <span className="text-[10px]">🔒</span>}
+                           {!paid && <span className="text-sm">🔒</span>}
                            {paid ? "Confirm & Complete Booking" : "Fadlan Xaqiiji Lacag Bixinta"}
                          </button>
                        )}

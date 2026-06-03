@@ -31,7 +31,7 @@ const ContactPage = () => {
           <div className="max-w-2xl text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full mb-4">
               <Sparkles className="w-3 h-3 text-primary" />
-              <span className="text-primary text-[10px] font-bold uppercase tracking-widest">Connect with Us</span>
+              <span className="text-primary text-sm font-bold uppercase tracking-widest">Connect with Us</span>
             </div>
             <h1 className="text-5xl md:text-6xl font-display font-medium text-charcoal mb-6 leading-[1.1]">
               Get in <span className="text-primary font-serif italic">Touch</span>

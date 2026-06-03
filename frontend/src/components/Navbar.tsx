@@ -96,7 +96,7 @@ const Navbar = ({ onBookNow }: NavbarProps) => {
                     )}
                   >
                      <div className="text-right hidden lg:block tracking-tight">
-                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-zinc-500 mb-0.5">Welcome,</p>
+                        <p className="text-sm font-black uppercase tracking-[0.15em] text-zinc-500 mb-0.5">Welcome,</p>
                         <p className={cn("text-sm font-black truncate max-w-[120px]", scrolled ? "text-foreground" : "text-[#112232]")}>
                            {user.user_metadata?.full_name || "User"}
                         </p>
@@ -252,7 +252,7 @@ const Navbar = ({ onBookNow }: NavbarProps) => {
           <button
             onClick={onBookNow}
             className={cn(
-              "px-3 sm:px-8 py-1.5 sm:py-2.5 rounded-full text-[9px] sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] uppercase transition-all shadow-md active:scale-95 font-bold shrink-0",
+              "px-3 sm:px-8 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] uppercase transition-all shadow-md active:scale-95 font-bold shrink-0",
               scrolled 
                 ? "bg-primary text-primary-foreground hover:bg-primary/90" 
                 : "bg-[#E87A5D] text-white hover:bg-[#d66a4f]"
@@ -276,11 +276,11 @@ const Navbar = ({ onBookNow }: NavbarProps) => {
 
       {/* Mobile-only visible quick-nav (Horizontal Scrolling) */}
       <div className="md:hidden bg-background/80 backdrop-blur-md border-b border-border/50 h-14 flex items-center overflow-x-auto no-scrollbar px-6 gap-8 sticky top-0 shadow-sm">
-          <button onClick={() => navigate("/rentals")} className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.15em] text-charcoal opacity-80 active:text-primary">Rentals</button>
-          <button onClick={() => scrollTo("services")} className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.15em] text-charcoal opacity-80 active:text-primary">Services</button>
-          <button onClick={() => scrollTo("about")} className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.15em] text-charcoal opacity-80 active:text-primary">About</button>
-          <button onClick={() => navigate("/team")} className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.15em] text-charcoal opacity-80 active:text-primary">Team</button>
-          <button onClick={() => navigate("/contact")} className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.15em] text-charcoal opacity-80 active:text-primary">Contact</button>
+          <button onClick={() => navigate("/rentals")} className="whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-charcoal opacity-80 active:text-primary">Rentals</button>
+          <button onClick={() => scrollTo("services")} className="whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-charcoal opacity-80 active:text-primary">Services</button>
+          <button onClick={() => scrollTo("about")} className="whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-charcoal opacity-80 active:text-primary">About</button>
+          <button onClick={() => navigate("/team")} className="whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-charcoal opacity-80 active:text-primary">Team</button>
+          <button onClick={() => navigate("/contact")} className="whitespace-nowrap text-sm font-black uppercase tracking-[0.15em] text-charcoal opacity-80 active:text-primary">Contact</button>
       </div>
 
       <AnimatePresence>
@@ -365,7 +365,7 @@ const Navbar = ({ onBookNow }: NavbarProps) => {
 
                 <button
                   onClick={() => { onBookNow(); setMobileOpen(false); }}
-                  className="w-full mt-4 bg-primary text-primary-foreground py-5 rounded-[1.5rem] text-[10px] tracking-[0.2em] uppercase font-black shadow-xl shadow-primary/20 active:scale-95 transition-all"
+                  className="w-full mt-4 bg-primary text-primary-foreground py-5 rounded-[1.5rem] text-sm tracking-[0.2em] uppercase font-black shadow-xl shadow-primary/20 active:scale-95 transition-all"
                 >
                   Book Now
                 </button>

@@ -27,7 +27,7 @@ const SupportSection = () => {
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full border border-white/10">
                 <Zap className="w-4 h-4 text-primary" />
-                <span className="text-white text-[10px] font-bold uppercase tracking-[0.2em]">Instant Support</span>
+                <span className="text-white text-sm font-bold uppercase tracking-[0.2em]">Instant Support</span>
               </div>
               
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-medium text-white leading-[1.1]">

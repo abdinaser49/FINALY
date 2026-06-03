@@ -55,7 +55,7 @@ const AboutUsSection = () => {
             className="space-y-6"
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#E87A5D]/10 rounded-full">
-              <span className="text-[#E87A5D] text-[10px] font-bold uppercase tracking-widest">About Qurux Dumar</span>
+              <span className="text-[#E87A5D] text-sm font-bold uppercase tracking-widest">About Qurux Dumar</span>
             </div>
             
             <h2 className="text-4xl md:text-5xl font-display font-medium text-[#112232] leading-tight mb-6">

@@ -731,7 +731,7 @@ const Dashboard = () => {
 
       setModalType(null);
       setEditingId(null);
-      setFormData({ name: "", phone: "", service: "", selectedServices: [], date: "", time: "", amount: "", description: "", duration: "", image: "", color: "", size: "", weight_kg: "", height_cm: "", serviceId: "", email: "", password: "" });
+      setFormData({ name: "", phone: "", service: "", selectedServices: [], date: "", time: "", amount: "", description: "", duration: "", image: "", color: "", size: "", weight_kg: "", height_cm: "", serviceId: "", email: "", password: "", category: "" });
       fetchBookings();
       fetchServices();
       fetchStaff();
@@ -1106,46 +1106,46 @@ const Dashboard = () => {
                   <img src={logo} alt="Logo" className="w-full h-full object-contain" />
                </div>
                <h2 className="text-3xl font-black tracking-tighter text-zinc-900 leading-none">QURUX<span className="text-primary">•</span>DUMAR</h2>
-               <p className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.4em] mt-2">Professional Excellence</p>
+               <p className="text-sm font-black uppercase text-zinc-400 tracking-[0.4em] mt-2">Professional Excellence</p>
             </div>
 
             {/* Business Contacts Section */}
             <div className="grid grid-cols-2 gap-4 mb-10 pb-10 border-b border-zinc-100">
                <div className="space-y-1 text-left">
-                  <p className="text-[7px] font-black uppercase text-zinc-400 tracking-widest">Business</p>
-                  <p className="text-[10px] font-black text-zinc-900">Qurux - Dumar Salon</p>
-                  <p className="text-[9px] font-medium text-zinc-500">+252 61 7643394</p>
+                  <p className="text-xs font-black uppercase text-zinc-400 tracking-widest">Business</p>
+                  <p className="text-sm font-black text-zinc-900">Qurux - Dumar Salon</p>
+                  <p className="text-xs font-medium text-zinc-500">+252 61 7643394</p>
                </div>
                <div className="text-right space-y-1">
-                  <p className="text-[7px] font-black uppercase text-zinc-400 tracking-widest">Date / Time</p>
-                  <p className="text-[9px] font-black text-zinc-900 uppercase">{receiptData.date}</p>
-                  <p className="text-[9px] font-medium text-zinc-400 uppercase">{receiptData.time}</p>
-                  <p className="text-[7px] font-black uppercase text-zinc-400 tracking-widest mt-1">Method</p>
-                  <p className="text-[9px] font-black text-emerald-600 uppercase">{receiptData.paymentMethod || 'Cash'}</p>
+                  <p className="text-xs font-black uppercase text-zinc-400 tracking-widest">Date / Time</p>
+                  <p className="text-xs font-black text-zinc-900 uppercase">{receiptData.date}</p>
+                  <p className="text-xs font-medium text-zinc-400 uppercase">{receiptData.time}</p>
+                  <p className="text-xs font-black uppercase text-zinc-400 tracking-widest mt-1">Method</p>
+                  <p className="text-xs font-black text-emerald-600 uppercase">{receiptData.paymentMethod || 'Cash'}</p>
                </div>
             </div>
 
             {/* Customer Details */}
             <div className="mb-10 text-left">
-               <p className="text-[7px] font-black uppercase text-zinc-400 tracking-widest mb-2">Billed To</p>
+               <p className="text-xs font-black uppercase text-zinc-400 tracking-widest mb-2">Billed To</p>
                <h3 className="text-xs font-black text-zinc-900 uppercase">{receiptData.customer_name}</h3>
-               {receiptData.customer_phone && <p className="text-[9px] font-bold text-zinc-500 mt-1">{receiptData.customer_phone}</p>}
+               {receiptData.customer_phone && <p className="text-xs font-bold text-zinc-500 mt-1">{receiptData.customer_phone}</p>}
             </div>
 
             {/* Itemized Table */}
             <div className="mb-10">
                <div className="flex justify-between items-center pb-2 border-b border-zinc-900 mb-4">
-                  <span className="text-[8px] font-black uppercase tracking-widest">Description</span>
-                  <span className="text-[8px] font-black uppercase tracking-widest">Amount</span>
+                  <span className="text-sm font-black uppercase tracking-widest">Description</span>
+                  <span className="text-sm font-black uppercase tracking-widest">Amount</span>
                </div>
                <div className="space-y-4">
                   {receiptData.items.map((item: any, i: number) => (
                     <div key={i} className="flex justify-between items-baseline">
                        <div className="flex-1 min-w-0 pr-4 text-left">
-                          <p className="text-[10px] font-black text-zinc-900 uppercase">{item.name}</p>
-                          <p className="text-[8px] font-medium text-zinc-400 mt-0.5">Professional Beauty Service</p>
+                          <p className="text-sm font-black text-zinc-900 uppercase">{item.name}</p>
+                          <p className="text-sm font-medium text-zinc-400 mt-0.5">Professional Beauty Service</p>
                        </div>
-                       <span className="text-[10px] font-black text-zinc-900">${parseFloat(item.price).toFixed(2)}</span>
+                       <span className="text-sm font-black text-zinc-900">${parseFloat(item.price).toFixed(2)}</span>
                     </div>
                   ))}
                </div>
@@ -1153,19 +1153,19 @@ const Dashboard = () => {
 
             {/* Summary Grid */}
             <div className="space-y-2 mb-10 pt-4 border-t border-zinc-50">
-               <div className="flex justify-between items-center text-[9px] font-bold text-zinc-400">
+               <div className="flex justify-between items-center text-xs font-bold text-zinc-400">
                   <span className="uppercase">Net Amount</span>
                   <span>${parseFloat(receiptData.total).toFixed(2)}</span>
                </div>
                <div className="flex justify-between items-center pt-4 mt-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900">Total Payable</span>
+                  <span className="text-sm font-black uppercase tracking-widest text-zinc-900">Total Payable</span>
                   <span className="text-2xl font-black text-zinc-900 tracking-tighter">${parseFloat(receiptData.total).toFixed(2)}</span>
                </div>
             </div>
 
             {/* Simple Final Footer */}
             <div className="mt-8 text-center pt-8 border-t border-dashed border-zinc-100">
-               <p className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">Waad ku mahadsantahay booqashadaada</p>
+               <p className="text-sm font-black text-zinc-900 uppercase tracking-widest">Waad ku mahadsantahay booqashadaada</p>
             </div>
           </div>
         </div>
@@ -1194,7 +1194,7 @@ const Dashboard = () => {
                 key={item.id}
                 onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
                 className={cn(
-                  "w-full flex items-center gap-2.5 px-4 py-2 font-body text-[9px] font-black uppercase tracking-widest rounded-xl transition-all group relative",
+                  "w-full flex items-center gap-2.5 px-4 py-2 font-body text-xs font-black uppercase tracking-widest rounded-xl transition-all group relative",
                   activeTab === item.id
                     ? "bg-white/10 text-white shadow-lg shadow-black/10"
                     : "text-white/40 hover:bg-white/5 hover:text-white"
@@ -1206,7 +1206,7 @@ const Dashboard = () => {
                 <item.icon className={cn("w-4 h-4 transition-transform group-hover:scale-110 relative z-10", activeTab === item.id ? "text-white opacity-100" : "opacity-30")} />
                 <span className="relative z-10">{(t as any)[item.id] || item.label}</span>
 {item.id === 'rentals' && overdueRentals.length > 0 && (
-  <span className="ml-2 inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[8px] font-black">
+  <span className="ml-2 inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-sm font-black">
     {overdueRentals.length}
   </span>
 )}
@@ -1220,7 +1220,7 @@ const Dashboard = () => {
               className="w-full flex items-center gap-4 px-4 py-2.5 text-white/40 hover:text-white hover:bg-white/5 transition-all group rounded-xl"
             >
               <LogOut className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
-              <span className="text-[9px] font-black uppercase tracking-[0.2em]">Logout</span>
+              <span className="text-xs font-black uppercase tracking-[0.2em]">Logout</span>
             </button>
           </div>
         </div>
@@ -1246,7 +1246,7 @@ const Dashboard = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search..."
-                className="w-full pl-9 pr-4 py-2 bg-zinc-50 border border-zinc-100 font-body text-[10px] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/5 focus:border-primary/20 transition-all text-zinc-700"
+                className="w-full pl-9 pr-4 py-2 bg-zinc-50 border border-zinc-100 font-body text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/5 focus:border-primary/20 transition-all text-zinc-700"
               />
             </div>
           </div>
@@ -1259,10 +1259,10 @@ const Dashboard = () => {
                 setLang(nextLang);
                 toast.success(nextLang === 'so' ? "Nidaamka waxaa loo beddelay Soomaali! 🇸🇴" : "System switched to English! 🇬🇧");
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-100 hover:bg-zinc-50 hover:border-zinc-200 transition-all font-display text-[9px] font-black uppercase tracking-widest text-[#5D1B54] bg-[#5D1B54]/5 active:scale-95 shadow-sm shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-100 hover:bg-zinc-50 hover:border-zinc-200 transition-all font-display text-xs font-black uppercase tracking-widest text-[#5D1B54] bg-[#5D1B54]/5 active:scale-95 shadow-sm shrink-0"
               title="Change Language / Luqadda Beddel"
             >
-              <span className="text-[11px] leading-none shrink-0">{lang === 'en' ? '🇬🇧' : '🇸🇴'}</span>
+              <span className="text-sm leading-none shrink-0">{lang === 'en' ? '🇬🇧' : '🇸🇴'}</span>
               <span>{lang === 'en' ? 'EN' : 'SO'}</span>
             </button>
 
@@ -1290,14 +1290,14 @@ const Dashboard = () => {
                       className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-zinc-100 z-50 overflow-hidden"
                     >
                       <div className="p-4 border-b border-zinc-50 flex items-center justify-between bg-zinc-50/50">
-                        <h3 className="font-display text-[10px] font-black uppercase tracking-widest text-zinc-900">Recent Bookings</h3>
-                        <span className="bg-primary/10 text-primary text-[8px] font-black px-2 py-0.5 rounded-full">{bookings.filter(b => b.status === 'pending').length} Pending</span>
+                        <h3 className="font-display text-sm font-black uppercase tracking-widest text-zinc-900">Recent Bookings</h3>
+                        <span className="bg-primary/10 text-primary text-sm font-black px-2 py-0.5 rounded-full">{bookings.filter(b => b.status === 'pending').length} Pending</span>
                       </div>
                       <div className="max-h-[350px] overflow-y-auto">
                         {bookings.length === 0 ? (
                           <div className="p-10 text-center space-y-2">
                              <div className="p-3 bg-zinc-50 rounded-full w-fit mx-auto"><Bell className="w-4 h-4 text-zinc-300" /></div>
-                             <p className="text-[10px] font-bold text-zinc-400">No new notifications</p>
+                             <p className="text-sm font-bold text-zinc-400">No new notifications</p>
                           </div>
                         ) : (
                           <div className="divide-y divide-zinc-50">
@@ -1312,16 +1312,16 @@ const Dashboard = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between gap-2">
-                                    <p className="text-[10px] font-black text-zinc-900 truncate uppercase mt-0.5">{b.name}</p>
-                                    <span className="text-[7px] font-bold text-zinc-400 shrink-0">{b.start_time}</span>
+                                    <p className="text-sm font-black text-zinc-900 truncate uppercase mt-0.5">{b.name}</p>
+                                    <span className="text-xs font-bold text-zinc-400 shrink-0">{b.start_time}</span>
                                   </div>
-                                  <p className="text-[9px] font-bold text-zinc-400 truncate">{b.service}</p>
+                                  <p className="text-xs font-bold text-zinc-400 truncate">{b.service}</p>
                                   <div className="mt-1 flex items-center gap-1.5">
                                     <span className={cn(
                                       "w-1.5 h-1.5 rounded-full",
                                       b.status === 'pending' ? "bg-amber-500" : "bg-emerald-500"
                                     )} />
-                                    <span className="text-[7px] font-black uppercase tracking-widest text-zinc-500">{b.status}</span>
+                                    <span className="text-xs font-black uppercase tracking-widest text-zinc-500">{b.status}</span>
                                   </div>
                                 </div>
                               </button>
@@ -1331,7 +1331,7 @@ const Dashboard = () => {
                       </div>
                       <button 
                         onClick={() => { setActiveTab('appointments'); setNotificationsOpen(false); }}
-                        className="w-full p-3 bg-zinc-50 text-[8px] font-black text-zinc-500 uppercase tracking-widest hover:bg-zinc-100 transition-all border-t border-zinc-100"
+                        className="w-full p-3 bg-zinc-50 text-sm font-black text-zinc-500 uppercase tracking-widest hover:bg-zinc-100 transition-all border-t border-zinc-100"
                       >
                         View All Appointments
                       </button>
@@ -1341,14 +1341,14 @@ const Dashboard = () => {
               </AnimatePresence>
             <div className="flex items-center gap-2 pl-3 border-l border-zinc-100 ml-1">
               <div className="text-right hidden md:block leading-tight">
-                <p className="text-[10px] font-bold text-zinc-900 leading-none capitalize">
+                <p className="text-sm font-bold text-zinc-900 leading-none capitalize">
                   {userProfile?.full_name || userProfile?.name || (isAdmin ? "Admin" : "Staff")}
                 </p>
-                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mt-0.5">
+                <p className="text-sm font-black uppercase tracking-widest text-zinc-400 mt-0.5">
                   {isAdmin ? "MANAGER" : isCashier ? "CASHIER" : "STAFF"}
                 </p>
               </div>
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-black text-[10px] shadow-md border border-white uppercase">
+              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-black text-sm shadow-md border border-white uppercase">
                 {(userProfile?.full_name || userProfile?.name || (isAdmin ? "A" : "S"))[0]}
               </div>
             </div>
@@ -1368,17 +1368,17 @@ const Dashboard = () => {
                   <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-[#AB92FF]/15 rounded-full blur-2xl pointer-events-none" />
                   <div className="relative z-10 p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
                     <div className="space-y-1.5">
-                      <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">
+                      <p className="text-xs font-black uppercase tracking-[0.3em] text-white/40">
                         {new Date().toLocaleDateString('en-US', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}
                       </p>
                       <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
                         Welcome back, <span className="text-[#F4B4D4]">{userProfile?.full_name?.split(' ')[0] || (isAdmin ? 'Admin' : 'Staff')}! 👋</span>
                       </h1>
-                      <p className="text-[11px] font-medium text-white/50">{bizName} · All systems running smoothly</p>
+                      <p className="text-sm font-medium text-white/50">{bizName} · All systems running smoothly</p>
                     </div>
                     <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 shrink-0">
                       <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                      <span className="text-[9px] font-black uppercase tracking-widest text-emerald-300">Live · Online</span>
+                      <span className="text-xs font-black uppercase tracking-widest text-emerald-300">Live · Online</span>
                     </div>
                   </div>
                 </div>
@@ -1389,11 +1389,11 @@ const Dashboard = () => {
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 bg-rose-500 text-white rounded-lg"><AlertTriangle className="w-3 h-3" /></div>
                       <div>
-                        <p className="text-[8px] font-black text-rose-600 uppercase tracking-widest">Inventory Alert</p>
-                        <p className="text-[10px] font-bold text-rose-900 mt-0.5">Some products are running low on stock!</p>
+                        <p className="text-sm font-black text-rose-600 uppercase tracking-widest">Inventory Alert</p>
+                        <p className="text-sm font-bold text-rose-900 mt-0.5">Some products are running low on stock!</p>
                       </div>
                     </div>
-                    <button onClick={() => setActiveTab('products')} className="text-[8px] font-black uppercase tracking-widest text-rose-500 hover:underline">View</button>
+                    <button onClick={() => setActiveTab('products')} className="text-sm font-black uppercase tracking-widest text-rose-500 hover:underline">View</button>
                   </div>
                 )}
 
@@ -1414,7 +1414,7 @@ const Dashboard = () => {
                       <div className={`w-11 h-11 ${stat.bg} rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-300`}>
                         <stat.icon className={`w-5 h-5 ${stat.clr} stroke-[2px]`} />
                       </div>
-                      <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest leading-none mb-1.5">{stat.label}</p>
+                      <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest leading-none mb-1.5">{stat.label}</p>
                       <h3 className="font-display text-[30px] font-black text-zinc-900 tracking-tight leading-none">{stat.value}</h3>
                     </div>
                   ))}
@@ -1422,7 +1422,7 @@ const Dashboard = () => {
 
                 {/* ── QUICK ACTIONS ──────────────────────────────────────── */}
                 <div className="px-2">
-                  <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.25em] mb-3">Quick Actions</p>
+                  <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.25em] mb-3">Quick Actions</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
                       { label: 'Walk-in Desk', sub: 'Register walk-in client', icon: UserPlus, tab: 'walkin', from: 'from-[#FFF0F6]', border: 'border-rose-100 hover:border-rose-200', bg: 'bg-[#EE2A7B]/10', clr: 'text-[#EE2A7B]', hbg: 'group-hover:bg-[#EE2A7B]/20', glow: 'hover:shadow-[0_8px_30px_rgba(238,42,123,0.12)]', blob: 'bg-[#EE2A7B]/5' },
@@ -1439,8 +1439,8 @@ const Dashboard = () => {
                           <a.icon className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="text-[11px] font-black text-[#5D1B54] uppercase tracking-tight">{a.label}</h4>
-                          <p className="text-[9px] font-bold text-zinc-400 mt-0.5">{a.sub}</p>
+                          <h4 className="text-sm font-black text-[#5D1B54] uppercase tracking-tight">{a.label}</h4>
+                          <p className="text-xs font-bold text-zinc-400 mt-0.5">{a.sub}</p>
                         </div>
                       </button>
                     ))}
@@ -1451,30 +1451,30 @@ const Dashboard = () => {
                 <div className="mx-2 bg-white rounded-[24px] border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
                   <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-50">
                     <div>
-                      <h3 className="text-[11px] font-black uppercase tracking-widest text-zinc-900">Recent Bookings</h3>
-                      <p className="text-[9px] font-bold text-zinc-400 mt-0.5 uppercase tracking-widest">Latest system activity</p>
+                      <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900">Recent Bookings</h3>
+                      <p className="text-xs font-bold text-zinc-400 mt-0.5 uppercase tracking-widest">Latest system activity</p>
                     </div>
-                    <button onClick={() => setActiveTab('appointments')} className="text-[9px] font-black text-primary uppercase tracking-widest hover:underline">View All →</button>
+                    <button onClick={() => setActiveTab('appointments')} className="text-xs font-black text-primary uppercase tracking-widest hover:underline">View All →</button>
                   </div>
                   {allBookings.length === 0 ? (
                     <div className="py-12 text-center">
-                      <p className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">No bookings found</p>
+                      <p className="text-sm font-bold text-zinc-300 uppercase tracking-widest">No bookings found</p>
                     </div>
                   ) : (
                     <div className="divide-y divide-zinc-50">
                       {allBookings.slice(0, 5).map((b, i) => (
                         <div key={i} className="flex items-center gap-4 px-6 py-3.5 hover:bg-zinc-50/50 transition-colors">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white font-black text-[11px] uppercase shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white font-black text-sm uppercase shrink-0">
                             {b.name?.[0] || '?'}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[11px] font-black text-zinc-900 truncate uppercase">{b.name}</p>
-                            <p className="text-[9px] font-bold text-zinc-400 truncate">{b.service} · {b.booking_date}</p>
+                            <p className="text-sm font-black text-zinc-900 truncate uppercase">{b.name}</p>
+                            <p className="text-xs font-bold text-zinc-400 truncate">{b.service} · {b.booking_date}</p>
                           </div>
                           <div className="text-right shrink-0 space-y-1">
                             <p className="text-[12px] font-black text-zinc-900">${b.amount || 0}</p>
                             <span className={cn(
-                              "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full",
+                              "text-sm font-black uppercase tracking-widest px-2 py-0.5 rounded-full",
                               b.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600' :
                               b.status === 'cancelled' ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-600'
                             )}>{b.status}</span>
@@ -1519,7 +1519,7 @@ const Dashboard = () => {
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-2">
                   <div>
                     <h1 className="font-display text-lg font-black tracking-tight text-[#5D1B54] leading-none uppercase">{t.appointments}</h1>
-                    <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">{t.salesHistory}</p>
+                    <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest">{t.salesHistory}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {/* Beautiful Layout Switcher Toggle */}
@@ -1527,7 +1527,7 @@ const Dashboard = () => {
                       <button
                         onClick={() => setAppointmentsLayout('table')}
                         className={cn(
-                          "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200",
+                          "px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200",
                           appointmentsLayout === 'table'
                             ? "bg-white text-[#83215D] shadow-sm font-black"
                             : "text-zinc-400 hover:text-zinc-600"
@@ -1538,7 +1538,7 @@ const Dashboard = () => {
                       <button
                         onClick={() => setAppointmentsLayout('cards')}
                         className={cn(
-                          "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200",
+                          "px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200",
                           appointmentsLayout === 'cards'
                             ? "bg-white text-[#83215D] shadow-sm font-black"
                             : "text-zinc-400 hover:text-zinc-600"
@@ -1550,7 +1550,7 @@ const Dashboard = () => {
 
                     <button 
                       onClick={downloadTransactionsCSV}
-                      className="flex items-center gap-1.5 bg-white border border-zinc-200 px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-zinc-600 hover:bg-zinc-50 transition-all shadow-sm duration-200"
+                      className="flex items-center gap-1.5 bg-white border border-zinc-200 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-zinc-600 hover:bg-zinc-50 transition-all shadow-sm duration-200"
                     >
                       <Download className="w-3 h-3 text-zinc-400" /> Export
                     </button>
@@ -1562,7 +1562,7 @@ const Dashboard = () => {
                         });
                         setModalType("appointment");
                       }}
-                      className="bg-gradient-to-r from-[#83215D] to-[#5D1B54] text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 hover:shadow-[0_8px_20px_rgba(131,33,93,0.25)] hover:scale-[1.02] active:scale-95 transition-all duration-200"
+                      className="bg-gradient-to-r from-[#83215D] to-[#5D1B54] text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 hover:shadow-[0_8px_20px_rgba(131,33,93,0.25)] hover:scale-[1.02] active:scale-95 transition-all duration-200"
                     >
                       <Plus className="w-3.5 h-3.5 stroke-[3px]" /> Add Booking
                     </button>
@@ -1575,11 +1575,11 @@ const Dashboard = () => {
                       <table className="w-full border-collapse">
                         <thead>
                           <tr className="bg-gradient-to-r from-zinc-50/60 to-zinc-50/20 border-b border-zinc-100">
-                            <th className="text-left py-4 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Client</th>
-                            <th className="text-left py-4 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Service</th>
-                            <th className="text-left py-4 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Date / Time</th>
-                            <th className="text-left py-4 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Amount</th>
-                            <th className="text-right py-4 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Actions</th>
+                            <th className="text-left py-4 px-6 text-sm font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Client</th>
+                            <th className="text-left py-4 px-6 text-sm font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Service</th>
+                            <th className="text-left py-4 px-6 text-sm font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Date / Time</th>
+                            <th className="text-left py-4 px-6 text-sm font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Amount</th>
+                            <th className="text-right py-4 px-6 text-sm font-black uppercase tracking-[0.2em] text-[#5D1B54]/75">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-100/50">
@@ -1600,7 +1600,7 @@ const Dashboard = () => {
                                     </div>
                                     <div className="min-w-0">
                                       <div className="font-display text-sm font-black text-[#5D1B54] tracking-tight truncate group-hover:text-[#83215D] transition-colors">{apt.name}</div>
-                                      <div className="text-[9px] font-bold text-zinc-400 mt-0.5 tracking-wider uppercase">{apt.phone}</div>
+                                      <div className="text-xs font-bold text-zinc-400 mt-0.5 tracking-wider uppercase">{apt.phone}</div>
                                     </div>
                                   </td>
 
@@ -1614,13 +1614,13 @@ const Dashboard = () => {
                                       <div className="flex flex-col gap-1.5">
                                         <div className="flex flex-wrap gap-1">
                                           {services.map((srvName, idx) => (
-                                            <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#83215D]/[0.06] text-[#83215D] border border-[#83215D]/10 shadow-[0_1px_4px_rgba(131,33,93,0.03)] animate-in fade-in zoom-in-95 duration-200">
+                                            <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-[#83215D]/[0.06] text-[#83215D] border border-[#83215D]/10 shadow-[0_1px_4px_rgba(131,33,93,0.03)] animate-in fade-in zoom-in-95 duration-200">
                                               {srvName}
                                             </span>
                                           ))}
                                         </div>
                                         {apt.category === 'Online' && (
-                                          <span className="w-fit text-[7px] font-black bg-sky-100 text-sky-600 px-1.5 py-0.5 rounded uppercase tracking-[0.2em] border border-sky-200">Online</span>
+                                          <span className="w-fit text-xs font-black bg-sky-100 text-sky-600 px-1.5 py-0.5 rounded uppercase tracking-[0.2em] border border-sky-200">Online</span>
                                         )}
                                       </div>
                                     </div>
@@ -1629,7 +1629,7 @@ const Dashboard = () => {
                                   <td className="p-4">
                                     <div className="space-y-1">
                                       <div className="font-display text-xs font-black text-zinc-700">{apt.booking_date}</div>
-                                      <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-100 text-zinc-500 rounded-md text-[9px] font-black uppercase tracking-wider">
+                                      <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-100 text-zinc-500 rounded-md text-xs font-black uppercase tracking-wider">
                                         <Clock className="w-2.5 h-2.5 text-zinc-400" />
                                         <span>{apt.start_time}</span>
                                       </div>
@@ -1645,13 +1645,13 @@ const Dashboard = () => {
                                       {apt.status === "pending" ? (
                                         <div className="flex gap-1.5">
                                           <button
-                                            className="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-md shadow-emerald-500/10 transition-all duration-200"
+                                            className="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-md shadow-emerald-500/10 transition-all duration-200"
                                             onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "confirmed"); }}
                                           >
                                             Confirm
                                           </button>
                                           <button
-                                            className="bg-rose-50 hover:bg-rose-100 text-rose-500 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-200"
+                                            className="bg-rose-50 hover:bg-rose-100 text-rose-500 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200"
                                             onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "cancelled"); }}
                                           >
                                             Cancel
@@ -1659,7 +1659,7 @@ const Dashboard = () => {
                                         </div>
                                       ) : (
                                         <div className={cn(
-                                          "py-1.5 px-4 rounded-xl text-center text-[9px] font-black uppercase tracking-[0.1em] flex items-center justify-center gap-2 border",
+                                          "py-1.5 px-4 rounded-xl text-center text-xs font-black uppercase tracking-[0.1em] flex items-center justify-center gap-2 border",
                                           apt.status === "cancelled" 
                                             ? "bg-[#FCE8E6] text-[#C5221F] border-[#FAD2CF]/80 shadow-[0_2px_8px_rgba(197,34,31,0.04)]" 
                                             : "bg-[#E6F4EA] text-[#137333] border-[#CEEAD6]/80 shadow-[0_2px_8px_rgba(19,115,51,0.04)]"
@@ -1708,14 +1708,14 @@ const Dashboard = () => {
                                 </div>
                                 <div className="min-w-0">
                                   <h4 className="font-display text-sm font-black text-[#5D1B54] tracking-tight truncate group-hover:text-[#83215D] transition-colors uppercase">{apt.name}</h4>
-                                  <p className="text-[9px] font-bold text-zinc-400 tracking-wider uppercase mt-0.5">{apt.phone}</p>
+                                  <p className="text-xs font-bold text-zinc-400 tracking-wider uppercase mt-0.5">{apt.phone}</p>
                                 </div>
                               </div>
 
                               {/* Status Badge */}
                               {apt.status !== "pending" ? (
                                 <span className={cn(
-                                  "py-1 px-3 rounded-full text-[8px] font-black uppercase tracking-wider border",
+                                  "py-1 px-3 rounded-full text-sm font-black uppercase tracking-wider border",
                                   apt.status === "cancelled" 
                                     ? "bg-[#FCE8E6] text-[#C5221F] border-[#FAD2CF]/80 shadow-[0_2px_8px_rgba(197,34,31,0.04)]" 
                                     : "bg-[#E6F4EA] text-[#137333] border-[#CEEAD6]/80 shadow-[0_2px_8px_rgba(19,115,51,0.04)]"
@@ -1723,7 +1723,7 @@ const Dashboard = () => {
                                   {apt.status}
                                 </span>
                               ) : (
-                                <span className="py-1 px-3 rounded-full text-[8px] font-black uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-200/60 shadow-[0_2px_8px_rgba(245,158,11,0.04)]">
+                                <span className="py-1 px-3 rounded-full text-sm font-black uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-200/60 shadow-[0_2px_8px_rgba(245,158,11,0.04)]">
                                   Pending
                                 </span>
                               )}
@@ -1743,7 +1743,7 @@ const Dashboard = () => {
                               <div className="flex flex-col gap-1">
                                 <div className="flex flex-wrap gap-1 max-w-[200px]">
                                   {services.map((srvName, idx) => (
-                                    <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-[#83215D]/[0.06] text-[#83215D] border border-[#83215D]/10">
+                                    <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-black uppercase tracking-wider bg-[#83215D]/[0.06] text-[#83215D] border border-[#83215D]/10">
                                       {srvName}
                                     </span>
                                   ))}
@@ -1768,8 +1768,8 @@ const Dashboard = () => {
                             {/* Bottom row: Time badge & Price + Actions Overlay */}
                             <div className="flex items-center justify-between border-t border-zinc-100/60 pt-3.5 mt-auto">
                               <div className="space-y-0.5">
-                                <div className="font-display text-[10px] font-black text-zinc-400 uppercase tracking-wider">{apt.booking_date}</div>
-                                <div className="flex items-center gap-1 text-[#83215D] font-black text-[9px] uppercase tracking-wider">
+                                <div className="font-display text-sm font-black text-zinc-400 uppercase tracking-wider">{apt.booking_date}</div>
+                                <div className="flex items-center gap-1 text-[#83215D] font-black text-xs uppercase tracking-wider">
                                   <Clock className="w-3 h-3 text-[#83215D]/70" />
                                   <span>{apt.start_time}</span>
                                 </div>
@@ -1783,14 +1783,14 @@ const Dashboard = () => {
                                   {apt.status === "pending" && (
                                     <>
                                       <button
-                                        className="bg-emerald-500 hover:bg-emerald-600 text-white p-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-md transition-all active:scale-95 duration-200"
+                                        className="bg-emerald-500 hover:bg-emerald-600 text-white p-1.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-md transition-all active:scale-95 duration-200"
                                         onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "confirmed"); }}
                                         title="Confirm"
                                       >
                                         <CheckCircle2 className="w-3.5 h-3.5" />
                                       </button>
                                       <button
-                                        className="bg-rose-50 hover:bg-rose-100 text-rose-500 p-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-200"
+                                        className="bg-rose-50 hover:bg-rose-100 text-rose-500 p-1.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200"
                                         onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, "cancelled"); }}
                                         title="Cancel"
                                       >
@@ -1823,7 +1823,7 @@ const Dashboard = () => {
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 px-2">
                   <div className="space-y-0.5">
                     <h1 className="font-display text-lg font-black tracking-tight text-[#5D1B54] leading-none uppercase">Kalandarka Ballamaha (Calendar)</h1>
-                    <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Maamul oo u kuurgal dhammaan ballamaha ku qoran kalandarka</p>
+                    <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Maamul oo u kuurgal dhammaan ballamaha ku qoran kalandarka</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button 
@@ -1834,7 +1834,7 @@ const Dashboard = () => {
                         });
                         setModalType("appointment");
                       }}
-                      className="bg-primary text-white px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 hover:bg-primary/90 active:scale-95 transition-all shadow-md shadow-primary/20 shrink-0"
+                      className="bg-primary text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 hover:bg-primary/90 active:scale-95 transition-all shadow-md shadow-primary/20 shrink-0"
                     >
                       <Plus className="w-3.5 h-3.5 stroke-[3px]" /> Ku dar Ballan (Add Booking)
                     </button>
@@ -1854,7 +1854,7 @@ const Dashboard = () => {
                           <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900 leading-none">
                             {calendarCurrentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                           </h2>
-                          <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Guji maalin si aad u aragto ballamaha ku qoran</p>
+                          <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-1">Guji maalin si aad u aragto ballamaha ku qoran</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
@@ -1866,7 +1866,7 @@ const Dashboard = () => {
                         </button>
                         <button 
                           onClick={() => setCalendarCurrentDate(new Date())}
-                          className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-zinc-500 hover:text-primary hover:bg-zinc-50 rounded-lg transition-colors border border-zinc-200/50"
+                          className="px-3 py-1.5 text-sm font-black uppercase tracking-widest text-zinc-500 hover:text-primary hover:bg-zinc-50 rounded-lg transition-colors border border-zinc-200/50"
                         >
                           Maanta (Today)
                         </button>
@@ -1882,7 +1882,7 @@ const Dashboard = () => {
                     {/* Day of Week Headers */}
                     <div className="grid grid-cols-7 gap-2 text-center">
                       {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
-                        <div key={i} className="text-[9px] font-black uppercase tracking-widest text-zinc-400 py-1">{d}</div>
+                        <div key={i} className="text-xs font-black uppercase tracking-widest text-zinc-400 py-1">{d}</div>
                       ))}
                     </div>
 
@@ -1921,7 +1921,7 @@ const Dashboard = () => {
                             {hasBookings && (
                               <div className="w-full flex items-center justify-center gap-0.5 mt-auto">
                                 <span className={cn(
-                                  "text-[7px] font-black px-1.5 py-0.5 rounded-full",
+                                  "text-xs font-black px-1.5 py-0.5 rounded-full",
                                   isSelected ? "bg-primary text-white" : "bg-primary/10 text-primary"
                                 )}>
                                   {dayBookings.length}
@@ -1943,7 +1943,7 @@ const Dashboard = () => {
                   <div className="lg:col-span-4 bg-white border border-zinc-100 rounded-3xl shadow-sm p-6 space-y-6">
                     <div className="border-b border-zinc-50 pb-4">
                       <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400">Ajendaha Maalinta (Day Agenda)</h3>
-                      <p className="text-[10px] font-black text-primary uppercase mt-1">
+                      <p className="text-sm font-black text-primary uppercase mt-1">
                         {new Date(calendarSelectedDate + "T12:00:00").toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
                       </p>
                     </div>
@@ -1951,7 +1951,7 @@ const Dashboard = () => {
                     <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
                       {allBookings.filter(b => b.booking_date === calendarSelectedDate).length === 0 ? (
                         <div className="py-12 text-center space-y-3 bg-[#FAFAFA] rounded-2xl border border-dashed border-zinc-200">
-                          <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Ma jiraan ballamo qoran</p>
+                          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Ma jiraan ballamo qoran</p>
                           <button
                             type="button"
                             onClick={() => {
@@ -1961,7 +1961,7 @@ const Dashboard = () => {
                               });
                               setModalType("appointment");
                             }}
-                            className="mx-auto bg-primary text-white px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-primary/95 active:scale-95 transition-all"
+                            className="mx-auto bg-primary text-white px-3 py-1.5 rounded-lg text-sm font-black uppercase tracking-widest hover:bg-primary/95 active:scale-95 transition-all"
                           >
                             Ku dar Ballan
                           </button>
@@ -1975,11 +1975,11 @@ const Dashboard = () => {
                               <div className="flex items-start justify-between">
                                 <div>
                                   <h4 className="text-xs font-black text-[#5D1B54] uppercase tracking-tight">{apt.name}</h4>
-                                  <p className="text-[8px] font-semibold text-zinc-400 uppercase tracking-widest mt-0.5">{apt.phone}</p>
+                                  <p className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mt-0.5">{apt.phone}</p>
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
                                   <span className={cn(
-                                    "text-[7px] font-black px-1.5 py-0.5 rounded uppercase tracking-[0.15em] border",
+                                    "text-xs font-black px-1.5 py-0.5 rounded uppercase tracking-[0.15em] border",
                                     apt.status === "confirmed" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                                     apt.status === "cancelled" ? "bg-rose-50 text-rose-500 border-rose-100" :
                                     "bg-amber-50 text-amber-600 border-amber-100"
@@ -2002,8 +2002,8 @@ const Dashboard = () => {
 
                               <div className="flex items-center justify-between border-t border-zinc-100/50 pt-2 mt-1">
                                 <div className="flex flex-col gap-0.5">
-                                  <span className="text-[8px] font-black text-primary uppercase tracking-widest italic">{apt.service}</span>
-                                  <div className="flex items-center gap-1 text-[8px] text-zinc-400 font-bold mt-0.5">
+                                  <span className="text-sm font-black text-primary uppercase tracking-widest italic">{apt.service}</span>
+                                  <div className="flex items-center gap-1 text-sm text-zinc-400 font-bold mt-0.5">
                                     <Clock className="w-2.5 h-2.5 text-zinc-300" />
                                     {apt.start_time} - {apt.end_time}
                                   </div>
@@ -2048,14 +2048,14 @@ const Dashboard = () => {
                        {(isAdmin || isCashier) && (
                          <button 
                            onClick={() => setFinanceTab('sales')}
-                           className={cn("text-[10px] font-black uppercase tracking-widest pb-1 border-b-2 transition-all", financeTab === 'sales' ? "border-primary text-primary" : "border-transparent text-zinc-400")}
+                           className={cn("text-sm font-black uppercase tracking-widest pb-1 border-b-2 transition-all", financeTab === 'sales' ? "border-primary text-primary" : "border-transparent text-zinc-400")}
                          >
                            Sales
                          </button>
                        )}
                        <button 
                          onClick={() => setFinanceTab('expenses')}
-                         className={cn("text-[10px] font-black uppercase tracking-widest pb-1 border-b-2 transition-all", financeTab === 'expenses' ? "border-primary text-primary" : "border-transparent text-zinc-400")}
+                         className={cn("text-sm font-black uppercase tracking-widest pb-1 border-b-2 transition-all", financeTab === 'expenses' ? "border-primary text-primary" : "border-transparent text-zinc-400")}
                        >
                          Expenses
                        </button>
@@ -2066,7 +2066,7 @@ const Dashboard = () => {
                         if (financeTab === 'sales') setModalType('payment');
                         else setModalType('expense');
                     }} 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold text-[9px] flex items-center gap-1.5 transition-all shadow-md active:scale-95"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95"
                   >
                     <Plus className="w-3 h-3 stroke-[3px]" /> {financeTab === 'sales' ? t.newSale : 'Add Expense'}
                   </button>
@@ -2090,7 +2090,7 @@ const Dashboard = () => {
                         <div className={cn("w-6 h-6 rounded-md flex items-center justify-center", stat.bg)}>
                           <stat.icon className={cn("w-3 h-3", stat.color)} />
                         </div>
-                        <p className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">{stat.label}</p>
+                        <p className="text-sm font-black text-zinc-400 uppercase tracking-widest">{stat.label}</p>
                       </div>
                       <h3 className={cn("text-lg font-black tracking-tight", stat.color)}>${stat.value.toLocaleString()}</h3>
                     </div>
@@ -2100,7 +2100,7 @@ const Dashboard = () => {
                 <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden mx-2">
                   <div className="p-4 border-b border-zinc-50 bg-zinc-50/30 flex flex-wrap items-center justify-between gap-3 text-left">
                     <div>
-                      <h3 className="font-display font-bold text-[9px] uppercase tracking-widest text-zinc-400">
+                      <h3 className="font-display font-bold text-xs uppercase tracking-widest text-zinc-400">
                         {financeTab === 'sales' ? 'Sales Data' : 'Expenses Data'}
                       </h3>
                       {/* Finance date filter */}
@@ -2110,7 +2110,7 @@ const Dashboard = () => {
                             key={f}
                             onClick={() => setFinanceDateFilter(f)}
                             className={cn(
-                              "px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all",
+                              "px-2.5 py-0.5 rounded-full text-sm font-black uppercase tracking-widest border transition-all",
                               financeDateFilter === f
                                 ? "bg-primary text-white border-primary"
                                 : "bg-white text-zinc-400 border-zinc-200 hover:border-zinc-300"
@@ -2128,12 +2128,12 @@ const Dashboard = () => {
                         <table className="w-full text-left">
                         <thead>
                             <tr className="bg-white border-b border-zinc-50">
-                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400">Customer</th>
-                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400">Service</th>
-                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Date</th>
-                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-right">Amount</th>
-                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Payment</th>
-                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Status</th>
+                            <th className="p-3 text-sm font-black uppercase tracking-widest text-zinc-400">Customer</th>
+                            <th className="p-3 text-sm font-black uppercase tracking-widest text-zinc-400">Service</th>
+                            <th className="p-3 text-sm font-black uppercase tracking-widest text-zinc-400 text-center">Date</th>
+                            <th className="p-3 text-sm font-black uppercase tracking-widest text-zinc-400 text-right">Amount</th>
+                            <th className="p-3 text-sm font-black uppercase tracking-widest text-zinc-400 text-center">Payment</th>
+                            <th className="p-3 text-sm font-black uppercase tracking-widest text-zinc-400 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2151,8 +2151,8 @@ const Dashboard = () => {
                                 .map((b, i) => (
                             <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
                                 <td className="p-3">
-                                <p className="text-[10px] font-bold text-zinc-900">{b.name}</p>
-                                <p className="text-[8px] text-zinc-400">{b.phone}</p>
+                                <p className="text-sm font-bold text-zinc-900">{b.name}</p>
+                                <p className="text-sm text-zinc-400">{b.phone}</p>
                                 </td>
                                 <td className="p-3">
                                 <div className="flex items-center gap-2">
@@ -2162,15 +2162,15 @@ const Dashboard = () => {
                                     </div>
                                     )}
                                     <div className="flex flex-col gap-1 min-w-0">
-                                    <span className="text-[9px] font-bold px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded-md truncate max-w-[100px]">{b.service}</span>
+                                    <span className="text-xs font-bold px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded-md truncate max-w-[100px]">{b.service}</span>
                                     {b.category === 'Online' && (
                                         <span className="w-fit text-[6px] font-black bg-sky-50 text-sky-500 px-1 py-0.5 rounded uppercase tracking-[0.2em]">Online</span>
                                     )}
                                     </div>
                                 </div>
                                 </td>
-                                <td className="p-3 text-[9px] text-zinc-400 text-center font-medium">{b.booking_date}</td>
-                                <td className="p-3 text-right font-black text-[10px] text-zinc-900">${b.amount || 0}</td>
+                                <td className="p-3 text-xs text-zinc-400 text-center font-medium">{b.booking_date}</td>
+                                <td className="p-3 text-right font-black text-sm text-zinc-900">${b.amount || 0}</td>
                                 <td className="p-3 text-center">
                                   {(() => {
                                     let payMethod = "Cash";
@@ -2178,11 +2178,11 @@ const Dashboard = () => {
                                       const match = b.notes.match(/Payment Method:\s*([^\n]+)/);
                                       if (match) payMethod = match[1].trim();
                                     }
-                                    return <span className="text-[7px] font-black uppercase tracking-widest px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded-md border border-zinc-200">{payMethod}</span>;
+                                    return <span className="text-xs font-black uppercase tracking-widest px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded-md border border-zinc-200">{payMethod}</span>;
                                   })()}
                                 </td>
                                 <td className="p-3 text-center">
-                                <span className="text-[7px] font-black uppercase tracking-widest px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">Paid</span>
+                                <span className="text-xs font-black uppercase tracking-widest px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">Paid</span>
                                 </td>
                             </tr>
                             ));
@@ -2193,11 +2193,11 @@ const Dashboard = () => {
                         <table className="w-full text-left">
                         <thead>
                             <tr className="bg-white border-b border-zinc-50">
-                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400">Title</th>
-                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400">Category</th>
-                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Date</th>
-                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-right">Amount</th>
-                            <th className="p-3 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Actions</th>
+                            <th className="p-3 text-sm font-black uppercase tracking-widest text-zinc-400">Title</th>
+                            <th className="p-3 text-sm font-black uppercase tracking-widest text-zinc-400">Category</th>
+                            <th className="p-3 text-sm font-black uppercase tracking-widest text-zinc-400 text-center">Date</th>
+                            <th className="p-3 text-sm font-black uppercase tracking-widest text-zinc-400 text-right">Amount</th>
+                            <th className="p-3 text-sm font-black uppercase tracking-widest text-zinc-400 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2221,14 +2221,14 @@ const Dashboard = () => {
                               });
                               return filteredExp.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="p-10 text-center text-zinc-400 text-[10px] font-bold uppercase tracking-widest">No expenses recorded ({financeDateFilter === 'today' ? 'Today' : financeDateFilter === 'month' ? 'This Month' : 'All Time'})</td>
+                                    <td colSpan={5} className="p-10 text-center text-zinc-400 text-sm font-bold uppercase tracking-widest">No expenses recorded ({financeDateFilter === 'today' ? 'Today' : financeDateFilter === 'month' ? 'This Month' : 'All Time'})</td>
                                 </tr>
                               ) : filteredExp.map((e, i) => (
                             <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                                <td className="p-3 text-[10px] font-bold text-zinc-900">{e.title}</td>
-                                <td className="p-3 text-[9px] font-black text-zinc-400 uppercase">{e.category}</td>
-                                <td className="p-3 text-[9px] text-zinc-400 text-center">{e.date}</td>
-                                <td className="p-3 text-right font-black text-[10px] text-rose-600">-${e.amount}</td>
+                                <td className="p-3 text-sm font-bold text-zinc-900">{e.title}</td>
+                                <td className="p-3 text-xs font-black text-zinc-400 uppercase">{e.category}</td>
+                                <td className="p-3 text-xs text-zinc-400 text-center">{e.date}</td>
+                                <td className="p-3 text-right font-black text-sm text-rose-600">-${e.amount}</td>
                                 <td className="p-3 text-center">
                                     <button onClick={() => { if(confirm('Delete?')) (supabase as any).from('expenses').delete().eq('id', e.id).then(() => fetchExpenses()) }} className="text-zinc-300 hover:text-rose-500"><Trash2 className="w-3 h-3" /></button>
                                 </td>
@@ -2250,16 +2250,16 @@ const Dashboard = () => {
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 px-2">
                   <div className="space-y-0.5 text-left">
                     <h1 className="font-display text-xl font-black text-zinc-900 leading-none">Salon Services</h1>
-                    <p className="font-body text-zinc-400 font-medium text-[9px]">Manage treatments and pricing</p>
+                    <p className="font-body text-zinc-400 font-medium text-xs">Manage treatments and pricing</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={handleSeedDefaults} 
-                      className="bg-amber-500/10 text-amber-600 border border-amber-100 px-4 py-2 rounded-lg font-body text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:bg-amber-500/20 transition-all active:scale-95"
+                      className="bg-amber-500/10 text-amber-600 border border-amber-100 px-4 py-2 rounded-lg font-body text-xs font-black uppercase tracking-widest flex items-center gap-1.5 hover:bg-amber-500/20 transition-all active:scale-95"
                     >
                       <Sparkles className="w-3 h-3" /> Seed Defaults
                     </button>
-                    <button onClick={() => setModalType('service')} className="bg-primary text-white px-4 py-2 rounded-lg font-body text-[9px] flex items-center gap-1.5 hover:bg-primary/90 transition-all shadow-md active:scale-95">
+                    <button onClick={() => setModalType('service')} className="bg-primary text-white px-4 py-2 rounded-lg font-body text-xs flex items-center gap-1.5 hover:bg-primary/90 transition-all shadow-md active:scale-95">
                       <Plus className="w-3 h-3" /> Add Service
                     </button>
                   </div>
@@ -2270,10 +2270,10 @@ const Dashboard = () => {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-zinc-100 bg-zinc-50/50">
-                          <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Service Details</th>
-                          <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-center">Duration</th>
-                          <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400 text-right">Price</th>
-                          <th className="text-center p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Actions</th>
+                          <th className="text-left p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Service Details</th>
+                          <th className="text-left p-4 text-sm font-black uppercase tracking-widest text-zinc-400 text-center">Duration</th>
+                          <th className="text-left p-4 text-sm font-black uppercase tracking-widest text-zinc-400 text-right">Price</th>
+                          <th className="text-center p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2300,13 +2300,13 @@ const Dashboard = () => {
                                   </div>
                                 )}
                                 <div>
-                                  <p className="font-display font-bold text-[10px] text-zinc-900 uppercase tracking-tight">{serv.name}</p>
-                                  <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">{serv.category || 'General'}</p>
+                                  <p className="font-display font-bold text-sm text-zinc-900 uppercase tracking-tight">{serv.name}</p>
+                                  <p className="text-sm text-zinc-400 font-bold uppercase tracking-widest mt-0.5">{serv.category || 'General'}</p>
                                 </div>
                               </div>
                             </td>
                             <td className="p-4 text-center">
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-100 rounded-full text-[8px] font-black uppercase tracking-widest text-zinc-500">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-100 rounded-full text-sm font-black uppercase tracking-widest text-zinc-500">
                                 <Clock className="w-2 h-2" /> {serv.duration || "30m"}
                               </span>
                             </td>
@@ -2332,15 +2332,15 @@ const Dashboard = () => {
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-zinc-100/50 pb-5">
                   <div>
                     <h1 className="font-display text-2xl font-black text-zinc-900 leading-none tracking-tight">Dress Rentals</h1>
-                    <p className="font-body text-zinc-400 font-medium text-[10px] uppercase tracking-wider mt-1.5">Collection management center</p>
+                    <p className="font-body text-zinc-400 font-medium text-sm uppercase tracking-wider mt-1.5">Collection management center</p>
                   </div>
                   <button 
                     onClick={() => {
                       setEditingId(null);
-                      setFormData({ name: "", phone: "", service: "", selectedServices: [], date: "", time: "", amount: "", description: "", duration: "", image: "", color: "", size: "", weight_kg: "", height_cm: "", serviceId: "", email: "", password: "" });
+                      setFormData({ name: "", phone: "", service: "", selectedServices: [], date: "", time: "", amount: "", description: "", duration: "", image: "", color: "", size: "", weight_kg: "", height_cm: "", serviceId: "", email: "", password: "", category: "" });
                       setModalType('rental');
                     }} 
-                    className="bg-[#5D1B54] text-white px-5 py-2.5 rounded-xl font-body text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-[#5D1B54]/95 transition-all shadow-lg shadow-[#5D1B54]/20 active:scale-95 shrink-0"
+                    className="bg-[#5D1B54] text-white px-5 py-2.5 rounded-xl font-body text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-[#5D1B54]/95 transition-all shadow-lg shadow-[#5D1B54]/20 active:scale-95 shrink-0"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[3px]" /> Add Dress
                   </button>
@@ -2353,7 +2353,7 @@ const Dashboard = () => {
                     </div>
                     <div>
                       <h3 className="font-display font-black text-sm text-zinc-950 uppercase tracking-widest">No Dresses in Collection</h3>
-                      <p className="text-[10px] font-medium text-zinc-400 mt-1 uppercase tracking-wide">Start building your premium rental collection today.</p>
+                      <p className="text-sm font-medium text-zinc-400 mt-1 uppercase tracking-wide">Start building your premium rental collection today.</p>
                     </div>
                   </div>
                 ) : (
@@ -2399,10 +2399,10 @@ const Dashboard = () => {
                           {/* Price Tag Overlay */}
                           <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
                             <div>
-                              <span className="text-[7px] font-black tracking-widest text-white/60 uppercase block mb-0.5">RENTAL PRICE</span>
-                              <span className="text-xl font-display font-black text-white leading-none tracking-tight">${dress.price} <span className="text-[9px] font-medium text-white/70">/ Day</span></span>
+                              <span className="text-xs font-black tracking-widest text-white/60 uppercase block mb-0.5">RENTAL PRICE</span>
+                              <span className="text-xl font-display font-black text-white leading-none tracking-tight">${dress.price} <span className="text-xs font-medium text-white/70">/ Day</span></span>
                             </div>
-                            <span className="px-2.5 py-1 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">
+                            <span className="px-2.5 py-1 bg-emerald-500 text-white rounded-lg text-sm font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">
                               Available
                             </span>
                           </div>
@@ -2414,7 +2414,7 @@ const Dashboard = () => {
                             <h3 className="font-display font-black text-xs text-zinc-950 uppercase tracking-tight truncate leading-none">
                               {dress.name}
                             </h3>
-                            <p className="text-[9px] font-medium text-zinc-400 mt-2 uppercase tracking-wide leading-relaxed line-clamp-2">
+                            <p className="text-xs font-medium text-zinc-400 mt-2 uppercase tracking-wide leading-relaxed line-clamp-2">
                               {dress.description || "Premium high-quality formal gown from our exclusive collection."}
                             </p>
                           </div>
@@ -2423,11 +2423,11 @@ const Dashboard = () => {
                           <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-zinc-50">
                             <div className="bg-zinc-50 border border-zinc-100 p-2 rounded-xl text-center">
                               <span className="text-[6.5px] font-black text-zinc-400 uppercase tracking-widest block">COLOR</span>
-                              <span className="text-[9px] font-black text-zinc-800 uppercase tracking-tight block mt-0.5">{dress.color || 'Royal Gold'}</span>
+                              <span className="text-xs font-black text-zinc-800 uppercase tracking-tight block mt-0.5">{dress.color || 'Royal Gold'}</span>
                             </div>
                             <div className="bg-zinc-50 border border-zinc-100 p-2 rounded-xl text-center">
                               <span className="text-[6.5px] font-black text-zinc-400 uppercase tracking-widest block">SIZE</span>
-                              <span className="text-[9px] font-black text-zinc-800 uppercase tracking-tight block mt-0.5">{dress.size || 'M / L'}</span>
+                              <span className="text-xs font-black text-zinc-800 uppercase tracking-tight block mt-0.5">{dress.size || 'M / L'}</span>
                             </div>
                           </div>
                         </div>
@@ -2444,11 +2444,11 @@ const Dashboard = () => {
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-2">
                   <div>
                     <h1 className="font-display text-xl tracking-tight text-charcoal mb-0.5 font-black">Clients</h1>
-                    <p className="text-zinc-400 font-body text-[9px]">List of your clients</p>
+                    <p className="text-zinc-400 font-body text-xs">List of your clients</p>
                   </div>
                   <button
                     onClick={() => setModalType("client")}
-                    className="bg-primary text-white px-4 py-2 rounded-lg font-body text-[9px] flex items-center gap-1.5 hover:bg-primary/90 transition-all shadow-md active:scale-95"
+                    className="bg-primary text-white px-4 py-2 rounded-lg font-body text-xs flex items-center gap-1.5 hover:bg-primary/90 transition-all shadow-md active:scale-95"
                   >
                     <Plus className="w-3 h-3" /> Add Client
                   </button>
@@ -2459,44 +2459,44 @@ const Dashboard = () => {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-gray-100 bg-[#FAFAFA]">
-                          <th className="text-left p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Client</th>
-                          <th className="text-left p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Contact</th>
-                          <th className="text-center p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Visits</th>
-                          <th className="text-center p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Loyalty Points</th>
-                          <th className="text-right p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Revenue</th>
-                          <th className="text-center p-4 font-body text-[8px] text-primary font-semibold uppercase tracking-wider">Actions</th>
+                          <th className="text-left p-4 font-body text-sm text-primary font-semibold uppercase tracking-wider">Client</th>
+                          <th className="text-left p-4 font-body text-sm text-primary font-semibold uppercase tracking-wider">Contact</th>
+                          <th className="text-center p-4 font-body text-sm text-primary font-semibold uppercase tracking-wider">Visits</th>
+                          <th className="text-center p-4 font-body text-sm text-primary font-semibold uppercase tracking-wider">Loyalty Points</th>
+                          <th className="text-right p-4 font-body text-sm text-primary font-semibold uppercase tracking-wider">Revenue</th>
+                          <th className="text-center p-4 font-body text-sm text-primary font-semibold uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {allClients.length === 0 ? (
                           <tr>
-                            <td colSpan={5} className="p-10 text-center text-primary/60 font-body text-[10px]">No clients found.</td>
+                            <td colSpan={5} className="p-10 text-center text-primary/60 font-body text-sm">No clients found.</td>
                           </tr>
                         ) : (
                           allClients.map((client) => (
                             <tr key={client.id} className="border-b border-gray-50 last:border-0 hover:bg-primary/[0.02] transition-colors group">
                               <td className="p-4">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-bold text-[10px] shadow-sm">
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-bold text-sm shadow-sm">
                                     {client.name[0]}
                                   </div>
-                                  <div className="font-body text-[10px] font-semibold text-charcoal">{client.name}</div>
+                                  <div className="font-body text-sm font-semibold text-charcoal">{client.name}</div>
                                 </div>
                               </td>
                               <td className="p-4 space-y-0.5">
-                                <div className="font-body text-[8px] text-charcoal">{client.email}</div>
-                                <div className="font-body text-[8px] text-primary/60">{client.phone}</div>
+                                <div className="font-body text-sm text-charcoal">{client.email}</div>
+                                <div className="font-body text-sm text-primary/60">{client.phone}</div>
                               </td>
                               <td className="p-4 text-center">
-                                <span className="bg-[#FAFAFA] border border-gray-100 px-3 py-0.5 rounded-full text-[9px] font-bold text-charcoal">{client.visits}</span>
+                                <span className="bg-[#FAFAFA] border border-gray-100 px-3 py-0.5 rounded-full text-xs font-bold text-charcoal">{client.visits}</span>
                               </td>
                               <td className="p-4 text-center">
                                 <div className="flex flex-col items-center">
-                                    <span className="text-[10px] font-black text-amber-500">{(client.spent ? Math.floor(client.spent / 10) : 0)} pts</span>
+                                    <span className="text-sm font-black text-amber-500">{(client.spent ? Math.floor(client.spent / 10) : 0)} pts</span>
                                     <span className="text-[6px] font-bold text-zinc-400 uppercase">Loyalty</span>
                                 </div>
                               </td>
-                              <td className="p-4 text-right font-bold text-primary text-[10px]">${client.spent || 0}</td>
+                              <td className="p-4 text-right font-bold text-primary text-sm">${client.spent || 0}</td>
                               <td className="p-4 text-center">
                                 <div className="flex items-center justify-center gap-0.5">
                                   <button onClick={() => openEditClient(client)} className="p-2 text-zinc-400 hover:text-primary transition-colors"><Edit className="w-3 h-3" /></button>
@@ -2518,13 +2518,13 @@ const Dashboard = () => {
               <div className="space-y-6 pb-10">
                 <div className="px-2">
                   <h1 className="font-display text-xl font-black text-zinc-900 leading-none">Staff</h1>
-                  <p className="font-body text-zinc-400 font-medium text-[9px] mt-0.5">Manage salon staff</p>
+                  <p className="font-body text-zinc-400 font-medium text-xs mt-0.5">Manage salon staff</p>
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center px-2">
                     <div className="h-px flex-1 bg-zinc-100 mr-4" />
-                    <button onClick={() => setModalType('staff')} className="bg-primary text-white px-4 py-2 rounded-lg font-body text-[9px] flex items-center gap-1.5 hover:bg-primary/90 transition-all shadow-md shrink-0">
+                    <button onClick={() => setModalType('staff')} className="bg-primary text-white px-4 py-2 rounded-lg font-body text-xs flex items-center gap-1.5 hover:bg-primary/90 transition-all shadow-md shrink-0">
                       <Plus className="w-3 h-3" /> Add Staff
                     </button>
                   </div>
@@ -2534,44 +2534,44 @@ const Dashboard = () => {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-zinc-100 bg-zinc-50/50">
-                            <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Staff Member</th>
-                            <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Role</th>
-                            <th className="text-center p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Jobs</th>
-                            <th className="text-right p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Approx Earnings</th>
-                            <th className="text-center p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Actions</th>
+                            <th className="text-left p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Staff Member</th>
+                            <th className="text-left p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Role</th>
+                            <th className="text-center p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Jobs</th>
+                            <th className="text-right p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Approx Earnings</th>
+                            <th className="text-center p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {filteredStaff.length === 0 ? (
-                            <tr><td colSpan={5} className="p-10 text-center text-[10px] text-zinc-400">No staff found.</td></tr>
+                            <tr><td colSpan={5} className="p-10 text-center text-sm text-zinc-400">No staff found.</td></tr>
                           ) : filteredStaff.map((s, i) => (
                             <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors group">
                               <td className="p-4">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-zinc-100 rounded-lg overflow-hidden shadow-sm flex items-center justify-center font-display font-black text-primary text-[10px] uppercase">
+                                  <div className="w-8 h-8 bg-zinc-100 rounded-lg overflow-hidden shadow-sm flex items-center justify-center font-display font-black text-primary text-sm uppercase">
                                     {s.avatar_url ? <img src={s.avatar_url} className="w-full h-full object-cover" /> : ((s.full_name || s.name)?.[0] || 'S')}
                                   </div>
-                                  <p className="font-display font-bold text-[10px] text-zinc-900 uppercase">{s.full_name || s.name || 'Staff'}</p>
+                                  <p className="font-display font-bold text-sm text-zinc-900 uppercase">{s.full_name || s.name || 'Staff'}</p>
                                 </div>
                               </td>
                               <td className="p-4">
                                 <span className={cn(
-                                  "px-3 py-1 rounded-full text-[9px] font-bold",
+                                  "px-3 py-1 rounded-full text-xs font-bold",
                                   s.role === 'Admin' ? "bg-zinc-100 text-zinc-600" : "bg-primary/5 text-primary"
                                 )}>
                                   {s.role || 'Stylist'}
                                 </span>
                               </td>
                               <td className="p-4 text-center">
-                                <span className="text-[10px] font-black text-zinc-900">
+                                <span className="text-sm font-black text-zinc-900">
                                     {allBookings.filter(b => b.notes?.includes(s.name || s.full_name || '') || b.service?.includes(s.name || s.full_name || '')).length}
                                 </span>
                               </td>
                               <td className="p-4 text-right">
-                                <p className="text-[10px] font-black text-emerald-600">
+                                <p className="text-sm font-black text-emerald-600">
                                     ${(allBookings.filter(b => b.notes?.includes(s.name || s.full_name || '') || b.service?.includes(s.name || s.full_name || '')).reduce((sum, b) => sum + (b.amount || 0), 0) * 0.3).toFixed(2)}
                                 </p>
-                                <p className="text-[7px] font-bold text-zinc-400 uppercase">30% Comm.</p>
+                                <p className="text-xs font-bold text-zinc-400 uppercase">30% Comm.</p>
                               </td>
                               <td className="p-4 text-center">
                                 <div className="flex items-center justify-center gap-0.5">
@@ -2595,17 +2595,17 @@ const Dashboard = () => {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-zinc-100 pb-5">
                   <div>
                     <h1 className="font-display text-2xl font-black text-zinc-950 tracking-tight">Settings</h1>
-                    <p className="font-body text-zinc-400 font-medium text-[11px] mt-1 tracking-wide">Manage your salon preferences and system configuration</p>
+                    <p className="font-body text-zinc-400 font-medium text-sm mt-1 tracking-wide">Manage your salon preferences and system configuration</p>
                   </div>
                   
                   {settingsSubTab === 'grid' ? (
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-zinc-100 bg-white shadow-sm">
                         <ShieldCheck className="w-4 h-4 text-rose-500 stroke-[2.5px]" />
-                        <span className="text-[10px] font-bold text-zinc-700 uppercase tracking-widest">System Secure</span>
+                        <span className="text-sm font-bold text-zinc-700 uppercase tracking-widest">System Secure</span>
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-1" />
                       </div>
-                      <button className="bg-rose-400 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-md shadow-rose-400/20 active:scale-95">
+                      <button className="bg-rose-400 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-md shadow-rose-400/20 active:scale-95">
                         <CheckCircle2 className="w-4 h-4" />
                         Save Changes
                       </button>
@@ -2613,7 +2613,7 @@ const Dashboard = () => {
                   ) : (
                     <button 
                       onClick={() => setSettingsSubTab('grid')}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-800 hover:bg-zinc-50 transition-colors shadow-sm"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-black uppercase tracking-widest text-zinc-800 hover:bg-zinc-50 transition-colors shadow-sm"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                       Back to Settings Grid
@@ -2648,7 +2648,7 @@ const Dashboard = () => {
                           </div>
                           <div className="flex-1 min-w-0 pr-2">
                             <h3 className="text-[13px] font-black text-zinc-900 tracking-tight">{item.title}</h3>
-                            <p className="text-[10px] font-medium text-zinc-500 mt-0.5 leading-relaxed pr-2">{item.desc}</p>
+                            <p className="text-sm font-medium text-zinc-500 mt-0.5 leading-relaxed pr-2">{item.desc}</p>
                           </div>
                           <div className="w-6 h-6 flex items-center justify-center shrink-0">
                             <ArrowRight className="w-4 h-4 text-zinc-300 group-hover:text-zinc-600 transition-colors group-hover:translate-x-1" />
@@ -2665,7 +2665,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                           <h4 className="text-[12px] font-black text-zinc-900">System Information</h4>
-                          <p className="text-[10px] font-medium text-zinc-500 mt-0.5">Your system is up to date and running smoothly.</p>
+                          <p className="text-sm font-medium text-zinc-500 mt-0.5">Your system is up to date and running smoothly.</p>
                         </div>
                       </div>
                       
@@ -2675,8 +2675,8 @@ const Dashboard = () => {
                             <Box className="w-3.5 h-3.5 text-rose-500" />
                           </div>
                           <div>
-                            <p className="text-[9px] font-black uppercase tracking-wider text-zinc-900">Version</p>
-                            <p className="text-[10px] font-medium text-zinc-500 mt-0.5">v1.0.0</p>
+                            <p className="text-xs font-black uppercase tracking-wider text-zinc-900">Version</p>
+                            <p className="text-sm font-medium text-zinc-500 mt-0.5">v1.0.0</p>
                           </div>
                         </div>
 
@@ -2685,8 +2685,8 @@ const Dashboard = () => {
                             <Calendar className="w-3.5 h-3.5 text-violet-500" />
                           </div>
                           <div>
-                            <p className="text-[9px] font-black uppercase tracking-wider text-zinc-900">Last Backup</p>
-                            <p className="text-[10px] font-medium text-zinc-500 mt-0.5">May 12, 2024</p>
+                            <p className="text-xs font-black uppercase tracking-wider text-zinc-900">Last Backup</p>
+                            <p className="text-sm font-medium text-zinc-500 mt-0.5">May 12, 2024</p>
                           </div>
                         </div>
 
@@ -2695,8 +2695,8 @@ const Dashboard = () => {
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                           </div>
                           <div>
-                            <p className="text-[9px] font-black uppercase tracking-wider text-zinc-900">System Status</p>
-                            <p className="text-[10px] font-medium text-zinc-500 mt-0.5">All Systems Operational</p>
+                            <p className="text-xs font-black uppercase tracking-wider text-zinc-900">System Status</p>
+                            <p className="text-sm font-medium text-zinc-500 mt-0.5">All Systems Operational</p>
                           </div>
                         </div>
                       </div>
@@ -2716,13 +2716,13 @@ const Dashboard = () => {
                             </div>
                             <div>
                               <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Salon Identity</h2>
-                              <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Manage Salon contact information</p>
+                              <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Manage Salon contact information</p>
                             </div>
                           </div>
 
                           <div className="space-y-4">
                             <div className="space-y-1">
-                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Name</label>
+                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Name</label>
                               <input 
                                 type="text" 
                                 className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
@@ -2732,7 +2732,7 @@ const Dashboard = () => {
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Contact Phone</label>
+                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Contact Phone</label>
                               <input 
                                 type="text" 
                                 className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
@@ -2742,7 +2742,7 @@ const Dashboard = () => {
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Email</label>
+                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Email</label>
                               <input 
                                 type="email" 
                                 className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
@@ -2752,7 +2752,7 @@ const Dashboard = () => {
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Physical Address</label>
+                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Physical Address</label>
                               <input 
                                 type="text" 
                                 className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
@@ -2769,7 +2769,7 @@ const Dashboard = () => {
                                 localStorage.setItem('bizAddress', bizAddress);
                                 toast.success("Salon Identity Saved! ✨");
                               }}
-                              className="bg-primary text-white w-full py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary/95 active:scale-[0.98] transition-all shadow-lg shadow-primary/10 mt-2"
+                              className="bg-primary text-white w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/95 active:scale-[0.98] transition-all shadow-lg shadow-primary/10 mt-2"
                             >
                               Save Identity
                             </button>
@@ -2785,14 +2785,14 @@ const Dashboard = () => {
                             </div>
                             <div>
                               <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Operations & Limits</h2>
-                              <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Control workhours & booking limits</p>
+                              <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Control workhours & booking limits</p>
                             </div>
                           </div>
 
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                               <div className="space-y-1">
-                                <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Opening Time</label>
+                                <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Opening Time</label>
                                 <input 
                                   type="time" 
                                   className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-zinc-900" 
@@ -2802,7 +2802,7 @@ const Dashboard = () => {
                               </div>
 
                               <div className="space-y-1">
-                                <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Closing Time</label>
+                                <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Closing Time</label>
                                 <input 
                                   type="time" 
                                   className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-zinc-900" 
@@ -2816,7 +2816,7 @@ const Dashboard = () => {
                             <div className="space-y-2 bg-[#FAFAFA] p-4 rounded-2xl border border-zinc-100/80 mt-2">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <label className="text-[9px] font-black text-zinc-950 uppercase tracking-widest">Double-Booking Cap</label>
+                                  <label className="text-xs font-black text-zinc-950 uppercase tracking-widest">Double-Booking Cap</label>
                                   <p className="text-[7.5px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Max bookings per time slot</p>
                                 </div>
                                 <input 
@@ -2844,7 +2844,7 @@ const Dashboard = () => {
                                 localStorage.setItem('maxBookingsPerSlot', maxBookingsPerSlot.toString());
                                 toast.success("Operational Configuration Saved! 🚀");
                               }}
-                              className="bg-primary text-white w-full py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary/95 active:scale-[0.98] transition-all shadow-lg shadow-primary/10 mt-4"
+                              className="bg-primary text-white w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/95 active:scale-[0.98] transition-all shadow-lg shadow-primary/10 mt-4"
                             >
                               Save Configurations
                             </button>
@@ -2864,13 +2864,13 @@ const Dashboard = () => {
                             </div>
                             <div>
                               <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Change Password</h2>
-                              <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Secure your admin credentials</p>
+                              <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Secure your admin credentials</p>
                             </div>
                           </div>
 
                           <div className="space-y-4">
                             <div className="space-y-1">
-                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">New Password</label>
+                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">New Password</label>
                               <input 
                                 type="password" 
                                 placeholder="••••••••"
@@ -2881,7 +2881,7 @@ const Dashboard = () => {
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Confirm New Password</label>
+                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Confirm New Password</label>
                               <input 
                                 type="password" 
                                 placeholder="••••••••"
@@ -2911,7 +2911,7 @@ const Dashboard = () => {
                                   toast.error("Failed to update password: " + err.message);
                                 }
                               }}
-                              className="bg-rose-600 text-white w-full py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 active:scale-[0.98] transition-all shadow-lg shadow-rose-600/10 mt-4"
+                              className="bg-rose-600 text-white w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-rose-700 active:scale-[0.98] transition-all shadow-lg shadow-rose-600/10 mt-4"
                             >
                               Update Password
                             </button>
@@ -2928,25 +2928,25 @@ const Dashboard = () => {
                               </div>
                               <div>
                                 <h2 className="text-sm font-black uppercase tracking-wider text-white">Security Status</h2>
-                                <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Real-time session details</p>
+                                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Real-time session details</p>
                               </div>
                             </div>
 
                             <div className="space-y-4">
                               <div className="flex items-center justify-between bg-white/5 p-3.5 rounded-xl border border-white/5">
                                 <div>
-                                  <p className="text-[8px] font-black uppercase text-zinc-400">Current Login User</p>
+                                  <p className="text-sm font-black uppercase text-zinc-400">Current Login User</p>
                                   <p className="text-xs font-bold mt-1 text-white">{activeEmail || "admin@example.com"}</p>
                                 </div>
-                                <span className="text-[7px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-md">ADMIN ACC</span>
+                                <span className="text-xs font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-md">ADMIN ACC</span>
                               </div>
 
                               <div className="flex items-center justify-between bg-white/5 p-3.5 rounded-xl border border-white/5">
                                 <div>
-                                  <p className="text-[8px] font-black uppercase text-zinc-400">Session Status</p>
+                                  <p className="text-sm font-black uppercase text-zinc-400">Session Status</p>
                                   <p className="text-xs font-bold mt-1 text-white">Connected from Mogadishu</p>
                                 </div>
-                                <span className="inline-flex items-center gap-1.5 text-[7px] font-black text-emerald-400 uppercase tracking-widest">
+                                <span className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-400 uppercase tracking-widest">
                                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
                                   Active Now
                                 </span>
@@ -2954,16 +2954,16 @@ const Dashboard = () => {
 
                               <div className="flex items-center justify-between bg-white/5 p-3.5 rounded-xl border border-white/5">
                                 <div>
-                                  <p className="text-[8px] font-black uppercase text-zinc-400">Two-Factor Authentication</p>
+                                  <p className="text-sm font-black uppercase text-zinc-400">Two-Factor Authentication</p>
                                   <p className="text-xs font-bold mt-1 text-white">OTP Verification via Email</p>
                                 </div>
-                                <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded-md">ENABLED</span>
+                                <span className="text-xs font-black text-zinc-400 uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded-md">ENABLED</span>
                               </div>
                             </div>
                           </div>
 
                           <div className="pt-6 border-t border-zinc-900 mt-6">
-                            <p className="text-[7px] font-bold text-zinc-500 uppercase tracking-widest text-center">
+                            <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest text-center">
                               Secured by Supabase Authentication Protocol
                             </p>
                           </div>
@@ -2981,7 +2981,7 @@ const Dashboard = () => {
                           </div>
                           <div>
                             <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900 leading-tight">Data Reset & Cleanup</h2>
-                            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Permanently delete selected data categories from the system</p>
+                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Permanently delete selected data categories from the system</p>
                           </div>
                         </div>
 
@@ -2992,7 +2992,7 @@ const Dashboard = () => {
                             <div className="w-6 h-6 rounded-lg bg-rose-500/15 flex items-center justify-center">
                               <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-rose-800">CRITICAL WARNING!</span>
+                            <span className="text-sm font-black uppercase tracking-widest text-rose-800">CRITICAL WARNING!</span>
                           </div>
                           <p className="text-[9.5px] font-bold text-rose-950/80 uppercase tracking-wide leading-relaxed pl-8">
                             This action is permanent and cannot be undone. Please double-check all selected categories before proceeding.
@@ -3001,7 +3001,7 @@ const Dashboard = () => {
 
                         {/* Select Category Grid */}
                         <div className="space-y-4">
-                          <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Select the data categories to delete:</label>
+                          <label className="text-xs font-black text-zinc-400 uppercase tracking-widest pl-1">Select the data categories to delete:</label>
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Bookings & POS */}
@@ -3024,8 +3024,8 @@ const Dashboard = () => {
                                 <Calendar className="w-4 h-4 stroke-[2.5px]" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Bookings & POS</p>
-                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">Booking records & sales transactions</p>
+                                <p className="text-sm font-black uppercase tracking-wider leading-none">Bookings & POS</p>
+                                <p className="text-sm font-semibold text-zinc-400 uppercase mt-1">Booking records & sales transactions</p>
                               </div>
                               <div className={cn(
                                 "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
@@ -3057,8 +3057,8 @@ const Dashboard = () => {
                                 <CreditCard className="w-4 h-4 stroke-[2.5px]" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Expenses</p>
-                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">All recorded expense entries</p>
+                                <p className="text-sm font-black uppercase tracking-wider leading-none">Expenses</p>
+                                <p className="text-sm font-semibold text-zinc-400 uppercase mt-1">All recorded expense entries</p>
                               </div>
                               <div className={cn(
                                 "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
@@ -3090,8 +3090,8 @@ const Dashboard = () => {
                                 <Users className="w-4 h-4 stroke-[2.5px]" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Clients</p>
-                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">All registered client records</p>
+                                <p className="text-sm font-black uppercase tracking-wider leading-none">Clients</p>
+                                <p className="text-sm font-semibold text-zinc-400 uppercase mt-1">All registered client records</p>
                               </div>
                               <div className={cn(
                                 "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
@@ -3123,8 +3123,8 @@ const Dashboard = () => {
                                 <Scissors className="w-4 h-4 stroke-[2.5px]" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-wider leading-none">Services & Products</p>
-                                <p className="text-[8px] font-semibold text-zinc-400 uppercase mt-1">All registered services & products</p>
+                                <p className="text-sm font-black uppercase tracking-wider leading-none">Services & Products</p>
+                                <p className="text-sm font-semibold text-zinc-400 uppercase mt-1">All registered services & products</p>
                               </div>
                               <div className={cn(
                                 "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0",
@@ -3141,7 +3141,7 @@ const Dashboard = () => {
                         {/* Confirmation text */}
                         <div className="space-y-4 pt-4 border-t border-zinc-100">
                           <div className="flex justify-between items-center pl-1">
-                            <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Confirm Deletion:</label>
+                            <label className="text-xs font-black text-zinc-400 uppercase tracking-widest">Confirm Deletion:</label>
                             {dbConfirmationText.toUpperCase() === 'CLEAR' ? (
                               <span className="text-[8.5px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 uppercase tracking-widest flex items-center gap-1">
                                 <CheckCircle2 className="w-3 h-3" /> Unlocked
@@ -3153,7 +3153,7 @@ const Dashboard = () => {
                             )}
                           </div>
                           
-                          <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider pl-1">
+                          <p className="text-sm font-bold text-zinc-500 uppercase tracking-wider pl-1">
                             Type the word <span className="text-rose-600 font-extrabold font-mono text-[9.5px] bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200/50">CLEAR</span> in the box below to confirm deletion.
                           </p>
                           
@@ -3178,7 +3178,7 @@ const Dashboard = () => {
                           onClick={handleClearDatabase}
                           disabled={dbIsClearing || dbConfirmationText.toUpperCase() !== 'CLEAR' || (!dbClearBookings && !dbClearExpenses && !dbClearCustomers && !dbClearServices)}
                           className={cn(
-                            "w-full py-4.5 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2",
+                            "w-full py-4.5 rounded-2xl text-sm font-black uppercase tracking-widest active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2",
                             dbConfirmationText.toUpperCase() === 'CLEAR' && (dbClearBookings || dbClearExpenses || dbClearCustomers || dbClearServices)
                               ? "bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white shadow-xl shadow-rose-600/20 cursor-pointer"
                               : "bg-zinc-100 border border-zinc-200/50 text-zinc-400 cursor-not-allowed"
@@ -3207,14 +3207,14 @@ const Dashboard = () => {
                            </div>
                            <div>
                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Staff Permissions</h2>
-                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Control access roles and modules</p>
+                             <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Control access roles and modules</p>
                            </div>
                          </div>
                          <div className="p-10 text-center flex flex-col items-center">
                            <ShieldCheck className="w-8 h-8 text-zinc-300 mb-3" />
                            <p className="text-xs font-black text-zinc-900 uppercase">Permissions Module</p>
-                           <p className="text-[10px] text-zinc-500 mt-1 max-w-xs leading-relaxed">Staff permission levels (Admin, Cashier, Stylist) are currently managed directly within the Login Management table.</p>
-                           <button onClick={() => { setActiveTab('users'); setSettingsSubTab('grid'); }} className="mt-4 px-4 py-2 bg-zinc-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all">Go to User Login Management</button>
+                           <p className="text-sm text-zinc-500 mt-1 max-w-xs leading-relaxed">Staff permission levels (Admin, Cashier, Stylist) are currently managed directly within the Login Management table.</p>
+                           <button onClick={() => { setActiveTab('users'); setSettingsSubTab('grid'); }} className="mt-4 px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all">Go to User Login Management</button>
                          </div>
                       </div>
                     )}
@@ -3227,14 +3227,14 @@ const Dashboard = () => {
                            </div>
                            <div>
                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Booking Settings</h2>
-                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Configure appointment rules</p>
+                             <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Configure appointment rules</p>
                            </div>
                          </div>
                          <div className="p-6 space-y-4">
                            <div className="flex items-center justify-between bg-zinc-50/50 p-4 rounded-xl border border-zinc-100">
                              <div>
-                               <p className="text-[10px] font-black uppercase text-zinc-900">Auto-Approve Bookings</p>
-                               <p className="text-[8px] font-medium text-zinc-500 uppercase mt-0.5">Automatically accept incoming online bookings</p>
+                               <p className="text-sm font-black uppercase text-zinc-900">Auto-Approve Bookings</p>
+                               <p className="text-sm font-medium text-zinc-500 uppercase mt-0.5">Automatically accept incoming online bookings</p>
                              </div>
                              <div 
                                onClick={() => setBookingSettings(p => ({ ...p, autoApprove: !p.autoApprove }))}
@@ -3245,8 +3245,8 @@ const Dashboard = () => {
                            </div>
                            <div className="flex items-center justify-between bg-zinc-50/50 p-4 rounded-xl border border-zinc-100">
                              <div>
-                               <p className="text-[10px] font-black uppercase text-zinc-900">Require Deposit</p>
-                               <p className="text-[8px] font-medium text-zinc-500 uppercase mt-0.5">Require 30% upfront for large bookings</p>
+                               <p className="text-sm font-black uppercase text-zinc-900">Require Deposit</p>
+                               <p className="text-sm font-medium text-zinc-500 uppercase mt-0.5">Require 30% upfront for large bookings</p>
                              </div>
                              <div 
                                onClick={() => setBookingSettings(p => ({ ...p, requireDeposit: !p.requireDeposit }))}
@@ -3267,7 +3267,7 @@ const Dashboard = () => {
                            </div>
                            <div>
                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Payment Methods</h2>
-                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Manage accepted payments</p>
+                             <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Manage accepted payments</p>
                            </div>
                          </div>
                          <div className="p-6 grid grid-cols-2 gap-4">
@@ -3276,7 +3276,7 @@ const Dashboard = () => {
                                 <div className={cn("w-4 h-4 rounded border flex items-center justify-center transition-colors", isEnabled ? "bg-zinc-900 border-zinc-900" : "border-zinc-300 bg-white")}>
                                   {isEnabled && <Check className="w-3 h-3 text-white" />}
                                 </div>
-                                <span className="text-[10px] font-black uppercase text-zinc-800">{pm}</span>
+                                <span className="text-sm font-black uppercase text-zinc-800">{pm}</span>
                               </div>
                             ))}
                          </div>
@@ -3291,13 +3291,13 @@ const Dashboard = () => {
                            </div>
                            <div>
                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Rentals Management</h2>
-                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Configure dress rental rules</p>
+                             <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Configure dress rental rules</p>
                            </div>
                          </div>
                          <div className="p-10 text-center flex flex-col items-center">
                            <Shirt className="w-8 h-8 text-zinc-300 mb-3" />
-                           <p className="text-[10px] text-zinc-500 mt-1 max-w-xs leading-relaxed uppercase tracking-wider font-bold">Rental inventory and individual pricing are managed within the main Rentals tab.</p>
-                           <button onClick={() => { setActiveTab('rentals'); setSettingsSubTab('grid'); }} className="mt-4 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all">Go to Rentals Hub</button>
+                           <p className="text-sm text-zinc-500 mt-1 max-w-xs leading-relaxed uppercase tracking-wider font-bold">Rental inventory and individual pricing are managed within the main Rentals tab.</p>
+                           <button onClick={() => { setActiveTab('rentals'); setSettingsSubTab('grid'); }} className="mt-4 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all">Go to Rentals Hub</button>
                          </div>
                       </div>
                     )}
@@ -3310,13 +3310,13 @@ const Dashboard = () => {
                            </div>
                            <div>
                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Notifications</h2>
-                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Customize alerts & messages</p>
+                             <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Customize alerts & messages</p>
                            </div>
                          </div>
                          <div className="p-6 space-y-4">
                            {Object.entries(notifSettings).map(([notif, isEnabled]) => (
                              <div key={notif} className="flex items-center justify-between bg-zinc-50/50 p-4 rounded-xl border border-zinc-100">
-                               <p className="text-[10px] font-black uppercase text-zinc-900">{notif}</p>
+                               <p className="text-sm font-black uppercase text-zinc-900">{notif}</p>
                                <div 
                                  onClick={() => setNotifSettings(p => ({ ...p, [notif]: !p[notif as keyof typeof p] }))}
                                  className={cn("w-10 h-6 rounded-full relative shadow-inner cursor-pointer transition-colors", isEnabled ? "bg-emerald-500" : "bg-zinc-200")}
@@ -3337,26 +3337,26 @@ const Dashboard = () => {
                            </div>
                            <div>
                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Localization</h2>
-                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Region, currency & language</p>
+                             <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Region, currency & language</p>
                            </div>
                          </div>
                          <div className="p-6 space-y-4">
                             <div className="space-y-1.5">
-                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Primary Currency</label>
+                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Primary Currency</label>
                               <select value={sysCurrency} onChange={(e) => setSysCurrency(e.target.value)} className="w-full p-3.5 bg-zinc-50 rounded-xl text-xs font-bold border border-zinc-200 outline-none text-zinc-900">
                                 <option value="USD ($)">USD ($)</option>
                                 <option value="SOS (Sh)">SOS (Sh)</option>
                               </select>
                             </div>
                             <div className="space-y-1.5">
-                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">System Language</label>
+                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">System Language</label>
                               <select className="w-full p-3.5 bg-zinc-50 rounded-xl text-xs font-bold border border-zinc-200 outline-none text-zinc-900" value={lang} onChange={(e) => setLang(e.target.value as 'en'|'so')}>
                                 <option value="en">English (US)</option>
                                 <option value="so">Somali</option>
                               </select>
                             </div>
                             <div className="space-y-1.5">
-                              <label className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-1">Timezone</label>
+                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Timezone</label>
                               <select value={sysTimezone} onChange={(e) => setSysTimezone(e.target.value)} className="w-full p-3.5 bg-zinc-50 rounded-xl text-xs font-bold border border-zinc-200 outline-none text-zinc-900">
                                 <option value="Africa/Mogadishu (GMT+3)">Africa/Mogadishu (GMT+3)</option>
                                 <option value="Africa/Nairobi (GMT+3)">Africa/Nairobi (GMT+3)</option>
@@ -3374,20 +3374,20 @@ const Dashboard = () => {
                            </div>
                            <div>
                              <h2 className="text-lg font-black uppercase tracking-widest text-zinc-950">Appearance</h2>
-                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Themes and branding</p>
+                             <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-1">Themes and branding</p>
                            </div>
                          </div>
                          <div className="p-8 space-y-6">
                             <div className="space-y-4">
-                              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest pl-1">Interface Theme</label>
+                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Interface Theme</label>
                               <div className="grid grid-cols-2 gap-4">
                                 <button type="button" onClick={() => setThemeMode('light')} className={cn("p-4.5 flex items-center gap-4 cursor-pointer transition-all rounded-xl w-full text-left", themeMode === 'light' ? "border-2 border-zinc-100 bg-white shadow-sm" : "border border-zinc-100 bg-white hover:border-zinc-200")}>
                                   <div className={cn("w-4 h-4 rounded-full flex items-center justify-center transition-all shrink-0", themeMode === 'light' ? "border-[4px] border-zinc-200" : "border border-zinc-200")} />
-                                  <span className="text-[11px] font-black uppercase text-zinc-950 tracking-wider">Light Mode</span>
+                                  <span className="text-sm font-black uppercase text-zinc-950 tracking-wider">Light Mode</span>
                                 </button>
                                 <button type="button" onClick={() => setThemeMode('dark')} className={cn("p-4.5 flex items-center gap-4 cursor-pointer transition-all rounded-xl w-full text-left", themeMode === 'dark' ? "border-[3px] border-[#c026d3] bg-[#0f0f11]" : "border border-zinc-200 bg-[#18181b] opacity-90 hover:opacity-100")}>
                                   <div className={cn("w-4 h-4 rounded-full flex items-center justify-center transition-all shrink-0", themeMode === 'dark' ? "bg-white border-[4px] border-[#d946ef]" : "border border-zinc-500")} />
-                                  <span className="text-[11px] font-black uppercase text-white tracking-wider">Dark Mode</span>
+                                  <span className="text-sm font-black uppercase text-white tracking-wider">Dark Mode</span>
                                 </button>
                               </div>
                             </div>
@@ -3403,7 +3403,7 @@ const Dashboard = () => {
                            </div>
                            <div>
                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Backup & Restore</h2>
-                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Secure your salon data</p>
+                             <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Secure your salon data</p>
                            </div>
                          </div>
                          <div className="p-6 flex flex-col items-center justify-center text-center py-10">
@@ -3411,8 +3411,8 @@ const Dashboard = () => {
                               <CheckCircle2 className="w-8 h-8 text-emerald-500" />
                             </div>
                             <h3 className="text-xs font-black uppercase text-zinc-900">Cloud Sync Active</h3>
-                            <p className="text-[10px] font-medium text-zinc-500 mt-2 max-w-[250px]">Your data is automatically synced and backed up to Supabase servers in real-time.</p>
-                            <button className="mt-6 px-6 py-3 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-zinc-800 transition-colors shadow-lg active:scale-95">
+                            <p className="text-sm font-medium text-zinc-500 mt-2 max-w-[250px]">Your data is automatically synced and backed up to Supabase servers in real-time.</p>
+                            <button className="mt-6 px-6 py-3 bg-zinc-900 text-white rounded-xl text-sm font-black uppercase tracking-widest flex items-center gap-2 hover:bg-zinc-800 transition-colors shadow-lg active:scale-95">
                               <Download className="w-4 h-4" /> Download Manual JSON Backup
                             </button>
                          </div>
@@ -3427,7 +3427,7 @@ const Dashboard = () => {
                            </div>
                            <div>
                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">System Logs</h2>
-                             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Audit trail and activity</p>
+                             <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Audit trail and activity</p>
                            </div>
                          </div>
                          <div className="p-6 space-y-3">
@@ -3440,9 +3440,9 @@ const Dashboard = () => {
                              <div key={i} className="flex justify-between items-center p-3.5 bg-zinc-50 rounded-xl border border-zinc-100">
                                <div className="flex items-center gap-3">
                                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
-                                 <span className="text-[10px] font-bold text-zinc-800">{log.action}</span>
+                                 <span className="text-sm font-bold text-zinc-800">{log.action}</span>
                                </div>
-                               <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">{log.time}</span>
+                               <span className="text-sm font-black text-zinc-400 uppercase tracking-widest">{log.time}</span>
                              </div>
                            ))}
                          </div>
@@ -3459,16 +3459,16 @@ const Dashboard = () => {
               <div className="space-y-6 pb-10 px-2">
                 <div className="px-2">
                   <h1 className="font-display text-xl font-black text-zinc-900 leading-none">Login Management</h1>
-                  <p className="font-body text-zinc-400 font-medium text-[9px] mt-0.5">Control system access & roles</p>
+                  <p className="font-body text-zinc-400 font-medium text-xs mt-0.5">Control system access & roles</p>
                 </div>
                 
                 <div className={cardStyles}>
                   <div className="p-6 border-b border-zinc-50 flex items-center justify-between">
                     <div>
-                      <h2 className="text-[10px] font-black uppercase tracking-widest text-zinc-900">System Users</h2>
-                      <p className="text-[8px] text-zinc-400 font-bold mt-1 uppercase">Manage login accounts</p>
+                      <h2 className="text-sm font-black uppercase tracking-widest text-zinc-900">System Users</h2>
+                      <p className="text-sm text-zinc-400 font-bold mt-1 uppercase">Manage login accounts</p>
                     </div>
-                    <button onClick={() => { setEditingId(null); setModalType('staff'); }} className="bg-zinc-900 text-white px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 active:scale-95 transition-all shadow-lg">
+                    <button onClick={() => { setEditingId(null); setModalType('staff'); }} className="bg-zinc-900 text-white px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest flex items-center gap-1.5 active:scale-95 transition-all shadow-lg">
                       <Plus className="w-3 h-3" /> Add New Login User
                     </button>
                   </div>
@@ -3476,33 +3476,33 @@ const Dashboard = () => {
                     <table className="w-full">
                       <thead>
                         <tr className="bg-zinc-50/50 border-b border-zinc-100">
-                          <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">User</th>
-                          <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Role</th>
-                          <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Status</th>
-                          <th className="text-center p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Action</th>
+                          <th className="text-left p-4 text-sm font-black uppercase tracking-widest text-zinc-400">User</th>
+                          <th className="text-left p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Role</th>
+                          <th className="text-left p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Status</th>
+                          <th className="text-center p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-50">
                         {filteredStaff.length === 0 ? (
-                          <tr><td colSpan={4} className="p-10 text-center text-[10px] text-zinc-400">No users found.</td></tr>
+                          <tr><td colSpan={4} className="p-10 text-center text-sm text-zinc-400">No users found.</td></tr>
                         ) : filteredStaff.map((u, i) => (
                           <tr key={i} className="hover:bg-zinc-50/20 transition-colors group">
                             <td className="p-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center text-[10px] font-black text-primary uppercase shadow-sm">
+                                <div className="w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center text-sm font-black text-primary uppercase shadow-sm">
                                   {(u.full_name || u.name)?.[0] || 'U'}
                                 </div>
                                 <div>
-                                  <p className="text-[10px] font-black text-zinc-900 uppercase">{u.full_name || u.name}</p>
-                                  <p className="text-[8px] text-zinc-400">{u.email}</p>
+                                  <p className="text-sm font-black text-zinc-900 uppercase">{u.full_name || u.name}</p>
+                                  <p className="text-sm text-zinc-400">{u.email}</p>
                                 </div>
                               </div>
                             </td>
                             <td className="p-4">
-                              <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest bg-zinc-100 px-2 py-0.5 rounded-full">{u.role || 'Admin'}</span>
+                              <span className="text-sm font-bold text-zinc-600 uppercase tracking-widest bg-zinc-100 px-2 py-0.5 rounded-full">{u.role || 'Admin'}</span>
                             </td>
                             <td className="p-4">
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full text-[7px] font-black uppercase tracking-widest">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full text-xs font-black uppercase tracking-widest">
                                 <div className="w-1 h-1 bg-emerald-500 rounded-full" /> Active
                               </span>
                             </td>
@@ -3533,7 +3533,7 @@ const Dashboard = () => {
                   {/* Revenue Area Chart */}
                   <div className={cn(cardStyles, "lg:col-span-2 p-6 flex flex-col")}>
                     <div className="mb-6">
-                      <h2 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Revenue Growth (7 Days)</h2>
+                      <h2 className="text-sm font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Revenue Growth (7 Days)</h2>
                     </div>
                     <div className="h-[250px] w-full">
                       <ResponsiveContainer width="100%" height="100%">
@@ -3561,7 +3561,7 @@ const Dashboard = () => {
                   {/* Service Share Pie Chart */}
                   <div className={cn(cardStyles, "p-6 bg-zinc-900 border-zinc-800 text-white flex flex-col")}>
                     <div className="mb-4">
-                      <h2 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-800 pb-2">Service Share</h2>
+                      <h2 className="text-sm font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-800 pb-2">Service Share</h2>
                     </div>
                     <div className="h-[180px] w-full">
                       <ResponsiveContainer width="100%" height="100%">
@@ -3587,9 +3587,9 @@ const Dashboard = () => {
                         <div key={idx} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.color }} />
-                            <span className="text-[9px] font-bold text-zinc-300 truncate max-w-[120px]">{s.name}</span>
+                            <span className="text-xs font-bold text-zinc-300 truncate max-w-[120px]">{s.name}</span>
                           </div>
-                          <span className="text-[9px] font-black text-white">{Math.round((s.value / serviceData.reduce((a,b)=>a+b.value,0))*100) || 0}%</span>
+                          <span className="text-xs font-black text-white">{Math.round((s.value / serviceData.reduce((a,b)=>a+b.value,0))*100) || 0}%</span>
                         </div>
                       ))}
                     </div>
@@ -3609,7 +3609,7 @@ const Dashboard = () => {
                             key={f}
                             onClick={() => { setReportsDateFilter(f); setReportsPage(1); }}
                             className={cn(
-                              "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all",
+                              "px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border transition-all",
                               reportsDateFilter === f
                                 ? "bg-primary text-white border-primary shadow-sm"
                                 : "bg-white text-zinc-400 border-zinc-200 hover:border-zinc-300"
@@ -3635,12 +3635,12 @@ const Dashboard = () => {
                     <table className="w-full whitespace-nowrap">
                       <thead>
                         <tr className="border-b border-zinc-100 bg-white">
-                          <th className="py-4 px-6 text-left text-[11px] font-bold uppercase tracking-widest text-zinc-400">Client Name</th>
-                          <th className="py-4 px-6 text-left text-[11px] font-bold uppercase tracking-widest text-zinc-400">Date</th>
-                          <th className="py-4 px-6 text-left text-[11px] font-bold uppercase tracking-widest text-zinc-400">Service</th>
-                          <th className="py-4 px-6 text-left text-[11px] font-bold uppercase tracking-widest text-zinc-400">Amount</th>
-                          <th className="py-4 px-6 text-left text-[11px] font-bold uppercase tracking-widest text-zinc-400">Status</th>
-                          <th className="py-4 px-6 text-center text-[11px] font-bold uppercase tracking-widest text-zinc-400 w-20"></th>
+                          <th className="py-4 px-6 text-left text-sm font-bold uppercase tracking-widest text-zinc-400">Client Name</th>
+                          <th className="py-4 px-6 text-left text-sm font-bold uppercase tracking-widest text-zinc-400">Date</th>
+                          <th className="py-4 px-6 text-left text-sm font-bold uppercase tracking-widest text-zinc-400">Service</th>
+                          <th className="py-4 px-6 text-left text-sm font-bold uppercase tracking-widest text-zinc-400">Amount</th>
+                          <th className="py-4 px-6 text-left text-sm font-bold uppercase tracking-widest text-zinc-400">Status</th>
+                          <th className="py-4 px-6 text-center text-sm font-bold uppercase tracking-widest text-zinc-400 w-20"></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-100 bg-white">
@@ -3753,9 +3753,9 @@ const Dashboard = () => {
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 px-2">
                   <div className="space-y-0.5">
                     <h1 className="font-display text-xl font-black text-zinc-900 leading-none">Inventory</h1>
-                    <p className="font-body text-zinc-400 font-medium text-[9px]">Manage stock</p>
+                    <p className="font-body text-zinc-400 font-medium text-xs">Manage stock</p>
                   </div>
-                  <button onClick={() => setModalType('service')} className="bg-primary text-white px-4 py-2 rounded-lg font-body text-[9px] flex items-center gap-1.5 hover:bg-primary/90 transition-all shadow-md">
+                  <button onClick={() => setModalType('service')} className="bg-primary text-white px-4 py-2 rounded-lg font-body text-xs flex items-center gap-1.5 hover:bg-primary/90 transition-all shadow-md">
                     <Plus className="w-3 h-3" /> Add Product
                   </button>
                 </div>
@@ -3765,10 +3765,10 @@ const Dashboard = () => {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-zinc-100 bg-zinc-50/50">
-                          <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Image</th>
-                          <th className="text-left p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Product</th>
-                          <th className="text-right p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Price</th>
-                          <th className="text-center p-4 text-[8px] font-black uppercase tracking-widest text-zinc-400">Actions</th>
+                          <th className="text-left p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Image</th>
+                          <th className="text-left p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Product</th>
+                          <th className="text-right p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Price</th>
+                          <th className="text-center p-4 text-sm font-black uppercase tracking-widest text-zinc-400">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -3784,20 +3784,20 @@ const Dashboard = () => {
                               </div>
                             </td>
                              <td className="p-4">
-                               <p className="font-display font-bold text-[10px] text-zinc-900 uppercase">{prod.name}</p>
+                               <p className="font-display font-bold text-sm text-zinc-900 uppercase">{prod.name}</p>
                                <div className="flex items-center gap-2 mt-1">
                                  <p className={cn(
-                                   "text-[8px] font-black uppercase px-2 py-0.5 rounded-full",
+                                   "text-sm font-black uppercase px-2 py-0.5 rounded-full",
                                    Number(prod.duration) < 5 ? "bg-rose-50 text-rose-500 animate-pulse" : "bg-emerald-50 text-emerald-600"
                                  )}>
                                    Stock: {prod.duration || "0"}
                                  </p>
                                  {Number(prod.duration) < 5 && (
-                                   <span className="text-[7px] font-black text-rose-400 uppercase tracking-widest">Low Stock!</span>
+                                   <span className="text-xs font-black text-rose-400 uppercase tracking-widest">Low Stock!</span>
                                  )}
                                </div>
                              </td>
-                            <td className="p-4 text-right font-display font-black text-emerald-600 text-[10px]">${prod.price}</td>
+                            <td className="p-4 text-right font-display font-black text-emerald-600 text-sm">${prod.price}</td>
                             <td className="p-4 text-center">
                               <button onClick={() => deleteService(prod.id)} className="p-2 text-rose-300 hover:text-rose-600 transition-all"><Trash2 className="w-3 h-3" /></button>
                             </td>
@@ -3817,7 +3817,7 @@ const Dashboard = () => {
                   <h1 className="font-display text-xl font-black text-zinc-900 tracking-tight flex items-center gap-2">
                     <Store className="w-5 h-5" /> Point of Sale
                   </h1>
-                  <button onClick={() => { setPosCart([]); setPosDiscount(0); }} className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:bg-rose-50 px-3 py-1 rounded-full px-2">Clear</button>
+                  <button onClick={() => { setPosCart([]); setPosDiscount(0); }} className="text-xs font-black text-rose-500 uppercase tracking-widest hover:bg-rose-50 px-3 py-1 rounded-full px-2">Clear</button>
                 </div>
 
                 <div className="grid lg:grid-cols-12 gap-6 items-start">
@@ -3835,8 +3835,8 @@ const Dashboard = () => {
                               {item.image_url ? <img src={item.image_url} className="w-full h-full object-cover" /> : <Sparkles className="w-3 h-3 text-zinc-200" />}
                             </div>
                             <div>
-                              <p className="text-[9px] font-black text-zinc-900 uppercase truncate px-1">{item.name}</p>
-                              <p className="text-[10px] font-black text-emerald-600">${item.price}</p>
+                              <p className="text-xs font-black text-zinc-900 uppercase truncate px-1">{item.name}</p>
+                              <p className="text-sm font-black text-emerald-600">${item.price}</p>
                             </div>
                           </button>
                         ))}
@@ -3849,17 +3849,17 @@ const Dashboard = () => {
                       <div className="max-h-[250px] overflow-y-auto space-y-2 pr-1">
                         {posCart.map((item, idx) => (
                           <div key={idx} className="flex items-center gap-3 bg-zinc-50 p-2 rounded-lg border border-zinc-100">
-                            <div className="w-8 h-8 bg-white rounded-md flex items-center justify-center text-[10px] font-bold">{item.name?.[0] || '?'}</div>
+                            <div className="w-8 h-8 bg-white rounded-md flex items-center justify-center text-sm font-bold">{item.name?.[0] || '?'}</div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-[9px] font-bold text-zinc-900 truncate">{item.name}</p>
-                              <p className="text-[9px] font-black text-emerald-600">${item.price}</p>
+                              <p className="text-xs font-bold text-zinc-900 truncate">{item.name}</p>
+                              <p className="text-xs font-black text-emerald-600">${item.price}</p>
                             </div>
                             <button onClick={() => setPosCart(posCart.filter((_, i) => i !== idx))} className="text-zinc-300 hover:text-rose-500"><X className="w-3 h-3" /></button>
                           </div>
                         ))}
                       </div>
                       <div className="border-t pt-4 space-y-2">
-                        <div className="flex justify-between text-[10px] font-bold text-zinc-400">
+                        <div className="flex justify-between text-sm font-bold text-zinc-400">
                           <span>Subtotal</span>
                           <span>${posCart.reduce((acc, curr) => acc + (curr.price || 0), 0)}</span>
                         </div>
@@ -3871,7 +3871,7 @@ const Dashboard = () => {
 
                       {/* Premium Somalia Payment Selector stack */}
                       <div className="border-t pt-3 space-y-2 text-left">
-                        <label className="text-[9px] font-black text-zinc-400 uppercase tracking-widest pl-1">Payment Method</label>
+                        <label className="text-xs font-black text-zinc-400 uppercase tracking-widest pl-1">Payment Method</label>
                         <div className="flex flex-col gap-2.5">
                           {[
                             {
@@ -3883,8 +3883,8 @@ const Dashboard = () => {
                               titleColor: "text-[#28A745]",
                               logoText: (
                                 <div className="flex flex-col items-center justify-center text-white leading-none">
-                                  <span className="text-[10px] font-black tracking-tighter">EVC+</span>
-                                  <span className="text-[5px] font-bold tracking-[0.15em] opacity-90 mt-0.5">PLUS</span>
+                                  <span className="text-sm font-black tracking-tighter">EVC+</span>
+                                  <span className="text-[10px] font-bold tracking-[0.15em] opacity-90 mt-0.5">PLUS</span>
                                 </div>
                               ),
                               rightIcon: (color: string) => (
@@ -3905,7 +3905,7 @@ const Dashboard = () => {
                               titleColor: "text-[#D49D26]",
                               logoText: (
                                 <div className="flex flex-col items-center justify-center text-white leading-none">
-                                  <span className="text-[9px] font-black italic tracking-tighter">eDahab</span>
+                                  <span className="text-xs font-black italic tracking-tighter">eDahab</span>
                                 </div>
                               ),
                               rightIcon: (color: string) => (
@@ -3924,7 +3924,7 @@ const Dashboard = () => {
                               titleColor: "text-[#1E2260]",
                               logoText: (
                                 <div className="flex flex-col items-center justify-center text-white leading-none">
-                                  <span className="text-[10px] font-black italic tracking-tighter">JEEB</span>
+                                  <span className="text-sm font-black italic tracking-tighter">JEEB</span>
                                 </div>
                               ),
                               rightIcon: (color: string) => (
@@ -3992,8 +3992,8 @@ const Dashboard = () => {
                                 </div>
                                 {/* Middle Details Area */}
                                 <div className="flex-1 px-3 py-1 flex flex-col justify-center min-w-0">
-                                  <h4 className={cn("text-[10px] font-black uppercase tracking-wider leading-none", pay.titleColor)}>{pay.title}</h4>
-                                  <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest mt-1">{pay.subtitle}</span>
+                                  <h4 className={cn("text-sm font-black uppercase tracking-wider leading-none", pay.titleColor)}>{pay.title}</h4>
+                                  <span className="text-xs font-black text-zinc-400 uppercase tracking-widest mt-1">{pay.subtitle}</span>
                                 </div>
                                 {/* Right Indicator Area */}
                                 <div className="pr-4 shrink-0 flex items-center justify-center">
@@ -4005,7 +4005,7 @@ const Dashboard = () => {
                         </div>
                       </div>
 
-                      <button onClick={handlePOSComplete} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 mt-2">Complete Payment</button>
+                      <button onClick={handlePOSComplete} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 mt-2">Complete Payment</button>
                     </div>
                   </div>
                 </div>
@@ -4044,7 +4044,7 @@ const Dashboard = () => {
 
                   {/* Service Selection */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#A0A0A0] uppercase tracking-widest pl-1">Service Selection</label>
+                    <label className="text-sm font-black text-[#A0A0A0] uppercase tracking-widest pl-1">Service Selection</label>
                     <div className="grid grid-cols-4 gap-2 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
                       {dbServices.map((srv, idx) => {
                         const isSelected = formData.selectedServices?.some(s => s.id === srv.id);
@@ -4085,12 +4085,12 @@ const Dashboard = () => {
                               )}
                             </div>
                             <div className="w-full text-center space-y-1 pb-1 px-1">
-                              <p className="text-[10px] font-black uppercase text-[#1E1E1E] leading-tight line-clamp-2">{srv.name}</p>
-                              <p className="text-[11px] font-black text-[#00B828]">${srv.price}</p>
+                              <p className="text-sm font-black uppercase text-[#1E1E1E] leading-tight line-clamp-2">{srv.name}</p>
+                              <p className="text-sm font-black text-[#00B828]">${srv.price}</p>
                             </div>
                             {isSelected && (
                               <div className="absolute top-2.5 right-2.5 w-4 h-4 bg-[#83215D] rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                                <span className="text-white text-[8px]">✓</span>
+                                <span className="text-white text-sm">✓</span>
                               </div>
                             )}
                           </button>
@@ -4126,13 +4126,13 @@ const Dashboard = () => {
                   <div className="bg-zinc-50/50 p-5 rounded-2xl border border-zinc-100/60 space-y-4 shadow-sm">
                     
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1">Item Name</label>
+                      <label className="text-sm font-black text-[#5D1B54] uppercase tracking-widest px-1">Item Name</label>
                       <input className="w-full p-3.5 bg-white border border-zinc-200 shadow-sm rounded-xl text-sm font-bold text-zinc-900 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all placeholder:text-zinc-300" placeholder="e.g. Classic Manicure" required value={formData.service} onChange={(e) => setFormData({ ...formData, service: e.target.value })} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1">Category</label>
+                        <label className="text-sm font-black text-[#5D1B54] uppercase tracking-widest px-1">Category</label>
                         <div className="relative">
                           <select 
                             className="w-full p-3.5 bg-white border border-zinc-200 shadow-sm rounded-xl text-sm font-bold text-zinc-900 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all appearance-none cursor-pointer" 
@@ -4154,7 +4154,7 @@ const Dashboard = () => {
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1">Price ($)</label>
+                        <label className="text-sm font-black text-[#5D1B54] uppercase tracking-widest px-1">Price ($)</label>
                         <div className="relative">
                           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-black text-[#83215D]">$</span>
                           <input type="number" className="w-full p-3.5 pl-8 bg-white border border-zinc-200 shadow-sm rounded-xl text-sm font-bold text-zinc-900 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all placeholder:text-zinc-300" placeholder="0.00" required value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
@@ -4163,18 +4163,18 @@ const Dashboard = () => {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1">Duration / Stock</label>
+                      <label className="text-sm font-black text-[#5D1B54] uppercase tracking-widest px-1">Duration / Stock</label>
                       <input className="w-full p-3.5 bg-white border border-zinc-200 shadow-sm rounded-xl text-sm font-bold text-zinc-900 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all placeholder:text-zinc-300" placeholder="e.g. 45 mins or 10 items" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} />
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1">Description</label>
+                      <label className="text-sm font-black text-[#5D1B54] uppercase tracking-widest px-1">Description</label>
                       <textarea className="w-full p-3.5 bg-white border border-zinc-200 shadow-sm rounded-xl text-sm font-bold text-zinc-900 focus:border-[#83215D] focus:ring-1 focus:ring-[#83215D] outline-none transition-all placeholder:text-zinc-300 min-h-[100px] resize-none" placeholder="Provide service details..." value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
                     </div>
                   </div>
 
                   <div className="bg-zinc-50/50 p-5 rounded-2xl border border-zinc-100/60 space-y-3 shadow-sm">
-                    <label className="text-[10px] font-black text-[#5D1B54] uppercase tracking-widest px-1 flex items-center gap-1.5">
+                    <label className="text-sm font-black text-[#5D1B54] uppercase tracking-widest px-1 flex items-center gap-1.5">
                       <ImagePlus className="w-3.5 h-3.5" /> Item Photo
                     </label>
                     <div className="flex items-center gap-5">
@@ -4186,11 +4186,11 @@ const Dashboard = () => {
                         )}
                       </div>
                       <div className="flex-1 space-y-2">
-                        <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-zinc-200 shadow-sm rounded-xl text-[10px] font-black uppercase tracking-widest text-[#5D1B54] hover:bg-zinc-50 hover:border-zinc-300 active:scale-95 transition-all">
+                        <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-zinc-200 shadow-sm rounded-xl text-sm font-black uppercase tracking-widest text-[#5D1B54] hover:bg-zinc-50 hover:border-zinc-300 active:scale-95 transition-all">
                           {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
                           {formData.image ? 'Change Photo' : 'Upload Photo'}
                         </button>
-                        <p className="text-[9px] font-bold text-zinc-400 tracking-wider">Recommended: Square format (1:1), max 2MB.</p>
+                        <p className="text-xs font-bold text-zinc-400 tracking-wider">Recommended: Square format (1:1), max 2MB.</p>
                         <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
                       </div>
                     </div>
@@ -4209,13 +4209,13 @@ const Dashboard = () => {
                         <>
                           <img src={formData.image} className="w-full h-full object-contain" />
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><Upload className="w-3.5 h-3.5" /> Change Photo</span>
+                            <span className="text-white text-sm font-black uppercase tracking-widest flex items-center gap-1.5"><Upload className="w-3.5 h-3.5" /> Change Photo</span>
                           </div>
                         </>
                       ) : (
                         <div className="flex flex-col items-center text-zinc-400 group-hover:text-[#5D1B54] transition-colors">
                           {uploading ? <Loader2 className="w-8 h-8 animate-spin mb-2 text-[#5D1B54]" /> : <ImagePlus className="w-8 h-8 mb-2 stroke-[1.5px]" />}
-                          <span className="text-[10px] font-black uppercase tracking-widest">{uploading ? 'Uploading...' : 'Upload Dress Photo'}</span>
+                          <span className="text-sm font-black uppercase tracking-widest">{uploading ? 'Uploading...' : 'Upload Dress Photo'}</span>
                         </div>
                       )}
                     </div>
@@ -4224,35 +4224,35 @@ const Dashboard = () => {
 
                   <div className="space-y-4">
                     <div className="relative mt-2">
-                      <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Dress Title</label>
+                      <label className="absolute -top-2 left-3 bg-white px-1 text-xs font-black text-zinc-400 uppercase tracking-widest z-10">Dress Title</label>
                       <input className="w-full p-4 bg-transparent border-2 border-zinc-100 rounded-xl text-sm font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 shadow-sm relative z-0" placeholder="e.g. Royal Red Velvet Gown" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="relative">
-                        <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Rental Price / Day</label>
+                        <label className="absolute -top-2 left-3 bg-white px-1 text-xs font-black text-zinc-400 uppercase tracking-widest z-10">Rental Price / Day</label>
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[12px] font-black text-zinc-400 z-10">$</div>
                         <input type="number" className="w-full p-4 pl-8 bg-transparent border-2 border-zinc-100 rounded-xl text-sm font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 shadow-sm relative z-0" placeholder="0.00" required value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
                       </div>
                       <div className="relative">
-                        <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Stock / Qty</label>
+                        <label className="absolute -top-2 left-3 bg-white px-1 text-xs font-black text-zinc-400 uppercase tracking-widest z-10">Stock / Qty</label>
                         <input type="number" className="w-full p-4 bg-transparent border-2 border-zinc-100 rounded-xl text-sm font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 shadow-sm relative z-0" placeholder="1" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="relative">
-                        <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Color</label>
+                        <label className="absolute -top-2 left-3 bg-white px-1 text-xs font-black text-zinc-400 uppercase tracking-widest z-10">Color</label>
                         <input className="w-full p-4 bg-transparent border-2 border-zinc-100 rounded-xl text-sm font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 shadow-sm relative z-0" placeholder="e.g. Navy Blue" value={formData.color} onChange={(e) => setFormData({ ...formData, color: e.target.value })} />
                       </div>
                       <div className="relative">
-                        <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Size</label>
+                        <label className="absolute -top-2 left-3 bg-white px-1 text-xs font-black text-zinc-400 uppercase tracking-widest z-10">Size</label>
                         <input className="w-full p-4 bg-transparent border-2 border-zinc-100 rounded-xl text-sm font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 shadow-sm relative z-0" placeholder="e.g. S, M, L" value={formData.size} onChange={(e) => setFormData({ ...formData, size: e.target.value })} />
                       </div>
                     </div>
 
                     <div className="relative">
-                      <label className="absolute -top-2 left-3 bg-white px-1 text-[9px] font-black text-zinc-400 uppercase tracking-widest z-10">Description & Care Info</label>
+                      <label className="absolute -top-2 left-3 bg-white px-1 text-xs font-black text-zinc-400 uppercase tracking-widest z-10">Description & Care Info</label>
                       <textarea className="w-full p-4 bg-transparent border-2 border-zinc-100 rounded-xl text-xs font-bold text-zinc-900 focus:border-[#5D1B54] outline-none transition-all placeholder:text-zinc-300 min-h-[100px] resize-none shadow-sm relative z-0" placeholder="Provide details about the dress material, care instructions, or any notable features..." value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
                     </div>
                   </div>
@@ -4274,7 +4274,7 @@ const Dashboard = () => {
                       <option value="Stylist">Stylist</option>
                     </select>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-zinc-400">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-black text-zinc-400">$</span>
                       <input type="number" className="w-full p-3 pl-7 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Salary" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
                     </div>
                   </div>
@@ -4283,12 +4283,12 @@ const Dashboard = () => {
                     <input type="password" style={{ WebkitTextSecurity: 'disc' } as any} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Login Password" required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Staff Photo</label>
+                    <label className="text-sm font-black text-zinc-400 uppercase tracking-widest px-1">Staff Photo</label>
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center overflow-hidden shrink-0">
                         {formData.image ? <img src={formData.image} className="w-full h-full object-cover" /> : <div className="text-zinc-200 font-black">?</div>}
                       </div>
-                      <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-4 py-2 bg-zinc-100 border border-zinc-200 rounded-lg text-[9px] font-black uppercase tracking-widest text-zinc-600 hover:bg-zinc-200 transition-all">
+                      <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-4 py-2 bg-zinc-100 border border-zinc-200 rounded-lg text-xs font-black uppercase tracking-widest text-zinc-600 hover:bg-zinc-200 transition-all">
                         <Upload className="w-3 h-3" /> Upload
                       </button>
                     </div>
@@ -4301,7 +4301,7 @@ const Dashboard = () => {
                    <input className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Expense Title" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                    <div className="grid grid-cols-2 gap-3">
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-zinc-400">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-black text-zinc-400">$</span>
                       <input type="number" className="w-full p-3 pl-7 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" placeholder="Amount" required value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} />
                     </div>
                     <select className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-xs font-bold focus:border-primary outline-none" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })}>
@@ -4427,7 +4427,7 @@ function WalkinTab({
         <h1 className="font-display text-xl font-black text-zinc-900 leading-none">Walk-in Counter</h1>
         <div className="flex items-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-          <span className="text-[8px] font-black uppercase tracking-widest text-emerald-600">Today: {wiToday.length}</span>
+          <span className="text-sm font-black uppercase tracking-widest text-emerald-600">Today: {wiToday.length}</span>
         </div>
       </div>
 
@@ -4452,8 +4452,8 @@ function WalkinTab({
                   )}
                 </div>
                 <div className="min-w-0 w-full space-y-0.5">
-                  <p className="text-[9px] font-black text-zinc-900 uppercase truncate px-1">{srv.name}</p>
-                  <p className="text-[11px] font-black text-emerald-600">${parseFloat(srv.price || 0).toFixed(2)}</p>
+                  <p className="text-xs font-black text-zinc-900 uppercase truncate px-1">{srv.name}</p>
+                  <p className="text-sm font-black text-emerald-600">${parseFloat(srv.price || 0).toFixed(2)}</p>
                 </div>
               </button>
             ))}
@@ -4463,22 +4463,22 @@ function WalkinTab({
         {/* Right: Cart & Checkout Form */}
         <div className="lg:col-span-4 sticky top-24 bg-white rounded-2xl border border-zinc-100 shadow-xl overflow-hidden flex flex-col h-fit max-h-[80vh]">
           <div className="p-5 border-b border-zinc-100 bg-zinc-50/50 flex justify-between items-center">
-            <h2 className="font-display font-black text-[11px] text-zinc-900 uppercase tracking-widest">Order Summary</h2>
-            <span className="bg-primary/10 text-primary text-[9px] font-black px-2 py-0.5 rounded-full">{wiCart.length} Items</span>
+            <h2 className="font-display font-black text-sm text-zinc-900 uppercase tracking-widest">Order Summary</h2>
+            <span className="bg-primary/10 text-primary text-xs font-black px-2 py-0.5 rounded-full">{wiCart.length} Items</span>
           </div>
 
           <div className="flex-1 overflow-y-auto p-5 space-y-3 min-h-[150px]">
             {wiCart.length === 0 ? (
               <div className="text-center py-10 opacity-50">
-                <p className="text-[10px] font-bold text-zinc-400">Cart is empty.</p>
-                <p className="text-[8px] text-zinc-400 mt-1 uppercase">Select items from the grid.</p>
+                <p className="text-sm font-bold text-zinc-400">Cart is empty.</p>
+                <p className="text-sm text-zinc-400 mt-1 uppercase">Select items from the grid.</p>
               </div>
             ) : (
               wiCart.map((item: any, idx: number) => (
                 <div key={idx} className="flex justify-between items-center p-3 border border-zinc-100 rounded-xl bg-zinc-50/50 group hover:bg-white hover:border-zinc-200 transition-colors">
                   <div className="flex-1 min-w-0 pr-2">
-                    <p className="text-[9px] font-black text-zinc-900 uppercase truncate">{item.name}</p>
-                    <p className="text-[10px] font-bold text-emerald-600">${parseFloat(item.price || 0).toFixed(2)}</p>
+                    <p className="text-xs font-black text-zinc-900 uppercase truncate">{item.name}</p>
+                    <p className="text-sm font-bold text-emerald-600">${parseFloat(item.price || 0).toFixed(2)}</p>
                   </div>
                   <button 
                     onClick={() => {
@@ -4498,14 +4498,14 @@ function WalkinTab({
           {/* Total */}
           <div className="p-5 border-t border-zinc-100 bg-white space-y-4">
             <div className="flex justify-between items-end">
-              <p className="text-[10px] font-black uppercase text-zinc-400">Total Amount</p>
+              <p className="text-sm font-black uppercase text-zinc-400">Total Amount</p>
               <p className="text-xl font-display font-black text-emerald-600 leading-none">${cartTotal.toFixed(2)}</p>
             </div>
 
             <button 
               onClick={saveWalkin} 
               disabled={wiSaving || wiCart.length === 0} 
-              className="w-full py-4 bg-zinc-900 disabled:bg-zinc-300 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+              className="w-full py-4 bg-zinc-900 disabled:bg-zinc-300 text-white rounded-xl text-sm font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all"
             >
               {wiSaving ? "Processing..." : "Complete Walk-in"}
             </button>

@@ -258,7 +258,7 @@ const Profile = () => {
                    </div>
                    <div>
                      <h2 className="text-3xl font-display font-bold text-charcoal">{profile.full_name || "User"}</h2>
-                     <button type="button" onClick={() => document.getElementById('avatar-input')?.click()} className="text-[10px] font-black uppercase tracking-widest text-primary mt-2 flex items-center gap-2 hover:underline">
+                     <button type="button" onClick={() => document.getElementById('avatar-input')?.click()} className="text-sm font-black uppercase tracking-widest text-primary mt-2 flex items-center gap-2 hover:underline">
                         <Camera className="w-3 h-3" /> Upload New Photo
                      </button>
                    </div>
@@ -267,7 +267,7 @@ const Profile = () => {
                  {/* Fields */}
                  <div className="grid grid-cols-1 gap-6">
                     <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Full Name</label>
+                       <label className="text-sm font-black uppercase tracking-widest text-zinc-400 ml-1">Full Name</label>
                        <input 
                          type="text" 
                          value={profile.full_name} 
@@ -278,7 +278,7 @@ const Profile = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                        <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Phone</label>
+                          <label className="text-sm font-black uppercase tracking-widest text-zinc-400 ml-1">Phone</label>
                           <input 
                             type="text" 
                             value={profile.phone} 
@@ -287,7 +287,7 @@ const Profile = () => {
                           />
                        </div>
                        <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Email</label>
+                          <label className="text-sm font-black uppercase tracking-widest text-zinc-400 ml-1">Email</label>
                           <input 
                             type="email" 
                             value={profile.email}
@@ -298,7 +298,7 @@ const Profile = () => {
                     </div>
 
                     <div className="space-y-4">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Gender</label>
+                       <label className="text-sm font-black uppercase tracking-widest text-zinc-400 ml-1">Gender</label>
                        <div className="flex gap-4">
                           {["Female", "Male"].map(g => (
                             <button
@@ -319,7 +319,7 @@ const Profile = () => {
                     </div>
 
                     <div className="space-y-4 pt-6 border-t border-zinc-100">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Change Password</label>
+                       <label className="text-sm font-black uppercase tracking-widest text-zinc-400 ml-1">Change Password</label>
                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                           <input 
                             type="password" 
@@ -368,13 +368,13 @@ const Profile = () => {
                  </div>
                  <div>
                    <h2 className="text-3xl font-display font-bold text-[#4B0E3D]">{profile.full_name || "User Name"}</h2>
-                   <p className="text-[10px] font-black uppercase tracking-widest text-primary mt-2">Live Preview Card</p>
+                   <p className="text-sm font-black uppercase tracking-widest text-primary mt-2">Live Preview Card</p>
                  </div>
               </div>
               
               <div className="space-y-6">
                  <div className="p-6 bg-zinc-50 rounded-2xl border border-zinc-100">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Contact Details</p>
+                    <p className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-2">Contact Details</p>
                     <div className="flex flex-col gap-3">
                        <div className="flex items-center gap-3 text-sm font-bold text-zinc-600">
                           <Mail className="w-4 h-4 text-primary/40" /> {profile.email || 'Email not set'}
@@ -386,7 +386,7 @@ const Profile = () => {
                  </div>
 
                  <div className="p-6 bg-zinc-50 rounded-2xl border border-zinc-100">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Preferences</p>
+                    <p className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-2">Preferences</p>
                     <div className="flex items-center gap-3 text-sm font-bold text-zinc-600">
                        <CheckCircle className="w-4 h-4 text-emerald-500" /> Gender: {profile.gender}
                     </div>
@@ -394,7 +394,7 @@ const Profile = () => {
 
                  <div className="p-8 mt-4 rounded-3xl bg-gradient-to-br from-[#4B0E3D] to-[#83215D] text-white overflow-hidden relative">
                     <div className="relative z-10">
-                       <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Membership Status</p>
+                       <p className="text-sm font-black uppercase tracking-widest opacity-60 mb-1">Membership Status</p>
                        <h4 className="text-xl font-display font-bold">Qurux Dumar Member</h4>
                     </div>
                     <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
@@ -426,9 +426,9 @@ const Profile = () => {
                     </div>
                     <div className="flex-1 text-center md:text-left">
                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
-                          <span className="text-[10px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-500 px-3 py-1 rounded-full">{b.booking_date}</span>
+                          <span className="text-sm font-black uppercase tracking-widest bg-zinc-100 text-zinc-500 px-3 py-1 rounded-full">{b.booking_date}</span>
                           <span className={cn(
-                            "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
+                            "text-sm font-black uppercase tracking-widest px-3 py-1 rounded-full",
                             b.status === 'confirmed' ? "bg-emerald-100 text-emerald-600" : "bg-primary/10 text-primary"
                           )}>
                             {b.status}

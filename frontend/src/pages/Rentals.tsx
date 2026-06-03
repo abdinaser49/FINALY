@@ -109,7 +109,7 @@ const Rentals = () => {
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full mb-4">
                 <Sparkles className="w-3 h-3 text-primary" />
-                <span className="text-primary text-[10px] font-bold uppercase tracking-widest">Premium Collection</span>
+                <span className="text-primary text-sm font-bold uppercase tracking-widest">Premium Collection</span>
               </div>
               <h1 className="text-5xl md:text-6xl font-display font-medium text-charcoal mb-6">
                 Bridal & Suit <span className="text-primary font-serif italic">Rentals</span>
@@ -124,7 +124,7 @@ const Rentals = () => {
                     <Phone className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Quick Inquiries</p>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">Quick Inquiries</p>
                     <p className="text-sm font-bold text-charcoal">+252 61 7643394</p>
                   </div>
                </div>
@@ -152,7 +152,7 @@ const Rentals = () => {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                 />
                 <div className="absolute top-4 left-4">
-                  <span className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-zinc-900 shadow-sm uppercase tracking-wider border border-white/20">
+                  <span className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-sm font-black text-zinc-900 shadow-sm uppercase tracking-wider border border-white/20">
                     {dress.tag || dress.category || "Rental"}
                   </span>
                 </div>
@@ -174,10 +174,10 @@ const Rentals = () => {
                   <h3 className="font-display font-bold text-zinc-900 text-lg uppercase tracking-tight">{dress.name}</h3>
                   <p className="text-primary font-bold text-lg">
                     {typeof dress.price === 'number' ? `$${dress.price}` : dress.price}
-                    <span className="text-[10px] text-zinc-400 font-normal ml-0.5">/day</span>
+                    <span className="text-sm text-zinc-400 font-normal ml-0.5">/day</span>
                   </p>
                 </div>
-                <p className="text-zinc-400 text-[10px] font-black uppercase tracking-widest mt-1">Available for hire</p>
+                <p className="text-zinc-400 text-sm font-black uppercase tracking-widest mt-1">Available for hire</p>
               </div>
             </motion.div>
           ))}

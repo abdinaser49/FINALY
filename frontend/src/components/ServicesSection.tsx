@@ -68,7 +68,7 @@ const ServicesSection = ({ onSelectService }: ServicesSectionProps) => {
         
         if (data && data.length > 0) {
           // Merge logic: Use DB services, and add default ones that aren't in DB (by name)
-          const merged = [...data];
+          const merged: any[] = [...data];
           defaultServices.forEach(ds => {
             const exists = data.some(d => d.name.toLowerCase() === ds.name.toLowerCase());
             if (!exists) {

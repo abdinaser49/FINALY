@@ -31,9 +31,9 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
             
             {/* 50% Off Badge */}
             <div className="absolute -top-4 -right-6 md:-top-6 md:-right-8 w-24 h-24 bg-[#112232] rounded-full flex flex-col items-center justify-center text-white z-30 shadow-xl border-[4px] border-white transform group-hover:scale-105 transition-all duration-300">
-              <span className="text-[10px] font-bold tracking-widest text-gray-300 mb-0.5">UP TO</span>
+              <span className="text-sm font-bold tracking-widest text-gray-300 mb-0.5">UP TO</span>
               <span className="text-xl md:text-2xl font-black text-[#E87A5D] leading-none mb-0.5">50%</span>
-              <span className="text-[10px] font-bold tracking-widest text-gray-300">OFF</span>
+              <span className="text-sm font-bold tracking-widest text-gray-300">OFF</span>
             </div>
           </div>
         </motion.div>
@@ -47,7 +47,7 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#E87A5D]"></span>
-            <span className="text-[10px] font-bold tracking-widest text-gray-800 uppercase">Qurux Dumar Salon</span>
+            <span className="text-sm font-bold tracking-widest text-gray-800 uppercase">Qurux Dumar Salon</span>
           </div>
           
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-display leading-[1.05] tracking-tight">

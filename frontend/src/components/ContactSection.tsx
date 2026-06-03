@@ -21,7 +21,7 @@ const ContactSection = () => {
             className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#E87A5D]/10 rounded-full mb-4"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[#E87A5D]"></span>
-            <span className="text-[#E87A5D] text-[10px] font-bold uppercase tracking-widest">Contact Us</span>
+            <span className="text-[#E87A5D] text-sm font-bold uppercase tracking-widest">Contact Us</span>
           </motion.div>
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
