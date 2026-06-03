@@ -1,8 +1,11 @@
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
+import { SALON_CONFIG } from "@/config/brand";
+import { useBusinessContact } from "@/hooks/useBusinessContact";
 
 const ContactSection = () => {
+  const { phone: businessPhone } = useBusinessContact();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success("Your message has been sent successfully! We will get back to you soon.");
@@ -67,7 +70,14 @@ const ContactSection = () => {
                   <Phone className="w-6 h-6 text-[#E87A5D]" />
                 </div>
                 <h3 className="text-lg font-semibold text-[#112232] mb-2 font-display">Phone</h3>
-                <p className="text-gray-500 text-sm font-body leading-relaxed">+252 61 7643394<br/>+252 62 111 5678</p>
+                <p className="text-gray-500 text-sm font-body leading-relaxed group">
+                  <a href={`https://wa.me/${businessPhone}`} target="_blank" className="hover:text-primary transition-colors flex items-center gap-1">
+                    +{businessPhone} <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 rounded uppercase font-black">WhatsApp</span>
+                  </a>
+                  <a href={`tel:+${businessPhone}`} className="hover:text-primary transition-colors block mt-1">
+                    +{businessPhone}
+                  </a>
+                </p>
               </div>
 
               {/* Email */}
@@ -76,7 +86,7 @@ const ContactSection = () => {
                   <Mail className="w-6 h-6 text-[#E87A5D]" />
                 </div>
                 <h3 className="text-lg font-semibold text-[#112232] mb-2 font-display">Email</h3>
-                <p className="text-gray-500 text-sm font-body leading-relaxed">info@quruxdumar.so<br/>booking@quruxdumar.so</p>
+                <p className="text-gray-500 text-sm font-body leading-relaxed">{SALON_CONFIG.email}</p>
               </div>
 
               {/* Hours */}

@@ -1,9 +1,12 @@
 import { motion } from "framer-motion";
 import { MessageCircle, Zap, ShieldCheck, HeartPulse } from "lucide-react";
+import { SALON_CONFIG } from "@/config/brand";
+import { useBusinessContact } from "@/hooks/useBusinessContact";
 
 const SupportSection = () => {
+  const { phone: businessPhone } = useBusinessContact();
   const openWhatsApp = () => {
-    const phoneNumber = "252617643394";
+    const phoneNumber = businessPhone || SALON_CONFIG.phoneNumber;
     const message = "Hello! I have a question about your services and would like to chat with an expert.";
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, "_blank");
   };

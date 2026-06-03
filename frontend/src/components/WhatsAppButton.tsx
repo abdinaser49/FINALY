@@ -1,16 +1,17 @@
 import { motion } from "framer-motion";
-import { MessageSquare } from "lucide-react";
+import { SALON_CONFIG } from "@/config/brand";
 import { useLocation } from "react-router-dom";
+import { useBusinessContact } from "@/hooks/useBusinessContact";
 
 const WhatsAppButton = () => {
   const location = useLocation();
-  const phoneNumber = "252617643394"; // Normalized number from context
+  const { phone: phoneNumber } = useBusinessContact(); 
 
-  // Hide button on dashboard
-  if (location.pathname.startsWith("/dashboard")) {
+  // Show button on all pages
+  /* if (location.pathname.startsWith("/dashboard")) {
     return null;
-  }
-  const message = "Hello Qurux Dumar! I would like to inquire about your services.";
+  } */
+  const message = SALON_CONFIG.whatsappMessage;
   const encodedMessage = encodeURIComponent(message);
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 

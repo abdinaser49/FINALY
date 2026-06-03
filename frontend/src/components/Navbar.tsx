@@ -4,6 +4,8 @@ import { Menu, X, LayoutDashboard, LogIn, User, Settings, LogOut, ChevronDown, C
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { SALON_CONFIG } from "@/config/brand";
+import { useBusinessContact } from "@/hooks/useBusinessContact";
 import logo from "@/assets/logo.png";
 
 const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || "")
@@ -18,12 +20,12 @@ interface NavbarProps {
 const Navbar = ({ onBookNow }: NavbarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const { phone: businessPhone } = useBusinessContact();
   const navigate = useNavigate();
 
   const isAdmin = user ? ADMIN_EMAILS.includes(user.email?.toLowerCase() || "") : false;
   const [profileOpen, setProfileOpen] = useState(false);
-  const { signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -201,7 +203,7 @@ const Navbar = ({ onBookNow }: NavbarProps) => {
                                   <LogOut className="w-4 h-4" /> Sign Out
                                </button>
                                <a 
-                                 href="https://wa.me/252617643394" 
+                                 href={`https://wa.me/${businessPhone}`} 
                                  target="_blank" 
                                  rel="noreferrer"
                                  className="w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform shrink-0"

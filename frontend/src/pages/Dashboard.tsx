@@ -126,7 +126,7 @@ const Dashboard = () => {
     category: ""
   });
   const [bizName, setBizName] = useState(localStorage.getItem('bizName') || "Qurux Dumar Salon");
-  const [bizPhone, setBizPhone] = useState(localStorage.getItem('bizPhone') || "+252 61 7643394");
+  const [bizPhone, setBizPhone] = useState(localStorage.getItem('bizPhone') || "614498649");
   const [bizEmail, setBizEmail] = useState(localStorage.getItem('bizEmail') || "contact@quruxdumar.com");
   const [bizAddress, setBizAddress] = useState(localStorage.getItem('bizAddress') || "Mogadishu, Somalia");
   const [bizHoursStart, setBizHoursStart] = useState(localStorage.getItem('bizHoursStart') || "08:00");
@@ -2762,12 +2762,23 @@ const Dashboard = () => {
                             </div>
 
                             <button 
-                              onClick={() => {
+                              onClick={async () => {
                                 localStorage.setItem('bizName', bizName);
                                 localStorage.setItem('bizPhone', bizPhone);
                                 localStorage.setItem('bizEmail', bizEmail);
                                 localStorage.setItem('bizAddress', bizAddress);
-                                toast.success("Salon Identity Saved! ✨");
+                                
+                                // Also update the admin's profile phone in the database so it's global
+                                try {
+                                  await supabase
+                                    .from('profiles')
+                                    .update({ phone: bizPhone })
+                                    .eq('full_name', 'Qurux Dumar');
+                                } catch (e) {
+                                  console.error("Link to DB failed:", e);
+                                }
+
+                                toast.success("Salon Identity Saved Globally! ✨");
                               }}
                               className="bg-primary text-white w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/95 active:scale-[0.98] transition-all shadow-lg shadow-primary/10 mt-2"
                             >

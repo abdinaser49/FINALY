@@ -1,9 +1,14 @@
 import { MapPin, Clock } from "lucide-react";
 import { WhatsAppOutlined } from "@ant-design/icons";
 import logo from "@/assets/logo.png";
+import { SALON_CONFIG } from "@/config/brand";
+import { useBusinessContact } from "@/hooks/useBusinessContact";
 
 const Footer = () => {
-  const whatsappNumber = "252619337715"; // International format for the primary number
+  const { phone: businessPhone } = useBusinessContact();
+  const whatsappNumber = businessPhone; 
+  const displayPhone = businessPhone.length > 9 && businessPhone.startsWith('252') ? businessPhone.substring(3) : businessPhone;
+  const email = SALON_CONFIG.email;
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
 
   return (
@@ -31,7 +36,7 @@ const Footer = () => {
               <div className="bg-[#25D366] p-1 rounded-full group-hover:scale-110 transition-transform">
                 <WhatsAppOutlined className="w-4 h-4 text-white" />
               </div>
-              <span className="font-medium">0619337715 / 0617645624</span>
+              <span className="font-medium">{SALON_CONFIG.displayPhone}</span>
             </a>
           </div>
           <div className="font-body text-sm">
