@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
-import { cn } from "@/lib/utils";
+import { cn, resolveBookingServiceId } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { createClient } from "@supabase/supabase-js";
 import { translations } from "@/utils/translations";
@@ -602,14 +602,21 @@ const Dashboard = () => {
 
         const totalAmount = formData.selectedServices.reduce((sum, srv) => sum + (parseFloat(srv.price) || 0), 0);
         const combinedServiceNames = formData.selectedServices.map(srv => srv.name).join(", ");
-        const firstServiceId = formData.selectedServices[0]?.id || null;
+        const firstServiceName = formData.selectedServices[0]?.name || combinedServiceNames;
+        const firstServiceId = formData.selectedServices[0]?.id?.toString?.() || null;
         const firstImageUrl = formData.selectedServices[0]?.image_url || null;
+        const resolvedServiceId = await resolveBookingServiceId(supabase, firstServiceId, firstServiceName, {
+          price: totalAmount,
+          image_url: firstImageUrl,
+          category: modalType === 'payment' ? 'Payment' : 'Appointment',
+        });
+        if (!resolvedServiceId) throw new Error('Unable to resolve a valid service id for booking.');
 
         const payload = {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
           service: combinedServiceNames,
-          service_id: firstServiceId,
+          service_id: resolvedServiceId,
           customer_id: user?.id,
           booking_date: slotDate,
           start_time: slotTime,
@@ -734,6 +741,29 @@ const Dashboard = () => {
     }
   };
 
+  const handleSeedDefaults = async () => {
+    const defaultServicesToSeed = [
+      { name: "Haircut & Styling", price: 35, description: "Professional cutting, coloring, and styling services tailored to your face shape and personal style.", category: "General" },
+      { name: "Makeup", price: 50, description: "Expert makeup application for weddings, parties, and special events using premium products.", category: "General" },
+      { name: "Manicure & Pedicure", price: 30, description: "Complete hand and foot care including nail shaping, cuticle treatment, and artistic polishing.", category: "General" },
+      { name: "Skin Care", price: 45, description: "Rejuvenating facial treatments designed to restore your skin's natural glow and hydration.", category: "General" },
+      { name: "Body Treatment", price: 60, description: "Full body exfoliation and nourishment for smooth, healthy-looking skin all year round.", category: "General" },
+      { name: "Massage", price: 65, description: "Relaxing body therapy to reduce stress, tension, and promote overall physical well-being.", category: "General" },
+    ];
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.from('services').insert(defaultServicesToSeed);
+      if (error) throw error;
+      toast.success("Default services added to dashboard!");
+      fetchServices();
+    } catch (err: any) {
+      toast.error("Error seeding services: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePOSComplete = async () => {
     if (posCart.length === 0) { toast.error("Please add items to the cart!"); return; }
     
@@ -749,11 +779,19 @@ const Dashboard = () => {
         if (p) finalCustomerId = p.id;
       }
 
+      const posServiceId = posCart[0]?.id?.toString?.();
+      const resolvedPosServiceId = await resolveBookingServiceId(supabase, posServiceId, posCart[0]?.name, {
+        price: posTotal,
+        image_url: posCart[0]?.image_url || null,
+        category: 'POS',
+      });
+      if (!resolvedPosServiceId) throw new Error('Unable to resolve a valid service id for POS booking.');
+
       const payload = {
         name: customerName,
         phone: wiPhone || "N/A",
         service: posCart.map(i => i.name).join(", "),
-        service_id: posCart[0]?.id || null,
+        service_id: resolvedPosServiceId,
         amount: posTotal,
         status: 'pending',
         booking_date: getLocalDateString(),
@@ -2210,13 +2248,21 @@ const Dashboard = () => {
             {activeTab === "jobs" && (
               <div className="space-y-6 pb-10">
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 px-2">
-                  <div className="space-y-0.5">
+                  <div className="space-y-0.5 text-left">
                     <h1 className="font-display text-xl font-black text-zinc-900 leading-none">Salon Services</h1>
                     <p className="font-body text-zinc-400 font-medium text-[9px]">Manage treatments and pricing</p>
                   </div>
-                  <button onClick={() => setModalType('service')} className="bg-primary text-white px-4 py-2 rounded-lg font-body text-[9px] flex items-center gap-1.5 hover:bg-primary/90 transition-all shadow-md active:scale-95">
-                    <Plus className="w-3 h-3" /> Add Service
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={handleSeedDefaults} 
+                      className="bg-amber-500/10 text-amber-600 border border-amber-100 px-4 py-2 rounded-lg font-body text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:bg-amber-500/20 transition-all active:scale-95"
+                    >
+                      <Sparkles className="w-3 h-3" /> Seed Defaults
+                    </button>
+                    <button onClick={() => setModalType('service')} className="bg-primary text-white px-4 py-2 rounded-lg font-body text-[9px] flex items-center gap-1.5 hover:bg-primary/90 transition-all shadow-md active:scale-95">
+                      <Plus className="w-3 h-3" /> Add Service
+                    </button>
+                  </div>
                 </div>
 
                 <div className={cardStyles}>
@@ -4311,11 +4357,19 @@ function WalkinTab({
 
       // Loop through all items in the cart
       for (const item of wiCart) {
+        const itemServiceId = item.id?.toString?.();
+        const resolvedItemServiceId = await resolveBookingServiceId(supabase, itemServiceId, item.name, {
+          price: parseFloat(item.price) || 0,
+          image_url: item.image_url || null,
+          category: item.category || 'Walk-in',
+        });
+        if (!resolvedItemServiceId) throw new Error(`Unable to resolve a valid service id for cart item: ${item.name}`);
+
         const { error } = await supabase.from('bookings').insert([{
           name: customerName,
           phone: wiPhone || "N/A",
           service: item.name,
-          service_id: item.id,
+          service_id: resolvedItemServiceId,
           customer_id: finalCustomerId,
           booking_date: today,
           start_time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),

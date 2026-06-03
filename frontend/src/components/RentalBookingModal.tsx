@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
+import { resolveBookingServiceId } from '@/lib/utils';
 
 interface RentalBookingModalProps {
   isOpen: boolean;
@@ -43,10 +44,17 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
         const { data: p } = await supabase.from('profiles').select('id').limit(1).single();
         if (p) finalCustomerId = p.id;
       }
+      const dressServiceId = dressId?.toString();
+      const resolvedServiceId = await resolveBookingServiceId(supabase, dressServiceId, dressName || 'Dress Rental', {
+        price: totalAmount,
+        image_url: dressImage || null,
+        category: 'Dress',
+      });
+      if (!resolvedServiceId) throw new Error('Unable to resolve a valid service id for rental booking.');
 
       const { error } = await supabase.from('bookings').insert([{
         customer_id: finalCustomerId,
-        service_id: dressId?.toString(),
+        service_id: resolvedServiceId,
         name: formData.name,
         phone: formData.phone,
         notes: `Duration: ${formData.days} days. ${formData.notes}`,
@@ -65,7 +73,7 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
         if (error.message.includes("column")) {
            const { error: fallbackError } = await supabase.from('bookings').insert([{
             customer_id: user?.id,
-            service_id: dressId?.toString(),
+            service_id: resolvedServiceId,
             name: formData.name,
             phone: formData.phone,
             notes: formData.notes,

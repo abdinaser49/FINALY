@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Clock, X, Check, Sparkles, Phone, CreditCard, Star, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn, resolveBookingServiceId } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
@@ -300,9 +300,17 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
       return `${hours.padStart(2, '0')}:${minutes}`;
     };
     
+    const serviceId = selectedService?.id?.toString?.();
+    const resolvedServiceId = await resolveBookingServiceId(supabase, serviceId, selectedService?.name, {
+      price: selectedService.price || 0,
+      image_url: selectedService.image || null,
+      category: selectedService.category || null,
+    });
+    if (!resolvedServiceId) throw new Error("Unable to resolve a booking service ID.");
+
     const bookingData = {
       customer_id: finalCustomerIdToSubmit,
-      service_id: selectedService.id,
+      service_id: resolvedServiceId,
       name: name,
       phone: phone,
       notes: `Payment Method: ${paymentMethod}${selectedEmployee !== 'Any' ? `\n(Assigned to: ${selectedEmployee})` : ''}${notes ? `\nNotes: ${notes}` : ''}`,

@@ -14,12 +14,36 @@ const iconMap: Record<string, any> = {
 };
 
 const defaultServices = [
-  { name: "Haircut & Styling", description: "Professional cutting, coloring, and styling services.", icon_name: "Hair" },
-  { name: "Makeup", description: "Expert makeup application for weddings and parties.", icon_name: "Makeup" },
-  { name: "Manicure & Pedicure", description: "Complete hand and foot care services.", icon_name: "Nails" },
-  { name: "Skin Care", description: "Rejuvenating facial treatments.", icon_name: "Skin" },
-  { name: "Body Treatment", description: "Full body exfoliation and nourishment.", icon_name: "Body" },
-  { name: "Massage", description: "Relaxing body therapy for stress reduction.", icon_name: "Massage" },
+  { 
+    name: "Haircut & Styling", 
+    description: "Professional cutting, coloring, and styling services tailored to your face shape and personal style.", 
+    icon_name: "Hair" 
+  },
+  { 
+    name: "Makeup", 
+    description: "Expert makeup application for weddings, parties, and special events using premium products.", 
+    icon_name: "Makeup" 
+  },
+  { 
+    name: "Manicure & Pedicure", 
+    description: "Complete hand and foot care including nail shaping, cuticle treatment, and artistic polishing.", 
+    icon_name: "Nails" 
+  },
+  { 
+    name: "Skin Care", 
+    description: "Rejuvenating facial treatments designed to restore your skin's natural glow and hydration.", 
+    icon_name: "Skin" 
+  },
+  { 
+    name: "Body Treatment", 
+    description: "Full body exfoliation and nourishment for smooth, healthy-looking skin all year round.", 
+    icon_name: "Body" 
+  },
+  { 
+    name: "Massage", 
+    description: "Relaxing body therapy to reduce stress, tension, and promote overall physical well-being.", 
+    icon_name: "Massage" 
+  },
 ];
 
 interface ServicesSectionProps {
@@ -41,7 +65,20 @@ const ServicesSection = ({ onSelectService }: ServicesSectionProps) => {
           .order('name', { ascending: true });
 
         if (error) throw error;
-        setDbServices(data && data.length > 0 ? data : defaultServices);
+        
+        if (data && data.length > 0) {
+          // Merge logic: Use DB services, and add default ones that aren't in DB (by name)
+          const merged = [...data];
+          defaultServices.forEach(ds => {
+            const exists = data.some(d => d.name.toLowerCase() === ds.name.toLowerCase());
+            if (!exists) {
+              merged.push(ds);
+            }
+          });
+          setDbServices(merged);
+        } else {
+          setDbServices(defaultServices);
+        }
       } catch (err) {
         console.error("Error fetching services:", err);
         setDbServices(defaultServices);
@@ -56,6 +93,7 @@ const ServicesSection = ({ onSelectService }: ServicesSectionProps) => {
     const IconComponent = iconMap[item.icon_name] || iconMap[Object.keys(iconMap).find(k => item.name.includes(k)) || "Makeup"] || Sparkles;
     return <IconComponent className="w-10 h-10 stroke-[1.5px]" />;
   };
+
   return (
     <section id="services" className="py-24 bg-[#fdfbf7] overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
@@ -86,9 +124,9 @@ const ServicesSection = ({ onSelectService }: ServicesSectionProps) => {
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 border-t border-l border-slate-100">
-          {dbServices.map((service, i) => (
+          {(dbServices.length > 0 ? dbServices : (loading ? [] : defaultServices)).map((service, i) => (
             <motion.div
-              key={service.name}
+              key={service.name || i}
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               whileHover={{ 
@@ -125,6 +163,7 @@ const ServicesSection = ({ onSelectService }: ServicesSectionProps) => {
     </section>
   );
 };
+
 
 // Helper function locally since we are in a component
 function cn(...classes: (string | boolean | undefined)[]) {
