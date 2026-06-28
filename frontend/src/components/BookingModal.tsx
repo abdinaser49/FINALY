@@ -379,8 +379,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
         `Taariikhda: ${format(date, "dd-MM-yyyy")}\n` +
         `Saacadda: ${startTime}\n` +
         `Numberka: Slot #${currentSlotNum}\n` +
-        `Taleefanka: ${phone}\n\n` +
-        `Fadlan hubi dalabka dashboard-ka.`
+        `Taleefanka: ${phone}`
       );
       
       // Attempt to open WhatsApp automatically

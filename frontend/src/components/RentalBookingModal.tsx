@@ -99,8 +99,7 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
         `Dharka: ${dressName}\n` +
         `Muddada: ${formData.days} maalmood\n` +
         `Ballanta: ${formData.date}\n` +
-        `Taleefanka: ${formData.phone}\n\n` +
-        `Dilaalkan hadda isku dubaridi.`
+        `Taleefanka: ${formData.phone}`
       );
       window.open(`https://wa.me/${adminPhone}?text=${waMsg}`, '_blank');
       
