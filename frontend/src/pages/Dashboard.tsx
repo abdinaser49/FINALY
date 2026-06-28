@@ -2817,6 +2817,7 @@ const Dashboard = () => {
                                 try {
                                   // Use the primary admin email to identify the global profile
                                   const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "quruxdumar49@gmail.com").split(',').map((e: string) => e.trim().toLowerCase());
+                                  // @ts-ignore
                                   await supabase
                                     .from('profiles')
                                     .update({ phone: bizPhone, full_name: bizName } as any)
