@@ -26,11 +26,12 @@ const Index = () => {
       return;
     }
     
-    if (!user) {
+    // Removed mandatory login to allow Guest Booking
+    /* if (!user) {
       toast.error("Please login or register to book an appointment.");
       navigate("/login");
       return;
-    }
+    } */
     setPreselectedService(service);
     setSelectedImage(image);
     setBookingOpen(true);

@@ -79,11 +79,12 @@ const Rentals = () => {
 
   const openBooking = (name?: string, img?: string, id?: string | number) => {
     if (authLoading) return;
-    if (!user) {
+    // Allowed Guest Booking for Rentals
+    /* if (!user) {
       toast.error("Please login or register to book an appointment.");
       navigate("/login");
       return;
-    }
+    } */
     setSelectedDress(name);
     setSelectedImage(img);
     setSelectedId(id);

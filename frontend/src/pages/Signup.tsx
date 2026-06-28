@@ -20,7 +20,11 @@ const Signup = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim() || !fullName.trim()) return;
+    if (!password.trim() || !fullName.trim()) {
+      toast.error("Fadlan geli magacaaga iyo password-ka!");
+      return;
+    }
+    const finalEmail = email.trim() || `${phone.trim() || Date.now()}@temp-beauty.com`;
     if (password.length < 6) {
       toast.error("Password must be at least 6 characters");
       return;
@@ -28,7 +32,7 @@ const Signup = () => {
     setLoading(true);
 
     const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
+      email: finalEmail,
       password,
       options: {
         data: { full_name: fullName.trim(), phone: phone.trim() },
@@ -168,8 +172,7 @@ const Signup = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full p-3 border border-border bg-background font-body text-sm focus:outline-none focus:border-primary transition-colors"
-                  placeholder="you@example.com"
-                  required
+                  placeholder="you@example.com (Optional)"
                 />
               </div>
 

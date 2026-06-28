@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, Clock, X, Check, Sparkles, Phone, CreditCard, Star, ArrowLeft } from "lucide-react";
+import { CalendarIcon, Clock, X, Check, Sparkles, Phone, CreditCard, Star, ArrowLeft, Smartphone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn, resolveBookingServiceId } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -84,7 +84,8 @@ const services = [
   { id: 22, category: "henna", name: "Traditional Patterns", price: 55, duration: "60 min", image: henna4 },
 ];
 
-const timeSlots = ["9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"];
+// Time slots will be generated dynamically
+// const timeSlots = ["9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"];
 
 
 
@@ -103,6 +104,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
   const [localSelectedImage, setLocalSelectedImage] = useState<string | undefined>(selectedImage);
   const [selectedEmployee, setSelectedEmployee] = useState("Any");
   const [date, setDate] = useState<Date>(new Date());
+  const [slotNumber, setSlotNumber] = useState<number>(1);
   const [startTime, setStartTime] = useState("9:00 AM");
   const [endTime, setEndTime] = useState("10:00 AM");
   
@@ -117,6 +119,28 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
   const [slotCounts, setSlotCounts] = useState<Record<string, number>>({});
   const [loadingSlots, setLoadingSlots] = useState(false);
   const MAX_BOOKINGS_PER_SLOT = parseInt(localStorage.getItem('maxBookingsPerSlot') || "3", 10);
+  
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  
+  const generateTimeSlots = () => {
+    const startStr = localStorage.getItem('bizHoursStart') || "08:00";
+    const endStr = localStorage.getItem('bizHoursEnd') || "20:00";
+    
+    const [startH] = startStr.split(':').map(Number);
+    const [endH] = endStr.split(':').map(Number);
+    
+    const slots = [];
+    for (let h = startH; h < endH; h++) {
+      const period = h >= 12 ? 'PM' : 'AM';
+      const displayH = h % 12 || 12;
+      slots.push(`${displayH}:00 ${period}`);
+    }
+    return slots;
+  };
+
+  useEffect(() => {
+    setTimeSlots(generateTimeSlots());
+  }, []);
   
   const bizName = localStorage.getItem('bizName') || "Qurux Dumar Salon";
   const rawPhone = localStorage.getItem('bizPhone') || "617643394";
@@ -281,14 +305,24 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
       toast.error("Fadlan marka hore xaqiiji lacag bixinta adigoo gujinaya badhanka 'Xaqiiji' ama 'OK' ee kor ku yaal!");
       return;
     }
-    // Allow Guest Booking (user can be null)
-    // Ensure we have a valid customer_id to satisfy NOT NULL constraint
     let finalCustomerIdToSubmit = user?.id || null;
     
+    // Database has a NOT NULL and FOREIGN KEY constraint on customer_id
+    // If guest, we use the Admin profile as a placeholder
     if (!finalCustomerIdToSubmit) {
-      // Fallback: Fetch any existing profile ID to satisfy constraint for guest booking
-      const { data: profile } = await supabase.from('profiles').select('id').limit(1).single();
-      if (profile) finalCustomerIdToSubmit = profile.id;
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('full_name', 'Admin') // Fallback if email search is harder
+        .limit(1);
+
+      if (adminProfile && adminProfile.length > 0) {
+        finalCustomerIdToSubmit = adminProfile[0].user_id;
+      } else {
+        // Fallback to any profile's user_id
+        const { data: pList } = await supabase.from('profiles').select('user_id').limit(1);
+        if (pList && pList.length > 0) finalCustomerIdToSubmit = pList[0].user_id;
+      }
     }
 
     const formatTimeToDb = (time12h: string) => {
@@ -325,10 +359,33 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
     };
 
     try {
+      // Calculate slot number before submitting
+      const displaySlot = startTime;
+      const count = slotCounts[displaySlot] || 0;
+      const currentSlotNum = count + 1;
+      setSlotNumber(currentSlotNum);
+
       const { data, error } = await supabase.from('bookings').insert([bookingData]).select();
       if (error) throw error;
+      
+      // Point 3: Admin WhatsApp Notification (Plain Text)
+      const adminPhone = localStorage.getItem('bizPhone') || "617643394";
+      const waMsg = encodeURIComponent(
+        `--- BALLAN CUSUB ---\n\n` +
+        `Macmiilka: ${name}\n` +
+        `Adeegga: ${selectedService.name}\n` +
+        `Taariikhda: ${format(date, "dd-MM-yyyy")}\n` +
+        `Saacadda: ${startTime}\n` +
+        `Numberka: Slot #${currentSlotNum}\n` +
+        `Taleefanka: ${phone}\n\n` +
+        `Fadlan hubi dalabka dashboard-ka.`
+      );
+      
+      // Attempt to open WhatsApp automatically
+      window.open(`https://wa.me/${adminPhone}?text=${waMsg}`, '_blank');
+      
       setStep(5);
-      toast.success("Appointment booked!");
+      toast.success("Appointment booked! Admin notified via WhatsApp.");
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -451,6 +508,7 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                           mode="single" 
                           selected={date} 
                           onSelect={(d) => d && setDate(d)} 
+                          disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
                           className="w-full"
                         />
                       </div>
@@ -834,9 +892,23 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
                    <div className="absolute -inset-4 bg-emerald-100 rounded-full blur-xl opacity-50 animate-pulse" />
                 </div>
 
-                <div className="text-center space-y-2">
+                <div className="text-center space-y-2 px-6">
                    <h3 className="text-4xl font-display font-bold text-charcoal">Mabruuk!</h3>
-                   <p className="text-gray-400 font-medium">Your appointment has been successfully scheduled.</p>
+                   <p className="text-gray-600 font-medium text-lg leading-relaxed">
+                     Congratulations <span className="text-primary font-bold">{name}</span>, you have booked Appointment Slot #{slotNumber} at <span className="font-bold">{startTime}</span> on <span className="font-bold">{format(date, "dd-MM-yyyy")}</span>.
+                   </p>
+                   <div className="flex flex-col gap-2 mt-4 items-center">
+                      <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest">A confirmation has been sent.</p>
+                      <button 
+                        onClick={() => {
+                          const msg = encodeURIComponent(`${name} has booked an appointment for Slot #${slotNumber} at ${startTime} on ${format(date, "dd-MM-yyyy")}.`);
+                          window.open(`https://wa.me/${rawPhone}?text=${msg}`, '_blank');
+                        }}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-full text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg active:scale-95"
+                      >
+                         <Smartphone className="w-3.5 h-3.5" /> Notify Admin (WhatsApp)
+                      </button>
+                   </div>
                 </div>
 
                 <div className="w-full max-w-sm bg-[#fdfbf7] rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-xl shadow-gray-200/50">

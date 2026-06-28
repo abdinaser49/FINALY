@@ -39,10 +39,10 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
 
     setIsSubmitting(true);
     try {
-      let finalCustomerId = user?.id;
+      let finalCustomerId = user?.id || null;
       if (!finalCustomerId) {
-        const { data: p } = await supabase.from('profiles').select('id').limit(1).single();
-        if (p) finalCustomerId = p.id;
+        const { data: ps } = await supabase.from('profiles').select('user_id').limit(1);
+        if (ps && ps.length > 0) finalCustomerId = ps[0].user_id;
       }
       const dressServiceId = dressId?.toString();
       const resolvedServiceId = await resolveBookingServiceId(supabase, dressServiceId, dressName || 'Dress Rental', {
@@ -90,8 +90,20 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
         }
       }
 
+      const adminPhone = localStorage.getItem('bizPhone') || "617643394";
+      const waMsg = encodeURIComponent(
+        `--- KIREYSI DIRAAC (RENTAL) ---\n\n` +
+        `Macmiilka: ${formData.name}\n` +
+        `Dharka: ${dressName}\n` +
+        `Muddada: ${formData.days} maalmood\n` +
+        `Ballanta: ${formData.date}\n` +
+        `Taleefanka: ${formData.phone}\n\n` +
+        `Dilaalkan hadda isku dubaridi.`
+      );
+      window.open(`https://wa.me/${adminPhone}?text=${waMsg}`, '_blank');
+      
       setStep(3);
-      toast.success("Your request has been submitted!");
+      toast.success("Your request has been submitted! Admin notified via WhatsApp.");
     } catch (err: any) {
       toast.error("Sorry, an error occurred: " + err.message);
     } finally {
@@ -161,6 +173,7 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
                       <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-primary transition-colors" />
                       <input 
                         type="date" 
+                        min={format(new Date(), "yyyy-MM-dd")}
                         value={formData.date}
                         onChange={(e) => setFormData({...formData, date: e.target.value})}
                         className="w-full bg-zinc-50 border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-primary/20 transition-all"

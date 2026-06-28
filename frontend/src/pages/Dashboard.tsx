@@ -8,7 +8,7 @@ import {
   Phone, CheckCircle2, Check, Clock, DollarSign, Briefcase, TrendingUp,
   ArrowUpRight, ArrowDownRight, CreditCard, Sparkles, Scissors, Box, Shirt, UserPlus,
   Upload, Loader2, ImagePlus, ShoppingBag, Store, AlertTriangle, Download, XCircle, ShieldCheck, CalendarCheck,
-  Globe, Palette, CloudUpload, FileText, ArrowRight, Info
+  Globe, Palette, CloudUpload, FileText, ArrowRight, Info, Smartphone, MessageCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
@@ -75,6 +75,39 @@ const Dashboard = () => {
   const userProfile = profiles.find(p => p.email?.toLowerCase() === activeEmail.toLowerCase());
   const isCashier = userProfile?.role?.toLowerCase() === "cashier";
 
+  const [lastCheck, setLastCheck] = useState<number>(0);
+  
+  // Point 2: Background Reminder Check
+  useEffect(() => {
+    const checkReminders = () => {
+      const now = new Date();
+      // Only check if we haven't checked in the last minute
+      if (Date.now() - lastCheck < 60000) return;
+      
+      bookings.forEach(apt => {
+        if (apt.status !== 'confirmed') return;
+        const [day, month, year] = apt.booking_date.split('-').map(Number);
+        const [hourStr, minStr] = apt.start_time.split(':');
+        const aptDate = new Date(year, month - 1, day, Number(hourStr), Number(minStr));
+        
+        const diffInMinutes = (aptDate.getTime() - now.getTime()) / 60000;
+        
+        if (diffInMinutes > 9 && diffInMinutes < 11) {
+          toast.info(`Digniin Reminder: ${apt.name} appointment starting in 10 mins!`, {
+            action: {
+              label: "Kusoo dir WA",
+              onClick: () => window.open(`https://wa.me/${apt.phone}?text=${encodeURIComponent("Dear customer, please be on time for your appointment. 🚫")}`, '_blank')
+            }
+          });
+        }
+      });
+      setLastCheck(Date.now());
+    };
+
+    const interval = setInterval(checkReminders, 30000);
+    return () => clearInterval(interval);
+  }, [bookings, lastCheck]);
+
   const [activeTab, setActiveTab] = useState<Tab>(isAdmin ? "overview" : "appointments");
 
   useEffect(() => {
@@ -130,7 +163,7 @@ const Dashboard = () => {
   const [bizEmail, setBizEmail] = useState(localStorage.getItem('bizEmail') || "contact@quruxdumar.com");
   const [bizAddress, setBizAddress] = useState(localStorage.getItem('bizAddress') || "Mogadishu, Somalia");
   const [bizHoursStart, setBizHoursStart] = useState(localStorage.getItem('bizHoursStart') || "08:00");
-  const [bizHoursEnd, setBizHoursEnd] = useState(localStorage.getItem('bizHoursEnd') || "20:00");
+  const [bizHoursEnd, setBizHoursEnd] = useState(localStorage.getItem('bizHoursEnd') || "12:00");
   const [maxBookingsPerSlot, setMaxBookingsPerSlot] = useState(parseInt(localStorage.getItem('maxBookingsPerSlot') || "3", 10));
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -704,6 +737,17 @@ const Dashboard = () => {
         toast.success(editingId ? "Staff member updated." : "Staff member added successfully.");
         fetchStaff();
       } else if (modalType === 'client') {
+        if (!editingId) {
+          // Point 5: Duplicate Customer Prevention
+          const { data: existing } = await supabase.from('customers').select('*').eq('phone', formData.phone.trim()).maybeSingle();
+          if (existing) {
+            toast.info(`Digniin: Macmiilkan horay ayaa loo diwaangeliyay!`);
+            setFormData({ ...formData, name: existing.name, phone: existing.phone, description: existing.email || "" });
+            setEditingId(existing.id); // Switch to editing mode instead of blocking? Or just return.
+            // Requirement says "prevent duplicate... display existing information"
+            return;
+          }
+        }
         const payload = {
           name: formData.name,
           phone: formData.phone,
@@ -1668,6 +1712,7 @@ const Dashboard = () => {
                                           {apt.status}
                                         </div>
                                       )}
+                                      <button onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${apt.phone}?text=${encodeURIComponent("Dear customer, please be on time for your appointment. 🚫")}`, '_blank'); }} className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all duration-200" title="Remind"><Smartphone className="w-3.5 h-3.5" /></button>
                                       <button 
                                         onClick={(e) => { e.stopPropagation(); if (confirm('Delete record?')) deleteBooking(apt.id); }} 
                                         className="p-2 text-zinc-350 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all duration-200"
