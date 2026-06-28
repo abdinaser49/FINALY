@@ -2819,7 +2819,7 @@ const Dashboard = () => {
                                   const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "quruxdumar49@gmail.com").split(',').map((e: string) => e.trim().toLowerCase());
                                   await supabase
                                     .from('profiles')
-                                    .update({ phone: bizPhone, full_name: bizName })
+                                    .update({ phone: bizPhone, full_name: bizName } as any)
                                     .eq('email', adminEmails[0]);
                                 } catch (e) {
                                   console.error("Link to DB failed:", e);
