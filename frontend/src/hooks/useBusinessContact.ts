@@ -14,24 +14,24 @@ export const useBusinessContact = () => {
   useEffect(() => {
     const fetchAdminPhone = async () => {
       try {
-        // Get admin emails from env
-        const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "").split(',').map((e: string) => e.trim().toLowerCase());
+        const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "quruxdumar49@gmail.com").split(',').map((e: string) => e.trim().toLowerCase());
         const primaryAdminEmail = adminEmails[0];
 
         if (primaryAdminEmail) {
           const { data, error } = await supabase
             .from('profiles')
             .select('phone')
-            .eq('full_name', 'Qurux Dumar') // Using the name from the screenshot as a reliable anchor
+            .eq('email', primaryAdminEmail)
             .maybeSingle();
 
           if (data?.phone && !error) {
-            // Normalize phone number (ensure country code)
-            let normalized = data.phone.replace(/\s+/g, '');
-            if (!normalized.startsWith('252') && normalized.length >= 9) {
+            let normalized = data.phone.replace(/\+/g, '').replace(/\s+/g, '');
+            if (!normalized.startsWith('252') && normalized.length >= 7) {
               normalized = '252' + normalized;
             }
             setPhone(normalized);
+            // Sync with localStorage for quick subsequent loads
+            localStorage.setItem('bizPhone', normalized);
           }
         }
       } catch (err) {

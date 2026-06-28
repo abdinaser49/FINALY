@@ -2815,10 +2815,12 @@ const Dashboard = () => {
                                 
                                 // Also update the admin's profile phone in the database so it's global
                                 try {
+                                  // Use the primary admin email to identify the global profile
+                                  const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "quruxdumar49@gmail.com").split(',').map((e: string) => e.trim().toLowerCase());
                                   await supabase
                                     .from('profiles')
-                                    .update({ phone: bizPhone })
-                                    .eq('full_name', 'Qurux Dumar');
+                                    .update({ phone: bizPhone, full_name: bizName })
+                                    .eq('email', adminEmails[0]);
                                 } catch (e) {
                                   console.error("Link to DB failed:", e);
                                 }

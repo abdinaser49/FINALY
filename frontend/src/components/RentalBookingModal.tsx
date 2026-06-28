@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
+import { useBusinessContact } from '@/hooks/useBusinessContact';
 import { resolveBookingServiceId } from '@/lib/utils';
 
 interface RentalBookingModalProps {
@@ -18,6 +19,7 @@ interface RentalBookingModalProps {
 
 const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice, dressId }: RentalBookingModalProps) => {
   const { user } = useAuth();
+  const { phone: businessPhone } = useBusinessContact();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
@@ -90,7 +92,7 @@ const RentalBookingModal = ({ isOpen, onClose, dressName, dressImage, dressPrice
         }
       }
 
-      const adminPhone = localStorage.getItem('bizPhone') || "617643394";
+      const adminPhone = businessPhone || localStorage.getItem('bizPhone') || "614498649";
       const waMsg = encodeURIComponent(
         `--- KIREYSI DIRAAC (RENTAL) ---\n\n` +
         `Macmiilka: ${formData.name}\n` +

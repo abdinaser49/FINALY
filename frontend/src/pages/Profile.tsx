@@ -130,6 +130,13 @@ const Profile = () => {
              phone: profile.phone
            }).eq('email', user.email);
         }
+        
+        // 3. Sync with localStorage if admin
+        const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "quruxdumar49@gmail.com").split(',').map((e: string) => e.trim().toLowerCase());
+        if (user.email && adminEmails.includes(user.email.toLowerCase())) {
+           localStorage.setItem('bizPhone', profile.phone);
+           localStorage.setItem('bizName', profile.full_name);
+        }
       }
 
       toast.success("Profile updated successfully!");
