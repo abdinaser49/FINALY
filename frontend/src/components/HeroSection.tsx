@@ -2,12 +2,15 @@ import { motion } from "framer-motion";
 import heroImage from "@/assets/hero1.jpg";
 import rightImage from "@/assets/hero-salon.jpg";
 import { ArrowUpRight } from "lucide-react";
+import { useBrand } from "@/hooks/useBrand";
 
 interface HeroSectionProps {
   onBookNow: () => void;
 }
 
 const HeroSection = ({ onBookNow }: HeroSectionProps) => {
+  const { bizName } = useBrand();
+  
   return (
     <section className="relative min-h-screen pt-24 pb-12 overflow-hidden bg-[#fdfbf7]">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8 pt-12 md:pt-20">
@@ -47,7 +50,7 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#E87A5D]"></span>
-            <span className="text-sm font-bold tracking-widest text-gray-800 uppercase">Qurux Dumar Salon</span>
+            <span className="text-sm font-bold tracking-widest text-gray-800 uppercase">{bizName}</span>
           </div>
           
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-display leading-[1.05] tracking-tight">

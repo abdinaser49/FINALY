@@ -5,10 +5,12 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import heroImage from "@/assets/hero-salon.jpg";
+import { useBrand } from "@/hooks/useBrand";
 import logo from "@/assets/logo.png";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { bizName, bizLogo } = useBrand();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -118,10 +120,10 @@ const Signup = () => {
         <div className="absolute inset-0 flex items-end p-12">
           <div className="flex flex-col gap-6">
             <Link to="/" className="self-start active:scale-95 transition-transform">
-              <img src={logo} alt="Qurux Dumar Logo" className="h-24 w-auto" />
+              <img src={bizLogo || logo} alt={`${bizName} Logo`} className="h-24 w-auto" />
             </Link>
             <div>
-              <h2 className="font-display text-4xl text-cream mb-2">Qurux Dumar Beauty Salon</h2>
+              <h2 className="font-display text-4xl text-cream mb-2">{bizName}</h2>
               <p className="text-cream/70 font-body">Create an account to book your appointments</p>
             </div>
           </div>
@@ -136,7 +138,7 @@ const Signup = () => {
         >
           <div className="mb-10 text-center">
             <Link to="/" className="inline-block active:scale-95 transition-transform mb-6">
-              <img src={logo} alt="Logo" className="h-20 w-auto" />
+              <img src={bizLogo || logo} alt="Logo" className="h-20 w-auto" />
             </Link>
             {!showOtp ? (
               <>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useBrand } from "@/hooks/useBrand";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -158,10 +159,19 @@ const Dashboard = () => {
     password: "",
     category: ""
   });
-  const [bizName, setBizName] = useState(localStorage.getItem('bizName') || "Qurux Dumar Salon");
-  const [bizPhone, setBizPhone] = useState(localStorage.getItem('bizPhone') || "614498649");
-  const [bizEmail, setBizEmail] = useState(localStorage.getItem('bizEmail') || "contact@quruxdumar.com");
-  const [bizAddress, setBizAddress] = useState(localStorage.getItem('bizAddress') || "Mogadishu, Somalia");
+  const { bizName, bizPhone, bizEmail, bizAddress, bizLogo, updateBrand } = useBrand();
+  // We'll keep local state for the form inputs but sync with useBrand on save
+  const [localBizName, setLocalBizName] = useState(bizName);
+  const [localBizPhone, setLocalBizPhone] = useState(bizPhone);
+  const [localBizEmail, setLocalBizEmail] = useState(bizEmail);
+  const [localBizAddress, setLocalBizAddress] = useState(bizAddress);
+  const [localBizLogo, setLocalBizLogo] = useState(bizLogo);
+  const [localBizDescription, setLocalBizDescription] = useState(localStorage.getItem('bizDescription') || "");
+  const [localBizInstagram, setLocalBizInstagram] = useState(localStorage.getItem('bizInstagram') || "");
+  const [localBizTikTok, setLocalBizTikTok] = useState(localStorage.getItem('bizTikTok') || "");
+  const [localBizFacebook, setLocalBizFacebook] = useState(localStorage.getItem('bizFacebook') || "");
+  const [localBizWhatsApp, setLocalBizWhatsApp] = useState(localStorage.getItem('bizWhatsApp') || "");
+
   const [bizHoursStart, setBizHoursStart] = useState(localStorage.getItem('bizHoursStart') || "08:00");
   const [bizHoursEnd, setBizHoursEnd] = useState(localStorage.getItem('bizHoursEnd') || "12:00");
   const [maxBookingsPerSlot, setMaxBookingsPerSlot] = useState(parseInt(localStorage.getItem('maxBookingsPerSlot') || "3", 10));
@@ -2765,74 +2775,130 @@ const Dashboard = () => {
                             </div>
                           </div>
 
-                          <div className="space-y-4">
-                            <div className="space-y-1">
-                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Name</label>
-                              <input 
-                                type="text" 
-                                className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
-                                value={bizName} 
-                                onChange={(e) => setBizName(e.target.value)}
-                              />
+                            <div className="space-y-4">
+                              <div className="flex flex-col items-center gap-4 mb-2">
+                                <div className="w-24 h-24 rounded-2xl bg-zinc-50 border-2 border-dashed border-zinc-200 flex items-center justify-center overflow-hidden relative group">
+                                  {localBizLogo ? (
+                                    <img src={localBizLogo} className="w-full h-full object-contain" alt="Logo" />
+                                  ) : (
+                                    <Store className="w-8 h-8 text-zinc-300" />
+                                  )}
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer" onClick={() => (fileInputRef as any).current?.click()}>
+                                    <Upload className="w-5 h-5 text-white" />
+                                  </div>
+                                </div>
+                                <button type="button" onClick={() => (fileInputRef as any).current?.click()} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">
+                                  {localBizLogo ? "Change Logo" : "Upload Brand Logo"}
+                                </button>
+                                <input 
+                                  type="file" 
+                                  ref={fileInputRef as any} 
+                                  className="hidden" 
+                                  accept="image/*" 
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    try {
+                                      setUploading(true);
+                                      const fileName = `brand/logo-${Date.now()}-${file.name}`;
+                                      const { error: uploadError } = await supabase.storage.from('services').upload(fileName, file);
+                                      if (uploadError) throw uploadError;
+                                      const { data: { publicUrl } } = supabase.storage.from('services').getPublicUrl(fileName);
+                                      setLocalBizLogo(publicUrl);
+                                      toast.success("Logo uploaded! Click save to apply everywhere.");
+                                    } catch (err: any) {
+                                      toast.error("Upload failed: " + err.message);
+                                    } finally {
+                                      setUploading(false);
+                                    }
+                                  }}
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Name</label>
+                                <input 
+                                  type="text" 
+                                  className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
+                                  value={localBizName} 
+                                  onChange={(e) => setLocalBizName(e.target.value)}
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Contact Phone</label>
+                                <input 
+                                  type="text" 
+                                  className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
+                                  value={localBizPhone} 
+                                  onChange={(e) => setLocalBizPhone(e.target.value)}
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Email</label>
+                                <input 
+                                  type="email" 
+                                  className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
+                                  value={localBizEmail} 
+                                  onChange={(e) => setLocalBizEmail(e.target.value)}
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Physical Address</label>
+                                <input 
+                                  type="text" 
+                                  className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
+                                  value={localBizAddress} 
+                                  onChange={(e) => setLocalBizAddress(e.target.value)}
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Description (About Us)</label>
+                                <textarea 
+                                  className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900 min-h-[100px] resize-none" 
+                                  value={localBizDescription} 
+                                  onChange={(e) => setLocalBizDescription(e.target.value)}
+                                  placeholder="Tell your clients about your salon..."
+                                />
+                              </div>
+
+                              <button 
+                                onClick={async () => {
+                                  updateBrand({
+                                    bizName: localBizName,
+                                    bizPhone: localBizPhone,
+                                    bizEmail: localBizEmail,
+                                    bizAddress: localBizAddress,
+                                    bizLogo: localBizLogo,
+                                    bizDescription: localBizDescription
+                                  });
+                                  
+                                  try {
+                                    const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "quruxdumar49@gmail.com").split(',').map((e: string) => e.trim().toLowerCase());
+                                    // @ts-ignore
+                                    await supabase
+                                      .from('profiles')
+                                      .update({ 
+                                        phone: localBizPhone, 
+                                        full_name: localBizName, 
+                                        avatar_url: localBizLogo,
+                                        description: localBizDescription 
+                                      } as any)
+                                      .eq('email', adminEmails[0]);
+                                  } catch (e) {
+                                    console.error("Link to DB failed:", e);
+                                  }
+
+                                  toast.success("Salon Identity Saved Globally! ✨");
+                                }}
+                                className="bg-primary text-white w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/95 active:scale-[0.98] transition-all shadow-lg shadow-primary/10 mt-2"
+                              >
+                                Save Identity
+                              </button>
                             </div>
-
-                            <div className="space-y-1">
-                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Contact Phone</label>
-                              <input 
-                                type="text" 
-                                className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
-                                value={bizPhone} 
-                                onChange={(e) => setBizPhone(e.target.value)}
-                              />
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Salon Email</label>
-                              <input 
-                                type="email" 
-                                className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
-                                value={bizEmail} 
-                                onChange={(e) => setBizEmail(e.target.value)}
-                              />
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="text-sm font-black text-zinc-400 uppercase tracking-widest pl-1">Physical Address</label>
-                              <input 
-                                type="text" 
-                                className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-200 text-zinc-900" 
-                                value={bizAddress} 
-                                onChange={(e) => setBizAddress(e.target.value)}
-                              />
-                            </div>
-
-                            <button 
-                              onClick={async () => {
-                                localStorage.setItem('bizName', bizName);
-                                localStorage.setItem('bizPhone', bizPhone);
-                                localStorage.setItem('bizEmail', bizEmail);
-                                localStorage.setItem('bizAddress', bizAddress);
-                                
-                                // Also update the admin's profile phone in the database so it's global
-                                try {
-                                  // Use the primary admin email to identify the global profile
-                                  const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || "quruxdumar49@gmail.com").split(',').map((e: string) => e.trim().toLowerCase());
-                                  // @ts-ignore
-                                  await supabase
-                                    .from('profiles')
-                                    .update({ phone: bizPhone, full_name: bizName } as any)
-                                    .eq('email', adminEmails[0]);
-                                } catch (e) {
-                                  console.error("Link to DB failed:", e);
-                                }
-
-                                toast.success("Salon Identity Saved Globally! ✨");
-                              }}
-                              className="bg-primary text-white w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/95 active:scale-[0.98] transition-all shadow-lg shadow-primary/10 mt-2"
-                            >
-                              Save Identity
-                            </button>
-                          </div>
                         </div>
 
                         {/* Operational Hours Card */}
@@ -2908,6 +2974,83 @@ const Dashboard = () => {
                               Save Configurations
                             </button>
                           </div>
+                        </div>
+
+                        {/* Social Media & Presence Card */}
+                        <div className="group relative bg-white rounded-[22px] border border-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden p-6 space-y-6 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-300 md:col-span-2">
+                          {/* ... social card content ... */}
+                          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#1DA1F2] via-[#E1306C] to-[#405DE6]" />
+                          <div className="flex items-center gap-4 border-b border-zinc-50 pb-5">
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-sky-50 transition-transform group-hover:rotate-12">
+                              <Globe className="w-6 h-6 text-sky-500" />
+                            </div>
+                            <div>
+                              <h2 className="text-sm font-black uppercase tracking-wider text-zinc-900">Social Media & Public Profile</h2>
+                              <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Manage links to Instagram, TikTok, and WhatsApp</p>
+                            </div>
+                          </div>
+
+                          <div className="grid md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-black text-zinc-400 uppercase tracking-widest pl-1">Instagram (@handle)</label>
+                                <input 
+                                  type="text" 
+                                  className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-pink-500 outline-none transition-all" 
+                                  placeholder="@salon_beauty"
+                                  value={localBizInstagram} 
+                                  onChange={(e) => setLocalBizInstagram(e.target.value)}
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-black text-zinc-400 uppercase tracking-widest pl-1">TikTok Username</label>
+                                <input 
+                                  type="text" 
+                                  className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-zinc-950 outline-none transition-all" 
+                                  placeholder="@salon_tiktok"
+                                  value={localBizTikTok} 
+                                  onChange={(e) => setLocalBizTikTok(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-4">
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-black text-zinc-400 uppercase tracking-widest pl-1">WhatsApp for Bookings</label>
+                                <input 
+                                  type="text" 
+                                  className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-emerald-500 outline-none transition-all" 
+                                  placeholder="617xxxxx"
+                                  value={localBizWhatsApp} 
+                                  onChange={(e) => setLocalBizWhatsApp(e.target.value)}
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-black text-zinc-400 uppercase tracking-widest pl-1">Facebook Page Link</label>
+                                <input 
+                                  type="text" 
+                                  className="w-full p-3.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white rounded-xl text-xs font-bold border border-zinc-200/80 focus:border-blue-600 outline-none transition-all" 
+                                  placeholder="facebook.com/yoursalon"
+                                  value={localBizFacebook} 
+                                  onChange={(e) => setLocalBizFacebook(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <button 
+                            onClick={() => {
+                              updateBrand({
+                                bizInstagram: localBizInstagram,
+                                bizTikTok: localBizTikTok,
+                                bizFacebook: localBizFacebook,
+                                bizWhatsApp: localBizWhatsApp
+                              });
+                              toast.success("Public Profile Updated Successfully! 🚀");
+                            }}
+                            className="bg-zinc-900 text-white w-full py-4 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-zinc-900/10 hover:bg-zinc-800 transition-all active:scale-[0.98] mt-2"
+                          >
+                            Update Public Profile
+                          </button>
                         </div>
                       </div>
                     )}

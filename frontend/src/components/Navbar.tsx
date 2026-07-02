@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { SALON_CONFIG } from "@/config/brand";
 import { useBusinessContact } from "@/hooks/useBusinessContact";
+import { useBrand } from "@/hooks/useBrand";
 import logo from "@/assets/logo.png";
 
 const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || "")
@@ -18,6 +19,7 @@ interface NavbarProps {
 }
 
 const Navbar = ({ onBookNow }: NavbarProps) => {
+  const { bizName, bizLogo } = useBrand();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, signOut } = useAuth();
@@ -52,11 +54,11 @@ const Navbar = ({ onBookNow }: NavbarProps) => {
     )}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group shrink-0">
-          <img src={logo} alt="Qurux Dumar Logo" className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-110" />
+          <img src={bizLogo || logo} alt={`${bizName} Logo`} className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-110" />
           <span className={cn(
             "font-display text-lg sm:text-2xl transition-colors drop-shadow-sm whitespace-nowrap max-md:text-[14px] max-[380px]:text-[12px] max-[340px]:hidden",
             scrolled ? "text-primary" : "text-[#112232]"
-          )}>Qurux Dumar</span>
+          )}>{bizName}</span>
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-4 ml-auto">

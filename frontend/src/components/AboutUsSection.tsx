@@ -1,9 +1,12 @@
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
+import { useBrand } from "@/hooks/useBrand";
 import img1 from "@/assets/pic1.jpg";
 import img2 from "@/assets/pic2.jpg";
 
 const AboutUsSection = () => {
+  const { bizName, bizPhone } = useBrand();
+  
   const features = [
     "Highly Experienced Professionals",
     "Modern & Natural Products",
@@ -55,7 +58,7 @@ const AboutUsSection = () => {
             className="space-y-6"
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#E87A5D]/10 rounded-full">
-              <span className="text-[#E87A5D] text-sm font-bold uppercase tracking-widest">About Qurux Dumar</span>
+              <span className="text-[#E87A5D] text-sm font-bold uppercase tracking-widest">About {bizName}</span>
             </div>
             
             <h2 className="text-4xl md:text-5xl font-display font-medium text-[#112232] leading-tight mb-6">
@@ -63,7 +66,7 @@ const AboutUsSection = () => {
             </h2>
             
             <p className="text-gray-500 font-body leading-relaxed text-sm md:text-base">
-              Qurux Dumar Spa & Salon is an exclusive center dedicated to women, offering comprehensive beauty services including skincare, hair styling, body massage, and nail care (Manicure & Pedicure).
+              {bizName} is an exclusive center dedicated to women, offering comprehensive beauty services including skincare, hair styling, body massage, and nail care (Manicure & Pedicure).
             </p>
             
             <p className="text-gray-500 font-body leading-relaxed text-sm md:text-base mb-6">
@@ -91,7 +94,7 @@ const AboutUsSection = () => {
                  </div>
                  <div>
                    <p className="text-xs text-gray-500 mb-0.5 font-medium uppercase tracking-wider">Contact Us</p>
-                   <p className="text-lg font-bold text-[#E87A5D]">+252 61 7643394</p>
+                   <p className="text-lg font-bold text-[#E87A5D]">{bizPhone}</p>
                  </div>
               </div>
             </div>

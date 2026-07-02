@@ -17,6 +17,8 @@ import Profile from "./pages/Profile.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { useConnectivity } from "@/hooks/useConnectivity";
 
+import { BrandProvider } from "@/hooks/useBrand";
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -27,7 +29,8 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AuthProvider>
+          <BrandProvider>
+            <AuthProvider>
             <WhatsAppButton />
             <Routes>
             <Route path="/" element={<Index />} />
@@ -49,7 +52,8 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
-      </BrowserRouter>
+      </BrandProvider>
+    </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
   );

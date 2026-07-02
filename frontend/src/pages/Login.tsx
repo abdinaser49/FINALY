@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Loader2, ArrowLeft, Mail, KeyRound, CheckCircle2 } from "lucide-react";
+import { useBrand } from "@/hooks/useBrand";
 import heroImage from "@/assets/hero-salon.jpg";
 import logo from "@/assets/logo.png";
 
@@ -16,6 +17,7 @@ type ResetStep = "idle" | "enter-email" | "enter-otp" | "done";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { bizName, bizLogo } = useBrand();
 
   // Login state
   const [email, setEmail] = useState("");
@@ -138,10 +140,10 @@ const Login = () => {
         <div className="absolute inset-0 flex items-end p-12">
           <div className="flex flex-col gap-6">
             <Link to="/" className="self-start active:scale-95 transition-transform">
-              <img src={logo} alt="Qurux Dumar Logo" className="h-24 w-auto" />
+              <img src={bizLogo || logo} alt={`${bizName} Logo`} className="h-24 w-auto" />
             </Link>
             <div>
-              <h2 className="font-display text-4xl text-cream mb-2">Qurux Dumar Beauty Salon</h2>
+              <h2 className="font-display text-4xl text-cream mb-2">{bizName}</h2>
               <p className="text-cream/70 font-body">Dashboard Management System</p>
             </div>
           </div>
@@ -168,7 +170,7 @@ const Login = () => {
               >
                 <div className="mb-8 text-center">
                   <Link to="/" className="inline-block active:scale-95 transition-transform mb-6">
-                    <img src={logo} alt="Logo" className="h-20 w-auto" />
+                    <img src={bizLogo || logo} alt="Logo" className="h-20 w-auto" />
                   </Link>
                   <h1 className="font-display text-3xl mb-2">Welcome back</h1>
                   <p className="text-muted-foreground font-body text-sm">

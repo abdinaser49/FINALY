@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Clock, X, Check, Sparkles, Phone, CreditCard, Star, ArrowLeft, Smartphone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useBrand } from "@/hooks/useBrand";
 import { useBusinessContact } from "@/hooks/useBusinessContact";
 import { cn, resolveBookingServiceId } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -99,6 +100,7 @@ interface BookingModalProps {
 
 const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: BookingModalProps) => {
   const { user } = useAuth();
+  const { bizName, bizPhone, bizEmail, bizAddress } = useBrand();
   const { phone: businessPhone } = useBusinessContact();
   const [step, setStep] = useState(1);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -144,10 +146,8 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
     setTimeSlots(generateTimeSlots());
   }, []);
   
-  const bizName = localStorage.getItem('bizName') || "Qurux Dumar Salon";
-  const rawPhone = localStorage.getItem('bizPhone') || "617643394";
-  const cleanMerchant = rawPhone.replace(/\D/g, '').slice(-9); // Get last 9 digits as EVC merchant code
-  const merchantCode = cleanMerchant || "617643394";
+  const cleanMerchant = bizPhone.replace(/\D/g, '').slice(-9); // Get last 9 digits as EVC merchant code
+  const merchantCode = cleanMerchant || bizPhone;
 
   useEffect(() => {
     if (user) {
@@ -370,8 +370,8 @@ const BookingModal = ({ isOpen, onClose, preselectedService, selectedImage }: Bo
       const { data, error } = await supabase.from('bookings').insert([bookingData]).select();
       if (error) throw error;
       
-      // Point 3: Admin WhatsApp Notification (Using dynamic businessPhone)
-      const adminPhone = businessPhone || localStorage.getItem('bizPhone') || "614498649";
+      // Point 3: Admin WhatsApp Notification (Using dynamic bizPhone)
+      const adminPhone = bizPhone;
       const waMsg = encodeURIComponent(
         `--- BALLAN CUSUB ---\n\n` +
         `Macmiilka: ${name}\n` +

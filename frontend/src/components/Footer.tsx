@@ -1,14 +1,12 @@
 import { MapPin, Clock } from "lucide-react";
 import { WhatsAppOutlined } from "@ant-design/icons";
+import { useBrand } from "@/hooks/useBrand";
 import logo from "@/assets/logo.png";
-import { SALON_CONFIG } from "@/config/brand";
-import { useBusinessContact } from "@/hooks/useBusinessContact";
 
 const Footer = () => {
-  const { phone: businessPhone } = useBusinessContact();
-  const whatsappNumber = businessPhone; 
-  const displayPhone = businessPhone.length > 9 && businessPhone.startsWith('252') ? businessPhone.substring(3) : businessPhone;
-  const email = SALON_CONFIG.email;
+  const { bizName, bizPhone, bizEmail, bizAddress, bizLogo } = useBrand();
+  const whatsappNumber = bizPhone; 
+  const displayPhone = bizPhone;
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
 
   return (
@@ -16,16 +14,16 @@ const Footer = () => {
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-3 gap-12 mb-16">
           <div>
-            <img src={logo} alt="Qurux Dumar Logo" className="h-24 w-auto mb-6 transition-transform hover:scale-105" />
-            <h3 className="font-display text-2xl text-background mb-4">Qurux Dumar Beauty Salon</h3>
+            <img src={bizLogo || logo} alt={`${bizName} Logo`} className="h-24 w-auto mb-6 transition-transform hover:scale-105" />
+            <h3 className="font-display text-2xl text-background mb-4">{bizName}</h3>
             <p className="font-body text-sm leading-relaxed">
-              Professional beauty home in the heart of Mogadishu, where every detail is designed to make you feel special.
+              Professional beauty home in the heart of {bizAddress.split(',')[0]}, where every detail is designed to make you feel special.
             </p>
           </div>
           <div className="space-y-4 font-body text-sm">
             <div className="flex items-start gap-3">
               <MapPin className="w-4 h-4 mt-0.5 text-gold-light" />
-              <span>Dabka, Banadir<br />Mogadishu, Somalia</span>
+              <span>{bizAddress}</span>
             </div>
             <a 
               href={whatsappUrl} 
@@ -36,7 +34,7 @@ const Footer = () => {
               <div className="bg-[#25D366] p-1 rounded-full group-hover:scale-110 transition-transform">
                 <WhatsAppOutlined className="w-4 h-4 text-white" />
               </div>
-              <span className="font-medium">{SALON_CONFIG.displayPhone}</span>
+              <span className="font-medium">{displayPhone}</span>
             </a>
           </div>
           <div className="font-body text-sm">
@@ -51,7 +49,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-background/10 pt-8 text-center font-body text-xs text-background/40">
-          © 2024 Qurux Dumar Beauty Salon. All rights reserved.
+          © {new Date().getFullYear()} {bizName}. All rights reserved.
         </div>
       </div>
     </footer>
